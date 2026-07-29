@@ -1,0 +1,860 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playwrite+AR:wght@400&family=Playwrite+ZA:wght@400&family=Playwrite+IS:wght@400&family=Nunito:wght@300;400;500;600;700;800;900&family=Nunito+Sans:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Space+Mono:wght@400;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Outfit:wght@300..900&family=Space+Grotesk:wght@300..700&family=JetBrains+Mono:wght@300..800&family=Inter:wght@300..900&family=Yellowtail&family=Fredoka:wght@600;700;900&family=Lilita+One&family=Waterfall&family=Playpen+Sans:wght@300..800&family=Corinthia:wght@400;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-main);
+  --font-serif: var(--font-display);
+  --font-main: "Inter", sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-script: "Yellowtail", cursive;
+  --font-chunky: "Lilita One", sans-serif;
+  --font-mono: "Space Grotesk", sans-serif;
+  --font-waterfall: "Waterfall", cursive;
+  --font-playpen: "Playpen Sans", cursive;
+  --font-corinthia: "Corinthia", cursive;
+  --font-playwrite: "Playwrite IS", cursive;
+  --font-playwrite-za: "Playwrite ZA", cursive;
+  --font-playwrite-ar: "Playwrite AR", cursive;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-ring: var(--ring);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-3xl: 3rem;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Font Families */
+  --font-main: "Inter", sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "Space Grotesk", sans-serif;
+  --custom-font-size: 13px;
+  --font-weight-bold: 600;
+  --tracking-tight: 0.02em;
+
+  /* Systematic Design Palette - Smart Minimalist (Beige, Gray, Pink, Ocean Blue) */
+  --background: #F8F7F4; /* Beige */
+  --foreground: #334155; /* Slate Gray */
+  --card: #ffffff; 
+  --card-foreground: #334155;
+  --primary: #0EA5E9; /* Ocean Blue */
+  --primary-foreground: #ffffff; 
+  --secondary: #F43F5E; /* Pink */
+  --secondary-foreground: #ffffff;
+  --accent: #E0F2FE; /* Light Ocean Blue */
+  --accent-foreground: #0284C7; /* Darker Ocean Blue */
+  --popover: #ffffff;
+  --popover-foreground: #334155;
+  --muted: #F1F5F9; /* Light Gray */
+  --muted-foreground: #64748B; /* Gray */
+  --border: #E2E8F0; /* Gray Border */
+  --ring: #0EA5E9;
+  --sky: #0EA5E9; 
+  --rose: #F43F5E; 
+  --radius: 0.75rem; /* Less rounded for smart minimalist look */
+
+  --stripe-color1: #ffffff;
+  --stripe-color2: #ffffff;
+
+  --pattern-stripes-purple: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(79, 70, 229, 0.05) 10px,
+    rgba(79, 70, 229, 0.05) 20px
+  );
+  --pattern-stripes-green: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(34, 197, 94, 0.05) 10px,
+    rgba(34, 197, 94, 0.05) 20px
+  );
+  --pattern-stripes-brown: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(15, 23, 42, 0.03) 10px,
+    rgba(15, 23, 42, 0.03) 20px
+  );
+  --pattern-stripes-rose: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(206, 159, 169, 0.05) 10px,
+    rgba(206, 159, 169, 0.05) 20px
+  );
+}
+
+.bg-pattern-purple { background-image: var(--pattern-stripes-purple) !important; }
+.bg-pattern-green { background-image: var(--pattern-stripes-green) !important; }
+.bg-pattern-brown { background-image: var(--pattern-stripes-brown) !important; }
+.bg-pattern-rose { background-image: var(--pattern-stripes-rose) !important; }
+
+/* Sticky first column styles for DataTable */
+.sticky-col-selectable {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 25 !important;
+    background-color: inherit;
+}
+
+.sticky-col-row-number {
+    position: sticky !important;
+    z-index: 25 !important;
+    background-color: inherit;
+}
+
+.sticky-col-first-data {
+    position: sticky !important;
+    z-index: 25 !important;
+    background-color: inherit;
+}
+
+.sticky-header-col {
+    z-index: 125 !important;
+    background-color: var(--table-header-bg, var(--secondary, #FAF9F6));
+}
+
+.sticky-footer-col {
+    z-index: 45 !important;
+}
+
+/* Design CSS applied classes */
+.side-panel {
+    display: flex;
+    flex-direction: column;
+    padding-top: 1rem;
+    max-height: 100vh;
+    min-height: 0;
+}
+
+.stat-group {
+    margin-bottom: 3rem;
+}
+
+.stat-group .label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.stat-group .value {
+    font-family: var(--font-main), sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.content-area {
+  padding: 0.75rem 1rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+}
+
+.actions {
+    margin-top: auto;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.actions button,
+.btn-primary,
+.btn-secondary {
+    cursor: pointer;
+    padding: 1.25rem;
+    font-family: var(--font-main), sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-size: 0.7rem;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.btn-primary {
+    border: none;
+    background: var(--foreground);
+    color: var(--background);
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 1px solid var(--foreground);
+    color: var(--foreground);
+}
+
+.dark {
+  --background: #5d111a;
+  --foreground: #f6f4f0;
+  --card: #4a0e15;
+  --card-foreground: #f6f4f0;
+  --popover: #4a0e15;
+  --popover-foreground: #f6f4f0;
+  --primary: #c88493;
+  --primary-foreground: #ffffff;
+  --secondary: #a5b889;
+  --secondary-foreground: #5d111a;
+  --muted: #4a0e15;
+  --muted-foreground: #c88493;
+  --accent: #f2cfd5;
+  --accent-foreground: #5d111a;
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: rgba(246, 244, 240, 0.15);
+  --input: rgba(246, 244, 240, 0.15);
+  --ring: #c88493;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --stripe-color1: #5d111a;
+  --stripe-color2: #4a0e15;
+}
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-weight: 500;
+    letter-spacing: var(--tracking-tight, 0.02em);
+    background-attachment: fixed;
+    position: relative;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: radial-gradient(circle at 10% 20%, color-mix(in srgb, var(--stripe-color1) 45%, transparent) 0%, transparent 45%),
+                radial-gradient(circle at 90% 80%, color-mix(in srgb, var(--stripe-color2) 45%, transparent) 0%, transparent 50%),
+                var(--background);
+    pointer-events: none;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image: var(--bg-image);
+    background-size: var(--bg-image-size, cover);
+    background-repeat: var(--bg-image-repeat, no-repeat);
+    background-position: var(--bg-image-position, center);
+    background-attachment: var(--bg-image-attachment, fixed);
+    opacity: var(--bg-image-opacity, 0);
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  /* Force visibility of all table cells to resolve alignment issues */
+  table.w-full th, 
+  table.w-full td {
+    display: table-cell !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display text-foreground tracking-tight;
+    text-shadow: 
+      -1px -1px 1px rgba(255, 255, 255, 0.95), 
+      1.5px 1.5px 2.5px rgba(45, 25, 18, 0.16);
+  }
+
+  .dark h1,
+  .dark h2,
+  .dark h3,
+  .dark h4 {
+    text-shadow: 
+      -1px -1px 1.5px rgba(255, 255, 255, 0.12), 
+      1.5px 1.5px 3px rgba(0, 0, 0, 0.55);
+  }
+
+  h1 {
+    @apply font-[700] leading-tight;
+  }
+
+  h2 {
+    @apply font-[700] tracking-[-0.01em] leading-tight;
+  }
+
+  .decorative-text {
+    @apply font-display font-[500] uppercase tracking-[0.1em];
+  }
+
+  html {
+    font-size: 16px;
+    font-family: var(--font-main);
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--primary) 50%, transparent)
+      transparent;
+  }
+
+  /* Force Table Font consistently */
+  table,
+  table th,
+  table td,
+  table input,
+  table select,
+  table textarea,
+  .table-font {
+    font-family: var(--font-table, var(--font-main)) !important;
+  }
+
+  table {
+    font-size: 100%;
+  }
+
+  th,
+  td {
+    font-size: var(--custom-font-size, 13px);
+    padding: var(--table-padding, 12px 16px);
+  }
+
+  td {
+    white-space: nowrap;
+  }
+
+  /* Custom Scrollbar Styles */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--accent);
+  }
+
+  /* Master AE Isolated Styles */
+  .master-ae-table-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: 800px !important;
+    overflow: hidden !important;
+    position: relative !important;
+  }
+
+  .master-ae-table-wrapper .data-table-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    position: relative !important;
+  }
+
+  .master-ae-table-wrapper .custom-scrollbar {
+    flex: 1 !important;
+    overflow: auto !important;
+    display: block !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    position: relative !important;
+  }
+
+  .master-ae-table-wrapper tfoot {
+    display: table-footer-group !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 45 !important;
+  }
+  
+  .master-ae-table-wrapper .total-row,
+  .master-ae-table-wrapper tfoot td {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 45 !important;
+    background-color: #FAF9F6 !important;
+    color: var(--accent, #1e293b) !important;
+    font-weight: 700 !important;
+    font-size: 0.75rem !important;
+    line-height: 1.25rem !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+  }
+
+  /* Remove automatic hiding of the second column which causes alignment issues */
+  .master-ae-table-wrapper:not(.pivot-table-container) th:nth-child(2),
+  .master-ae-table-wrapper:not(.pivot-table-container) td:nth-child(2) {
+    display: table-cell !important;
+  }
+
+  .master-ae-table-wrapper:not(.pivot-table-container) table {
+    table-layout: auto !important;
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  /* Restore second column and active cols for the Pivot Table with high specificity */
+  .pivot-table-container th,
+  .pivot-table-container td,
+  .master-ae-table-wrapper.pivot-table-container th,
+  .master-ae-table-wrapper.pivot-table-container td,
+  .master-ae-table-wrapper.pivot-table-container th:nth-child(2),
+  .master-ae-table-wrapper.pivot-table-container td:nth-child(2) {
+    display: table-cell !important;
+  }
+
+  .pivot-table-container th,
+  .master-ae-table-wrapper.pivot-table-container th {
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+
+  .pivot-table-container td,
+  .master-ae-table-wrapper.pivot-table-container td {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .pivot-table-container table,
+  .master-ae-table-wrapper .pivot-table-container table {
+    table-layout: fixed !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+  }
+
+  .master-ae-table-wrapper .pivot-table-container thead {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 35 !important;
+  }
+
+  .master-ae-table-wrapper .pivot-table-container thead th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 35 !important;
+  }
+
+  .master-ae-table-wrapper .pivot-table-container tfoot {
+    display: table-footer-group !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 35 !important;
+  }
+
+  .master-ae-table-wrapper .pivot-table-container .total-row,
+  .master-ae-table-wrapper .pivot-table-container tfoot td {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 35 !important;
+    background-color: var(--pivot-header-bg, #F4EFE6) !important;
+    color: #0f172a !important;
+    font-weight: 800 !important;
+    border-top: 1px solid #cbd5e1 !important;
+    border-bottom: 2px double #94a3b8 !important;
+    border-right: 1px solid #cbd5e1 !important;
+    font-size: 13px !important;
+    height: auto !important;
+    box-shadow: none !important;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(61, 57, 53, 0.08);
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: color-mix(in srgb, var(--primary) 85%, black 10%);
+    border-radius: 10px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--primary);
+  }
+
+  /* Compatibility Fixes for older Safari/iOS */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important; /* Prevents auto-zoom on iOS Safari */
+    font-family: inherit; /* Inherit from td or body */
+  }
+
+  .sticky {
+    position: -webkit-sticky;
+    position: sticky;
+  }
+
+  /* Global backdrop-filter prefixing support */
+  [class*="backdrop-blur"] {
+    -webkit-backdrop-filter: blur(var(--blur-amount, 8px));
+  }
+
+  /* Navigation Elevation */
+  .nav-elevation {
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.03);
+    border-right: 2px solid var(--border);
+  }
+}
+
+@layer utilities {
+  .table-container,
+  .data-table-wrapper,
+  .pivot-table-container,
+  #table-card {
+    background-color: var(--card);
+    border-radius: 0 !important;
+    box-shadow: none;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .scroll-wrapper {
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .data-table-wrapper {
+    background-color: var(--card) !important;
+    border-radius: 0;
+    overflow: hidden;
+  }
+
+  .data-table-wrapper th {
+    background-color: #FAF9F6 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    font-weight: 700 !important;
+    color: var(--accent) !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+
+  .data-table-wrapper th.academic-group {
+    background-color: #E0F2FE !important; /* Sky blue background */
+    color: #0369A1 !important; /* Sky blue text */
+    border-bottom: 2px solid #BAE6FD !important;
+  }
+
+  .data-table-wrapper th.admin-group {
+    background-color: #FEF3C7 !important; /* Amber background */
+    color: #B45309 !important; /* Amber text */
+    border-bottom: 2px solid #FDE68A !important;
+  }
+
+  .data-table-wrapper td {
+    border-bottom: 1px solid var(--border) !important;
+    color: rgba(51, 48, 46, 0.8) !important;
+  }
+
+  .data-table-wrapper tfoot td,
+  .master-ae-table-wrapper tfoot td,
+  .data-table-wrapper .total-row,
+  .master-ae-table-wrapper .total-row,
+  .master-ae-table-wrapper tfoot tr td,
+  .data-table-wrapper tfoot tr td {
+    background-color: #FAF9F6 !important;
+    color: var(--accent, #1e293b) !important;
+    font-weight: 700 !important;
+    font-size: 0.75rem !important;
+    line-height: 1.25rem !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+    border-top: 1px solid var(--border, #cbd5e1) !important;
+    border-bottom: 1px solid var(--border, #cbd5e1) !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 45 !important;
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.03) !important;
+  }
+
+  th.sticky:not(.has-group) {
+    z-index: 60;
+  }
+
+}
+
+@utility soft-button {
+  @apply rounded-full px-6 py-2.5 font-medium transition-all duration-300;
+}
+
+@utility scallop-border {
+  background-image: radial-gradient(
+    circle at 10px 10px,
+    transparent 10px,
+    white 10.5px
+  );
+  background-size: 20px 20px;
+}
+
+@utility gingham-pattern {
+  background-color: transparent;
+  background-image:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--primary) 8%, transparent) 50%,
+      transparent 50%
+    ),
+    linear-gradient(
+      color-mix(in srgb, var(--primary) 8%, transparent) 50%,
+      transparent 50%
+    );
+  background-size: 40px 40px;
+}
+
+@utility striped-pattern {
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent, #a8e4f0) 15%, transparent) 50%,
+    transparent 50%
+  );
+  background-size: 48px 100%;
+}
+
+@utility striped-pattern-sage {
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--primary) 15%, transparent) 50%,
+    transparent 50%
+  );
+  background-size: 40px 100%;
+}
+
+@utility vintage-card {
+  @apply bg-white border border-border rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+}
+
+@utility vintage-button {
+  @apply rounded-full px-6 py-2.5 font-medium transition-all duration-300 bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5;
+}
+
+@utility vintage-button-icon {
+  @apply rounded-full w-10 h-10 flex items-center justify-center bg-white border border-border text-primary hover:bg-primary hover:text-white transition-all;
+}
+
+@utility vintage-header {
+  @apply px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-muted/30 border-b border-border;
+}
+
+@utility vintage-input {
+  @apply flex items-center bg-white border border-border rounded-full px-4 py-2 text-sm focus-within:ring-2 focus-within:ring-primary/20;
+}
+
+@utility vintage-dropdown {
+  @apply absolute bg-white border border-border rounded-2xl shadow-xl z-50 overflow-hidden;
+}
+
+@utility text-embossed {
+  text-shadow: 
+    -1px -1px 1px rgba(255, 255, 255, 0.95), 
+    1.5px 1.5px 2.5px rgba(45, 25, 18, 0.16);
+}
+
+@utility text-embossed-paper {
+  color: #f7f4ec !important;
+  text-shadow: 
+    -1.5px -1.5px 2px rgba(255, 255, 255, 1), 
+    1.5px 1.5px 3px rgba(45, 25, 18, 0.16);
+}
+
+.dark .text-embossed-paper {
+  color: #5d111a !important;
+  text-shadow: 
+    -1.5px -1.5px 2px rgba(255, 255, 255, 0.12), 
+    1.5px 1.5px 3.5px rgba(0, 0, 0, 0.6);
+}
+
+/* Table Gridline Customization based on user settings */
+table,
+table th,
+table td,
+table tr,
+table thead,
+table tbody,
+table tfoot {
+  border-color: var(--grid-line-color, var(--border, #E2E8F0)) !important;
+}
+
+/* User-focused style corrections */
+
+/* Ensure the hold dashboard container has a defined height and allows internal scrolling if needed */
+.hold-dashboard-card {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+/* Ensure table footers are sticky and have high contrast opaque background */
+tfoot.sticky,
+tfoot[class*="sticky"] {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 30 !important;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05) !important;
+}
+
+tfoot.sticky td,
+tfoot[class*="sticky"] td {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 30 !important;
+}
+
+/* Ensure the main table scroll containers respect the viewport height constraints or fill parent space via Flexbox */
+.hold-dashboard-card .overflow-auto {
+  max-height: calc(100vh - 180px) !important;
+}
+
+.data-table-wrapper > div:first-child,
+.audit-data-table-wrapper > div:first-child {
+  max-height: none !important;
+  flex-grow: 1;
+}
+
+/* UI Adjustment: Table and Button Styling Rules */
+
+/* 1. Structural containers & wrappers enforce square corners (0px) */
+div,
+section,
+header,
+table,
+.table-container,
+.data-table-wrapper,
+.audit-data-table-wrapper,
+.pivot-table-container,
+.master-ae-table-wrapper,
+#table-card,
+header.table-header,
+div.table-wrapper,
+.main-header-wrapper,
+.table-data-container,
+[class*="container"]:not(.rounded-full):not(button),
+[class*="wrapper"]:not(.rounded-full):not(button) {
+  border-radius: 0px !important;
+}
+
+/* 2. Interactive buttons apply 20px rounded corners */
+button:not(.rounded-full):not(.rounded-none):not(.search-btn-exception),
+[role="button"]:not(.rounded-full):not(.rounded-none):not(.search-btn-exception),
+.filter-btn,
+button.px-3.py-1\.5 {
+  border-radius: 20px !important;
+}
+
+/* 3. Maintain circular shape for badges and search elements */
+span.rounded-full,
+div.rounded-full,
+input.rounded-full,
+button.rounded-full,
+.search-btn-exception,
+[class*="rounded-full"] {
+  border-radius: 9999px !important;
+}
+
+/* 4. Remove background and borders from specific toolbars */
+.flex.bg-slate-200\/30,
+div.flex.bg-slate-200\/30,
+div[class*="bg-slate-200/30"] {
+  background-color: transparent !important;
+  border-width: 0px !important;
+  box-shadow: none !important;
+}
+
+/* 5. Focus Mode targeted style overrides */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  border-width: 0px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  padding-right: 12px !important;
+  padding-bottom: 0px !important;
+  padding-top: 0px !important;
+  height: 55.2557px !important;
+  margin-bottom: 0px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#table-card:nth-of-type(2) > div:nth-of-type(1) {
+  border-width: 0.5px !important;
+  border-style: solid !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) {
+  background-color: #f5f4f7 !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) {
+  border-width: 0px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  border-width: 0px !important;
+  border-style: none !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) {
+  background-color: #f5f4f7 !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) {
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+  margin-top: 0px !important;
+  background-color: #f5f4f7 !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) {
+  margin-top: -11px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > table:nth-of-type(1) {
+  margin-top: 0px !important;
+  padding-top: 0px !important;
+}
+
