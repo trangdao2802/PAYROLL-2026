@@ -1096,7 +1096,7 @@ export function MasterAE() {
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="absolute inset-0 flex flex-col"
           >
-            <AEDataConfig onSwitchToFinal={() => setView("list")} />
+            <AEDataConfig onSwitchToFinal={() => { setActiveTab("Sheet1_AE"); setView("list"); }} />
           </motion.div>
         )}
       </AnimatePresence>

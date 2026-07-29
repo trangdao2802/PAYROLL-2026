@@ -532,7 +532,7 @@ const DataRow = React.memo(
     return (
       <tr
         onClick={() => onRowClick?.(row)}
-        className={`group ${selectable || onRowClick ? "cursor-pointer" : "cursor-default"} ${row._dimmed ? "opacity-35" : ""} ${row._isTotalRow ? "bg-indigo-50/80 font-black border-t-2 border-indigo-200" : String(row.overlap_check || "").startsWith("Trùng lịch") ? "bg-rose-50/70 text-rose-900" : String(row.overlap_check || "").startsWith("Trùng dòng") ? "bg-amber-50/70 text-amber-900" : isSelected ? "bg-primary/[0.05]" : isRowActive ? "bg-primary/[0.03]" : isRowInRange ? "bg-primary/[0.015]" : striped ? (rIdx % 2 === 0 ? "bg-[var(--stripe-color1,white)]" : "bg-[var(--stripe-color2,white)]") : "bg-white"} relative`}
+        className={`group ${selectable || onRowClick ? "cursor-pointer" : "cursor-default"} ${row._dimmed ? "opacity-35" : ""} ${row._isTotalRow ? "bg-indigo-50/80 font-black border-t-2 border-indigo-200" : String(row.overlap_check || "").startsWith("Trùng lịch") ? "bg-rose-50/70 text-rose-900" : String(row.overlap_check || "").startsWith("Trùng dòng") ? "bg-amber-50/70 text-amber-900" : isSelected ? "bg-primary/[0.05]" : isRowInRange ? "bg-primary/[0.015]" : striped ? (rIdx % 2 === 0 ? "bg-[var(--stripe-color1,white)]" : "bg-[var(--stripe-color2,white)]") : "bg-white"} relative`}
         style={{ height: rowHeight ? `${rowHeight}px` : undefined }}
       >
         {selectable && (
@@ -605,7 +605,6 @@ const DataRow = React.memo(
               className={`${col.cellClassName?.includes("whitespace-pre-wrap") ? "" : "whitespace-nowrap"} select-none ${getAlignment(col)} relative 
               ${isInRange ? "bg-accent/20 z-10" : ""} 
               ${isActive ? "bg-accent/15 z-10 font-medium" : ""} 
-              ${isColActive && !isActive && !isInRange ? "bg-accent/10" : ""}
               text-[1em] leading-[1.7] font-normal text-[#4A3E3E] border-b border-r ${borderClass || "border-[#E2E8F0]"} ${col.cellClassName || ""}
               ${stickyFirstColumn && cIdx === 0 ? "sticky-col-first-data" : ""}
             `}
@@ -2535,7 +2534,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
           onMouseDown={(e) => handleHeaderMouseDown(e, cIdx)}
           onMouseEnter={(e) => handleHeaderMouseEnter(e, cIdx)}
           onContextMenu={(e) => handleContextMenu(e, -1, cIdx)}
-          className={`relative ${stickyClass} ${col.group ? "has-group" : ""} whitespace-normal align-middle cursor-pointer select-none group border-r ${borderClass} text-center ${filteredHeaderClass} ${col.headerClassName || ""} ${isColActive ? "bg-accent/20" : ""} shadow-[0_1px_0_var(--table-border-color,#E2E8F0)] text-[0.75rem] font-bold uppercase ${col.group ? "" : "text-slate-800"}`}
+          className={`relative ${stickyClass} ${col.group ? "has-group" : ""} whitespace-normal align-middle cursor-pointer select-none group border-r ${borderClass} text-center ${filteredHeaderClass} ${col.headerClassName || ""} shadow-[0_1px_0_var(--table-border-color,#E2E8F0)] text-[0.75rem] font-bold uppercase ${col.group ? "" : "text-slate-800"}`}
           style={{
             padding: "var(--table-padding, 0.4rem 0.6rem)",
             paddingTop: "5px",

@@ -431,7 +431,7 @@ const DataRow = React.memo(
     return (
       <tr
         onClick={() => onRowClick?.(row)}
-        className={`group ${selectable || onRowClick ? "cursor-pointer" : "cursor-default"} ${row._dimmed ? "opacity-35" : ""} ${isSelected ? "bg-primary/[0.05]" : isRowActive ? "bg-primary/[0.03]" : isRowInRange ? "bg-primary/[0.015]" : striped ? (rIdx % 2 === 0 ? "bg-[var(--stripe-color1,white)]" : "bg-[var(--stripe-color2,white)]") : "bg-white"} relative`}
+        className={`group ${selectable || onRowClick ? "cursor-pointer" : "cursor-default"} ${row._dimmed ? "opacity-35" : ""} ${isSelected ? "bg-primary/[0.05]" : isRowInRange ? "bg-primary/[0.015]" : striped ? (rIdx % 2 === 0 ? "bg-[var(--stripe-color1,white)]" : "bg-[var(--stripe-color2,white)]") : "bg-white"} relative`}
         style={{ height: rowHeight ? `${rowHeight}px` : undefined }}
       >
         {isSelected && (
@@ -514,7 +514,6 @@ const DataRow = React.memo(
               className={`${col.cellClassName?.includes("whitespace-pre-wrap") ? "" : "whitespace-nowrap"} select-none ${getAlignment(col)} relative 
               ${isInRange ? "bg-accent/20 z-10" : ""} 
               ${isActive ? "bg-accent/15 z-10 font-medium" : ""} 
-              ${isColActive && !isActive && !isInRange ? "bg-accent/10" : ""}
               text-[1em] leading-[1.7] font-normal text-[#4A3E3E] border-b border-r border-[var(--grid-line-color,#E2E8F0)] ${col.cellClassName || ""}
             `}
               style={{
@@ -2301,9 +2300,6 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
             overflow: "visible",
           }}
         >
-          {isColActive && (
-            <div className="absolute inset-0 bg-accent/[0.08] pointer-events-none z-0" />
-          )}
           <div className="flex items-center gap-2 justify-center h-full px-2 relative z-10">
             <span
               className={`transition-colors flex-1 flex flex-col md:flex-row items-center justify-center gap-1 ${col.sortable !== false ? "hover:text-accent/80 active:scale-[0.98]" : ""} ${col.headerSpanClassName || ""}`}

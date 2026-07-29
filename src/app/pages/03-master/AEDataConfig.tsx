@@ -2217,10 +2217,16 @@ export function AEDataConfig({
       toast.success(
         `Xử lý xong: ${verifiedSheet1Data.length} Sheet1, ${finalBankData.length} Bank, ${verifiedHoldData.length} Hold.`,
       );
+      localStorage.setItem("master_ae_active_tab", "Sheet1_AE");
+      window.dispatchEvent(
+        new CustomEvent("master-ae-request-tab-change", {
+          detail: { tab: "Sheet1_AE" },
+        }),
+      );
+      window.dispatchEvent(new Event("master-ae-request-refresh"));
       if (onSwitchToFinal) {
         onSwitchToFinal();
       } else {
-        localStorage.setItem("master_ae_active_tab", "Sheet1_AE");
         navigate("/master-ae");
       }
     } catch (error: any) {
@@ -2236,21 +2242,21 @@ export function AEDataConfig({
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="flex-1 flex flex-col min-h-0 bg-transparent px-6 py-4 items-center overflow-hidden"
+      className="flex-1 flex flex-col min-h-0 bg-transparent p-4 sm:p-6 md:p-8 items-center overflow-hidden w-full max-w-full"
     >
       {/* Main Content Card */}
-      <div className="bg-card text-card-foreground soft-card force-light flex-1 flex flex-col min-h-0 w-full relative overflow-hidden rounded-none shadow-sm border-[0.5px]">
+      <div className="bg-card text-card-foreground soft-card force-light flex-1 flex flex-col min-h-0 w-full max-w-full relative overflow-hidden rounded-2xl shadow-sm border border-border/60">
         <div className="absolute inset-0 striped-pattern opacity-[0.05] pointer-events-none" />
 
         {/* Integrated Header & Controls */}
-        <div className="px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-6 bg-muted/20 shrink-0 border-b border-border relative z-10 overflow-hidden">
-          <div className="flex items-center gap-5 relative z-10">
-            <div className="bg-primary/10 flex items-center justify-center rounded-2xl border border-primary/20" style={{ height: "54.9886px", borderWidth: "0.5px", width: "54.9886px" }}>
-              <Database className="w-8 h-8 text-primary" />
+        <div className="px-6 sm:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-4 bg-muted/20 shrink-0 border-b border-border relative z-10 overflow-hidden">
+          <div className="flex items-center gap-4 relative z-10 shrink-0">
+            <div className="bg-primary/10 flex items-center justify-center rounded-2xl border border-primary/20 shrink-0 w-12 h-12" style={{ borderWidth: "0.5px" }}>
+              <Database className="w-6 h-6 text-primary" />
             </div>
 
             <div>
-              <h2 className="text-4xl text-[#6b9d99] font-script" style={{ fontFamily: "'Great Vibes', 'Corinthia', cursive", fontSize: "42px", lineHeight: "1.2" }}>
+              <h2 className="text-2xl sm:text-3xl text-[#6b9d99] font-script" style={{ fontFamily: "'Great Vibes', 'Corinthia', cursive", fontSize: "36px", lineHeight: "1.2" }}>
                 Files from ae
               </h2>
               <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-[0.2em]">
@@ -2259,7 +2265,7 @@ export function AEDataConfig({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             <AnimatePresence>
               {showSearch && (
                 <motion.div
@@ -2284,7 +2290,7 @@ export function AEDataConfig({
               )}
             </AnimatePresence>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               {/* Hidden multi-file upload input */}
               <input
                 type="file"
@@ -2303,34 +2309,30 @@ export function AEDataConfig({
                     navigate("/master-ae");
                   }
                 }}
-                className="flex items-center gap-2 px-5 border border-primary/20 rounded-full bg-primary/5 text-primary font-bold text-[0.6875rem] uppercase tracking-widest hover:bg-primary/10 transition-colors shadow-sm whitespace-nowrap"
-                style={{ height: "40.4735px", paddingTop: "6px", paddingBottom: "6px" }}
+                className="flex items-center gap-2 px-4 py-2 border border-primary/20 rounded-full bg-primary/5 text-primary font-bold text-[0.7rem] uppercase tracking-wider hover:bg-primary/10 transition-colors shadow-sm whitespace-nowrap h-10"
               >
-                <span style={{ width: "91.2992px", textAlign: "left" }}>Go to Gross Pay</span>
-                <ChevronRight className="w-4 h-4 ml-1" style={{ marginRight: "-16px", marginBottom: "0px", marginTop: "0px" }} />
+                <span>Go to Gross Pay</span>
+                <ChevronRight className="w-4 h-4 shrink-0" />
               </button>
 
               <button
                 onClick={processAEData}
                 disabled={isProcessing}
-                className="soft-button bg-primary text-primary-foreground shadow-md flex items-center gap-3 px-6"
-                style={{ height: "40.4735px", paddingTop: "6px", paddingBottom: "6px" }}
+                className="soft-button bg-primary text-primary-foreground shadow-md flex items-center gap-2 px-5 py-2 rounded-full font-bold text-[0.7rem] uppercase tracking-wider hover:bg-primary/90 transition-colors whitespace-nowrap h-10"
               >
                 {isProcessing ? (
-                  <Loader2 className="w-4 h-4 animate-spin" style={{ marginRight: "-16px", marginBottom: "0px", marginTop: "0px" }} />
+                  <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                 ) : (
-                  <Layers className="w-4 h-4" style={{ marginRight: "-16px", marginBottom: "0px", marginTop: "0px" }} />
+                  <Layers className="w-4 h-4 shrink-0" />
                 )}
-                <span className="text-[0.7rem] font-bold tracking-widest uppercase" style={{ width: "91.2992px" }}>
-                  Xử lý
-                </span>
+                <span>Xử lý</span>
               </button>
 
               <DropdownMenu>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <DropdownMenuTrigger asChild>
-                      <button className="w-[36.7925px] h-[36.7925px] flex items-center justify-center p-1.5 rounded-full border border-border bg-card text-card-foreground text-muted-foreground hover:text-primary transition-all group shadow-sm">
+                      <button className="w-10 h-10 flex items-center justify-center rounded-full border border-border bg-card text-card-foreground text-muted-foreground hover:text-primary transition-all group shadow-sm shrink-0">
                         <Wrench className="w-5 h-5 group-hover:rotate-45 transition-transform duration-500" />
                       </button>
                     </DropdownMenuTrigger>
@@ -2433,50 +2435,50 @@ export function AEDataConfig({
           </div>
         )}
 
-        <div className="flex-1 min-h-0 p-0 flex flex-col w-full font-[family-name:var(--font-table,var(--font-main))]">
-          <div className="flex-1 min-h-0 w-full overflow-auto custom-scrollbar data-table-wrapper rounded-none" style={{ backgroundColor: "#faf9f6" }}>
+        <div className="flex-1 min-h-0 p-5 sm:p-6 md:p-8 flex flex-col w-full max-w-full font-[family-name:var(--font-table,var(--font-main))] overflow-hidden">
+          <div className="flex-1 min-h-0 w-full max-w-full overflow-auto custom-scrollbar data-table-wrapper rounded-xl border border-[#E2E8F0] shadow-sm p-1" style={{ backgroundColor: "#faf9f6" }}>
             <table className="w-full border-separate border-spacing-0 table-auto text-left" style={{ borderWidth: "0.5px" }}>
               <thead>
                 <tr className="bg-[#F3EFE0]">
                   <th
-                    style={{ padding: "var(--table-padding, 6px 10px)" }}
-                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.85em] font-bold text-primary uppercase tracking-[0.22em] text-center border-b border-r border-[#E2E8F0] whitespace-nowrap shadow-[0_1px_0_rgba(0,0,0,0.1)]"
+                    style={{ padding: "10px 14px" }}
+                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] text-center border-b border-r border-[#E2E8F0] whitespace-nowrap min-w-[60px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
                   >
                     No
                   </th>
                   <th
-                    style={{ padding: "var(--table-padding, 6px 10px)" }}
-                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.85em] font-bold text-primary uppercase tracking-[0.22em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-center shadow-[0_1px_0_rgba(0,0,0,0.1)]"
+                    style={{ padding: "10px 14px" }}
+                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-left min-w-[280px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
                   >
                     TÊN FILE
                   </th>
                   <th
-                    style={{ padding: "var(--table-padding, 6px 10px)" }}
-                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.85em] font-bold text-primary uppercase tracking-[0.22em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-center w-32 shadow-[0_1px_0_rgba(0,0,0,0.1)]"
+                    style={{ padding: "10px 14px" }}
+                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-left min-w-[180px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
                   >
                     BANK
                   </th>
                   <th
-                    style={{ padding: "var(--table-padding, 6px 10px)" }}
-                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.85em] font-bold text-primary uppercase tracking-[0.22em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-center w-32 shadow-[0_1px_0_rgba(0,0,0,0.1)]"
+                    style={{ padding: "10px 14px" }}
+                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-center min-w-[120px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
                   >
                     THÁNG
                   </th>
                   <th
-                    style={{ padding: "var(--table-padding, 6px 10px)" }}
-                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.85em] font-bold text-primary uppercase tracking-[0.22em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-center shadow-[0_1px_0_rgba(0,0,0,0.1)]"
+                    style={{ padding: "10px 14px" }}
+                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-left min-w-[320px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
                   >
                     NGUỒN
                   </th>
                   <th
-                    style={{ padding: "var(--table-padding, 6px 10px)" }}
-                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.85em] font-bold text-primary uppercase tracking-[0.22em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-center w-40 shadow-[0_1px_0_rgba(0,0,0,0.1)]"
+                    style={{ padding: "10px 14px" }}
+                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-center min-w-[150px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
                   >
                     TRẠNG THÁI
                   </th>
                   <th
-                    style={{ padding: "var(--table-padding, 6px 10px)" }}
-                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.85em] font-bold text-primary uppercase tracking-[0.22em] text-center border-b border-[#E2E8F0] whitespace-nowrap w-20 shadow-[0_1px_0_rgba(0,0,0,0.1)]"
+                    style={{ padding: "10px 14px" }}
+                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] text-center border-b border-[#E2E8F0] whitespace-nowrap min-w-[70px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
                   >
                     XÓA
                   </th>
@@ -2512,23 +2514,21 @@ export function AEDataConfig({
                     >
                       <td
                         style={{
-                          padding: "var(--table-padding, 6px 10px)",
+                          padding: "8px 12px",
                           fontFamily: "var(--font-table, var(--font-main))",
-                          fontSize: "var(--font-size)",
                         }}
-                        className="text-center border-b border-r border-[#E2E8F0] bg-card"
+                        className="text-center border-b border-r border-[#E2E8F0] bg-card min-w-[50px]"
                       >
-                        <span className="text-[1em] font-medium text-foreground/30">
+                        <span className="text-[0.875rem] font-medium text-foreground/40">
                           {(currentPage - 1) * itemsPerPage + idx + 1}
                         </span>
                       </td>
                       <td
                         style={{
-                          padding: "var(--table-padding, 6px 10px)",
+                          padding: "8px 12px",
                           fontFamily: "var(--font-table, var(--font-main))",
-                          fontSize: "var(--font-size)",
                         }}
-                        className="border-b border-r border-[#E2E8F0]"
+                        className="border-b border-r border-[#E2E8F0] min-w-[220px]"
                       >
                         <input
                           id={`name-${row.id}`}
@@ -2539,17 +2539,15 @@ export function AEDataConfig({
                             updateRow(row.id, "name", e.target.value)
                           }
                           placeholder="Tên file..."
-                          className="w-full bg-transparent border-none focus:ring-0 text-[1em] font-medium text-foreground placeholder:text-foreground/20 p-0 uppercase tracking-tight"
-                          style={{ fontFamily: "inherit", fontSize: "inherit" }}
+                          className="w-full bg-transparent border-none focus:ring-0 text-[0.875rem] font-semibold text-foreground placeholder:text-foreground/20 p-0 uppercase tracking-tight"
                         />
                       </td>
                       <td
                         style={{
-                          padding: "var(--table-padding, 6px 10px)",
+                          padding: "8px 12px",
                           fontFamily: "var(--font-table, var(--font-main))",
-                          fontSize: "var(--font-size)",
                         }}
-                        className="border-b border-r border-[#E2E8F0]"
+                        className="border-b border-r border-[#E2E8F0] min-w-[170px]"
                       >
                         <select
                           id={`bank-${row.id}`}
@@ -2558,8 +2556,7 @@ export function AEDataConfig({
                           onChange={(e) =>
                             updateRow(row.id, "bank", e.target.value)
                           }
-                          className="w-full bg-transparent border-none focus:ring-0 text-[1em] font-bold text-foreground/60 p-0 uppercase cursor-pointer appearance-none tracking-widest"
-                          style={{ fontFamily: "inherit", fontSize: "inherit" }}
+                          className="w-full bg-transparent border-none focus:ring-0 text-[0.875rem] font-bold text-foreground/70 p-0 uppercase cursor-pointer appearance-none tracking-wider pr-4"
                         >
                           <option value="" className="text-foreground/40">
                             Chọn Region...
@@ -2573,11 +2570,10 @@ export function AEDataConfig({
                       </td>
                       <td
                         style={{
-                          padding: "var(--table-padding, 6px 10px)",
+                          padding: "8px 12px",
                           fontFamily: "var(--font-table, var(--font-main))",
-                          fontSize: "var(--font-size)",
                         }}
-                        className="border-b border-r border-[#E2E8F0] text-center"
+                        className="border-b border-r border-[#E2E8F0] text-center min-w-[110px]"
                       >
                         <select
                           id={`month-${row.id}`}
@@ -2586,8 +2582,7 @@ export function AEDataConfig({
                           onChange={(e) =>
                             updateRow(row.id, "month", e.target.value)
                           }
-                          className="w-full bg-transparent border-none focus:ring-0 text-[1em] font-bold text-foreground/60 p-0 uppercase cursor-pointer appearance-none tracking-widest text-center"
-                          style={{ fontFamily: "inherit", fontSize: "inherit" }}
+                          className="w-full bg-transparent border-none focus:ring-0 text-[0.875rem] font-bold text-foreground/70 p-0 uppercase cursor-pointer appearance-none tracking-wider text-center"
                         >
                           {[
                             "01.2026", "02.2026", "03.2026", "04.2026", "05.2026", "06.2026",
@@ -2599,11 +2594,10 @@ export function AEDataConfig({
                       </td>
                       <td
                         style={{
-                          padding: "var(--table-padding, 6px 10px)",
+                          padding: "8px 12px",
                           fontFamily: "var(--font-table, var(--font-main))",
-                          fontSize: "var(--font-size)",
                         }}
-                        className="border-b border-r border-[#E2E8F0]"
+                        className="border-b border-r border-[#E2E8F0] min-w-[280px]"
                       >
                         <div className="flex items-center gap-2">
                           <input
@@ -2621,10 +2615,10 @@ export function AEDataConfig({
                             onClick={() =>
                               document.getElementById(`file-${row.id}`)?.click()
                             }
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl border font-bold text-[0.625rem] tracking-widest uppercase transition-all flex-1 justify-center ${row.fileObj ? "bg-emerald-500 text-primary-foreground border-emerald-500 shadow-lg shadow-emerald-500/20" : "bg-card text-card-foreground text-primary border-primary/10 hover:bg-primary/5"}`}
+                            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl border font-bold text-[0.6875rem] tracking-wider uppercase transition-all flex-1 justify-center ${row.fileObj ? "bg-emerald-500 text-primary-foreground border-emerald-500 shadow-sm" : "bg-card text-card-foreground text-primary border-primary/20 hover:bg-primary/5"}`}
                           >
-                            <FileSpreadsheet className="w-3.5 h-3.5" />
-                            {row.fileObj ? "ĐÃ CHỌN" : "CHỌN FILE"}
+                            <FileSpreadsheet className="w-3.5 h-3.5 shrink-0" />
+                            <span className="whitespace-nowrap">{row.fileObj ? "ĐÃ CHỌN" : "CHỌN FILE"}</span>
                           </button>
                           <button
                             onClick={() => {
@@ -2632,7 +2626,7 @@ export function AEDataConfig({
                               setLinkInput("");
                               setLinkDialogOpen(true);
                             }}
-                            className="p-2 rounded-xl bg-blue-50 border border-blue-100 text-blue-500 hover:bg-blue-100 transition-colors shrink-0"
+                            className="p-1.5 rounded-xl bg-blue-50 border border-blue-100 text-blue-500 hover:bg-blue-100 transition-colors shrink-0"
                             title="Dán link Google Sheet"
                           >
                             <LinkIcon className="w-4 h-4" />
@@ -2640,7 +2634,7 @@ export function AEDataConfig({
 
                           <button
                             onClick={() => downloadRowFile(row)}
-                            className="p-2 rounded-xl bg-teal-50 border border-teal-100 text-teal-600 hover:bg-teal-100 transition-colors shrink-0"
+                            className="p-1.5 rounded-xl bg-teal-50 border border-teal-100 text-teal-600 hover:bg-teal-100 transition-colors shrink-0"
                             title="Tải file về máy / Tải file mẫu"
                           >
                             <Download className="w-4 h-4" />
@@ -2654,7 +2648,7 @@ export function AEDataConfig({
                                   rowId: row.id,
                                 })
                               }
-                              className="p-2 border border-primary/10 rounded-xl bg-card text-card-foreground text-primary hover:bg-primary/5 transition-all shadow-sm"
+                              className="p-1.5 border border-primary/10 rounded-xl bg-card text-card-foreground text-primary hover:bg-primary/5 transition-all shadow-sm shrink-0"
                               title="Cấu hình Mapping Cột"
                             >
                               <Wrench className="w-4 h-4" />
@@ -2662,8 +2656,7 @@ export function AEDataConfig({
                           )}
                           {row.fileObj && (
                             <span
-                              className="text-[0.625rem] font-bold text-foreground/40 truncate max-w-[100px] uppercase tracking-widest"
-                              style={{ fontSize: "0.625rem" }}
+                              className="text-[0.625rem] font-bold text-foreground/50 truncate max-w-[100px] uppercase tracking-wider"
                             >
                               {row.fileObj.name}
                             </span>
@@ -2672,40 +2665,39 @@ export function AEDataConfig({
                       </td>
                       <td
                         style={{
-                          padding: "var(--table-padding, 6px 10px)",
+                          padding: "8px 12px",
                           fontFamily: "var(--font-table, var(--font-main))",
-                          fontSize: "var(--font-size)",
                         }}
-                        className="border-b border-r border-[#E2E8F0]"
+                        className="border-b border-r border-[#E2E8F0] min-w-[140px]"
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center">
                           {row.status === "Success" ? (
-                            <div className="flex items-center gap-1.5 text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full text-[0.625rem] font-bold uppercase tracking-widest">
-                              <Check className="w-3 h-3" />
-                              <span>Thành công</span>
+                            <div className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full text-[0.6875rem] font-bold uppercase tracking-wider border border-emerald-200">
+                              <Check className="w-3.5 h-3.5 shrink-0" />
+                              <span className="whitespace-nowrap">Thành công</span>
                             </div>
                           ) : row.status === "ready" ? (
-                            <div className="flex items-center gap-1.5 text-foreground/30 bg-foreground/5 px-3 py-1 rounded-full text-[0.625rem] font-bold uppercase tracking-widest">
-                              <div className="w-1.5 h-1.5 rounded-full bg-foreground/20" />
-                              <span>Sẵn sàng</span>
+                            <div className="flex items-center gap-1.5 text-foreground/50 bg-foreground/5 px-3 py-1 rounded-full text-[0.6875rem] font-bold uppercase tracking-wider border border-border">
+                              <div className="w-1.5 h-1.5 rounded-full bg-foreground/30 shrink-0" />
+                              <span className="whitespace-nowrap">Sẵn sàng</span>
                             </div>
                           ) : row.status.includes("Error") ? (
-                            <div className="flex items-center gap-1.5 text-rose-500 bg-rose-500/10 px-3 py-1 rounded-full text-[0.625rem] font-bold uppercase tracking-widest">
-                              <AlertTriangle className="w-3 h-3" />
-                              <span>Lỗi</span>
+                            <div className="flex items-center gap-1.5 text-rose-600 bg-rose-50 px-3 py-1 rounded-full text-[0.6875rem] font-bold uppercase tracking-wider border border-rose-200">
+                              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                              <span className="whitespace-nowrap">Lỗi</span>
                             </div>
                           ) : (
-                            <div className="flex items-center gap-1.5 text-amber-500 bg-amber-500/10 px-3 py-1 rounded-full text-[0.625rem] font-bold uppercase tracking-widest">
-                              <RefreshCw className="w-3 h-3 animate-spin" />
-                              <span>Xử lý...</span>
+                            <div className="flex items-center gap-1.5 text-amber-600 bg-amber-50 px-3 py-1 rounded-full text-[0.6875rem] font-bold uppercase tracking-wider border border-amber-200">
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0" />
+                              <span className="whitespace-nowrap">Xử lý...</span>
                             </div>
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-center border-b border-slate-200">
+                      <td className="px-3 py-2 text-center border-b border-[#E2E8F0] min-w-[60px]">
                         <button
                           onClick={() => deleteRow(row.id)}
-                          className="p-2 text-rose-500 opacity-0 group-hover:opacity-100 hover:bg-rose-500/10 rounded-xl transition-all"
+                          className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

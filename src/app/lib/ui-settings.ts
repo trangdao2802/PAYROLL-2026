@@ -13,6 +13,7 @@ export interface CustomRule {
   margin?: string;
   width?: string;
   height?: string;
+  fontSize?: string;
 }
 
 export interface UiSettings {
@@ -349,6 +350,41 @@ export function applyUiSettings(settings: UiSettings, previewRule?: Partial<Cust
       border-radius: ${settings.tableRadius || "0px"} !important;
     }
 
+    /* General Table & Grid Rules */
+    table, 
+    .data-table-wrapper table, 
+    .pivot-table-container table, 
+    .master-ae-table-wrapper table {
+      border-color: ${settings.gridLineColor || "#E2E8F0"} !important;
+      font-size: ${settings.fontSize || "13px"} !important;
+      font-family: ${settings.tableFont || "var(--font-mono)"} !important;
+    }
+
+    table th, 
+    table td, 
+    .data-table-wrapper th, 
+    .data-table-wrapper td, 
+    .pivot-table-container th, 
+    .pivot-table-container td, 
+    .master-ae-table-wrapper th, 
+    .master-ae-table-wrapper td {
+      border-color: ${settings.gridLineColor || "#E2E8F0"} !important;
+      padding: ${settings.tablePadding || "10px 14px"} !important;
+      font-size: ${settings.fontSize || "13px"} !important;
+    }
+
+    table thead th, 
+    table thead tr, 
+    .data-table-wrapper thead th, 
+    .data-table-wrapper thead tr,
+    .pivot-table-container thead th,
+    .pivot-table-container thead tr,
+    .master-ae-table-wrapper thead th,
+    .master-ae-table-wrapper thead tr {
+      background-color: ${settings.tableHeaderBg || "#FAF3E8"} !important;
+      color: ${settings.accent || "#5D111A"} !important;
+    }
+
     button:not(.rounded-full):not(.rounded-none):not(.search-btn-exception),
     [role="button"]:not(.rounded-full):not(.rounded-none):not(.search-btn-exception) {
       border-radius: 20px !important;
@@ -370,6 +406,10 @@ export function applyUiSettings(settings: UiSettings, previewRule?: Partial<Cust
       border-width: 0px !important;
       box-shadow: none !important;
     }
+
+    body, #root, .bg-background {
+      background: linear-gradient(135deg, ${settings.stripeColor1 || "#F6F4F0"} 0%, ${settings.stripeColor2 || "#F4ECD8"} 100%) !important;
+    }
   `;
 
   css += `
@@ -384,7 +424,7 @@ export function applyUiSettings(settings: UiSettings, previewRule?: Partial<Cust
     .master-ae-table-wrapper td,
     .master-ae-table-wrapper input {
       font-family: var(--font-table, var(--font-mono)) !important;
-      font-size: var(--font-size, 12px) !important;
+      font-size: ${settings.fontSize || "12px"} !important;
     }
 
     .pivot-table-container thead,
@@ -395,7 +435,7 @@ export function applyUiSettings(settings: UiSettings, previewRule?: Partial<Cust
     .pivot-table-container tfoot td,
     .pivot-table-container .total-row,
     .pivot-table-container .total-row td {
-      background-color: ${settings.tableHeaderBg || "#eed7fc"} !important;
+      background-color: ${settings.tableHeaderBg || "#FAF3E8"} !important;
     }
 
     .pivot-table-container thead input:not(:focus) {
@@ -410,12 +450,30 @@ export function applyUiSettings(settings: UiSettings, previewRule?: Partial<Cust
         ${rule.selector} {
           ${rule.radius ? `border-radius: ${rule.radius} !important;` : ""}
           ${rule.bg ? `background-color: ${rule.bg} !important;` : ""}
-          ${rule.color ? `color: ${rule.color} !important;` : ""}
+          ${rule.color ? `color: ${rule.color} !important; stroke: ${rule.color} !important; fill: currentColor !important;` : ""}
           ${rule.border ? `border: ${rule.border} !important;` : ""}
           ${rule.padding ? `padding: ${rule.padding} !important;` : ""}
           ${rule.margin ? `margin: ${rule.margin} !important;` : ""}
           ${rule.width ? `width: ${rule.width} !important;` : ""}
           ${rule.height ? `height: ${rule.height} !important;` : ""}
+          ${rule.fontSize ? `font-size: ${rule.fontSize} !important;` : ""}
+        }
+        ${rule.selector} svg, 
+        ${rule.selector} .lucide, 
+        ${rule.selector} button, 
+        ${rule.selector} i, 
+        ${rule.selector} span,
+        ${rule.selector} p,
+        ${rule.selector} div,
+        ${rule.selector} input,
+        ${rule.selector} label,
+        ${rule.selector} th,
+        ${rule.selector} td {
+          ${rule.color ? `color: ${rule.color} !important; stroke: ${rule.color} !important;` : ""}
+          ${rule.fontSize ? `font-size: ${rule.fontSize} !important;` : ""}
+        }
+        ${rule.selector} svg, ${rule.selector} .lucide {
+          ${rule.fontSize ? `width: ${rule.fontSize} !important; height: ${rule.fontSize} !important;` : ""}
         }
       `;
     });
@@ -433,12 +491,13 @@ export function applyUiSettings(settings: UiSettings, previewRule?: Partial<Cust
       ${previewRule.selector} {
         ${previewRule.radius ? `border-radius: ${toPx(previewRule.radius)} !important;` : ""}
         ${previewRule.bg ? `background-color: ${previewRule.bg} !important;` : ""}
-        ${previewRule.color ? `color: ${previewRule.color} !important;` : ""}
+        ${previewRule.color ? `color: ${previewRule.color} !important; stroke: ${previewRule.color} !important; fill: currentColor !important;` : ""}
         ${previewRule.border ? `border: ${previewRule.border} !important;` : ""}
         ${previewRule.padding ? `padding: ${toPx(previewRule.padding)} !important;` : ""}
         ${previewRule.margin ? `margin: ${toPx(previewRule.margin)} !important;` : ""}
         ${previewRule.width ? `width: ${toPx(previewRule.width)} !important;` : ""}
         ${previewRule.height ? `height: ${toPx(previewRule.height)} !important;` : ""}
+        ${previewRule.fontSize ? `font-size: ${toPx(previewRule.fontSize)} !important;` : ""}
         
         /* Focus highlight for the selected/focused element as requested */
         outline: 3px solid #3b82f6 !important;
@@ -446,6 +505,23 @@ export function applyUiSettings(settings: UiSettings, previewRule?: Partial<Cust
         box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.45) !important;
         position: relative !important;
         z-index: 50 !important;
+      }
+      ${previewRule.selector} svg, 
+      ${previewRule.selector} .lucide, 
+      ${previewRule.selector} button, 
+      ${previewRule.selector} i, 
+      ${previewRule.selector} span,
+      ${previewRule.selector} p,
+      ${previewRule.selector} div,
+      ${previewRule.selector} input,
+      ${previewRule.selector} label,
+      ${previewRule.selector} th,
+      ${previewRule.selector} td {
+        ${previewRule.color ? `color: ${previewRule.color} !important; stroke: ${previewRule.color} !important;` : ""}
+        ${previewRule.fontSize ? `font-size: ${toPx(previewRule.fontSize)} !important;` : ""}
+      }
+      ${previewRule.selector} svg, ${previewRule.selector} .lucide {
+        ${previewRule.fontSize ? `width: ${toPx(previewRule.fontSize)} !important; height: ${toPx(previewRule.fontSize)} !important;` : ""}
       }
     `;
   }

@@ -65,6 +65,7 @@ export function UiSettingsModal({
   const [newBorder, setNewBorder] = useState("");
   const [newWidth, setNewWidth] = useState("");
   const [newHeight, setNewHeight] = useState("");
+  const [newFontSize, setNewFontSize] = useState("");
 
   // Split padding states
   const [padTop, setPadTop] = useState("");
@@ -162,6 +163,7 @@ export function UiSettingsModal({
       updateMarginStates(existingRule.margin || "");
       setNewWidth(existingRule.width || "");
       setNewHeight(existingRule.height || "");
+      setNewFontSize(existingRule.fontSize || "");
     } else {
       // Try to find the element and inspect its computed styles
       const el = targetElement || (() => {
@@ -236,6 +238,12 @@ export function UiSettingsModal({
             return "";
           };
 
+          const getCleanFontSize = () => {
+            const fs = computed.fontSize;
+            if (fs) return cleanUnit(fs);
+            return "";
+          };
+
           setNewRadius(getCleanRadius());
           setNewBg(getCleanBg());
           
@@ -252,6 +260,7 @@ export function UiSettingsModal({
           updateMarginStates(getCleanMargin());
           setNewWidth(getCleanWidth());
           setNewHeight(getCleanHeight());
+          setNewFontSize(getCleanFontSize());
         } catch (err) {
           console.error("Error computing styles for element:", err);
           setNewRadius("");
@@ -262,6 +271,7 @@ export function UiSettingsModal({
           updateMarginStates("");
           setNewWidth("");
           setNewHeight("");
+          setNewFontSize("");
         }
       } else {
         setNewRadius("");
@@ -272,6 +282,7 @@ export function UiSettingsModal({
         updateMarginStates("");
         setNewWidth("");
         setNewHeight("");
+        setNewFontSize("");
       }
     }
   }, [settings.customRules, updatePaddingStates, updateMarginStates]);
@@ -481,6 +492,7 @@ export function UiSettingsModal({
       margin: getCombinedMargin() || undefined,
       width: newWidth.trim() || undefined,
       height: newHeight.trim() || undefined,
+      fontSize: newFontSize.trim() || undefined,
     };
 
     let updatedRules;
@@ -503,6 +515,7 @@ export function UiSettingsModal({
     updateMarginStates("");
     setNewWidth("");
     setNewHeight("");
+    setNewFontSize("");
     toast.success(index >= 0 ? "Đã cập nhật style cho selector!" : "Đã thêm style custom cho selector!");
   };
 
@@ -539,10 +552,11 @@ export function UiSettingsModal({
         margin: getCombinedMargin(),
         width: newWidth,
         height: newHeight,
+        fontSize: newFontSize,
       };
       applyUiSettings(settings, previewRule);
     }
-  }, [settings, isOpen, newSelector, newRadius, newBg, newColor, newBorder, getCombinedPadding, getCombinedMargin, newWidth, newHeight]);
+  }, [settings, isOpen, newSelector, newRadius, newBg, newColor, newBorder, getCombinedPadding, getCombinedMargin, newWidth, newHeight, newFontSize]);
 
   const saveSettings = async () => {
     try {
@@ -1254,7 +1268,17 @@ export function UiSettingsModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 mt-1">
+              <div className="grid grid-cols-3 gap-2 mt-1">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[0.6rem] font-bold text-primary/60">Cỡ chữ (Font Size):</span>
+                  <input
+                    type="text"
+                    placeholder="e.g. 14px, 1rem"
+                    value={newFontSize}
+                    onChange={(e) => setNewFontSize(e.target.value)}
+                    className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
+                  />
+                </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-[0.6rem] font-bold text-primary/60">Rộng (Width):</span>
                   <input
@@ -1299,6 +1323,7 @@ export function UiSettingsModal({
                           rule.radius && `r: ${rule.radius}`,
                           rule.bg && `bg: ${rule.bg}`,
                           rule.color && `c: ${rule.color}`,
+                          rule.fontSize && `fs: ${rule.fontSize}`,
                           rule.border && `b: ${rule.border}`,
                           rule.padding && `p: ${rule.padding}`,
                           rule.margin && `m: ${rule.margin}`,
