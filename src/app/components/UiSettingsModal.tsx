@@ -313,7 +313,7 @@ export function UiSettingsModal({
       const target = e.target as HTMLElement;
       
       // Do not highlight elements inside the settings panel itself
-      if (target.closest(".fixed.inset-0") || target.closest(".fixed.top-4")) return;
+      if (target.closest(".ui-settings-modal-root")) return;
 
       if (activeEl && activeEl !== target) {
         activeEl.classList.remove("inspector-hovered");
@@ -438,7 +438,7 @@ export function UiSettingsModal({
       e.stopPropagation();
 
       const target = e.target as HTMLElement;
-      if (target.closest(".fixed.inset-0") || target.closest(".fixed.top-4")) return;
+      if (target.closest(".ui-settings-modal-root")) return;
 
       const selector = getReadableSelector(target);
       handleSelectorChange(selector, target);
@@ -472,12 +472,22 @@ export function UiSettingsModal({
     };
   }, [isInspecting, handleSelectorChange]);
 
+  const sanitizeSelector = (sel: string) => {
+    // Use only first selector if user pasted a multi-selector list
+    const s = String(sel || "").trim();
+    if (!s) return "";
+    const parts = s.split(",").map(p => p.trim()).filter(Boolean);
+    // defensive: remove javascript: and unsafe tokens
+    const first = parts[0] || "";
+    return first.replace(/javascript:\s*/i, "").replace(/\s+/g, " ");
+  };
+
   const addCustomRule = () => {
     if (!newSelector.trim()) {
       toast.error("Vui lòng nhập hoặc chọn một CSS selector!");
       return;
     }
-    const cleanSelector = newSelector.trim();
+    const cleanSelector = sanitizeSelector(newSelector);
     const existingRules = settings.customRules || [];
     const index = existingRules.findIndex((r) => r.selector === cleanSelector);
 
@@ -504,6 +514,23 @@ export function UiSettingsModal({
     }
 
     setSettings({ ...settings, customRules: updatedRules });
+
+    // Try to verify selector targets something in the DOM and warn if not
+    try {
+      if (typeof window !== "undefined" && cleanSelector) {
+        try {
+          const found = document.querySelector(cleanSelector);
+          if (!found) {
+            toast.warn("Selector chưa khớp với bất kỳ phần tử nào trên trang. Vẫn lưu nhưng hãy kiểm tra lại selector.");
+          }
+        } catch (e) {
+          // invalid selector
+          toast.warn("Selector có vẻ không hợp lệ nhưng đã lưu. Vui lòng kiểm tra cú pháp CSS selector.");
+        }
+      }
+    } catch (err) {
+      // ignore environment issues
+    }
     
     // Reset form inputs
     setNewSelector("");
@@ -555,6 +582,37 @@ export function UiSettingsModal({
         fontSize: newFontSize,
       };
       applyUiSettings(settings, previewRule);
+
+      // Temporary: auto-tag prominent add buttons so .btn-secret styles apply even if app didn't mark them
+      try {
+        const tempTagged: HTMLElement[] = [];
+        if (typeof document !== "undefined") {
+          const candidates = Array.from(document.querySelectorAll('button, a, [role="button"]')) as HTMLElement[];
+          for (const el of candidates) {
+            const txt = (el.innerText || "").trim().toLowerCase();
+            if (!txt) continue;
+            if (txt.includes("thêm") || txt.includes("thêm dòng") || txt.includes("add") || txt.includes("secret") || txt.includes("cta")) {
+              if (!el.classList.contains("btn-secret")) {
+                el.classList.add("btn-secret");
+                el.dataset.tempBtnSecret = "1";
+                tempTagged.push(el);
+              }
+            }
+          }
+        }
+
+        return () => {
+          // cleanup temp tags on unmount/when modal closes
+          try {
+            tempTagged.forEach((t) => {
+              if (t && t.dataset && t.dataset.tempBtnSecret) {
+                t.classList.remove("btn-secret");
+                delete t.dataset.tempBtnSecret;
+              }
+            });
+          } catch (e) {}
+        };
+      } catch (e) {}
     }
   }, [settings, isOpen, newSelector, newRadius, newBg, newColor, newBorder, getCombinedPadding, getCombinedMargin, newWidth, newHeight, newFontSize]);
 
@@ -675,7 +733,7 @@ export function UiSettingsModal({
         onClick={onClose}
       >
         <div 
-          className={`bg-white border-4 border-primary rounded-2xl shadow-hard-lg max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 pointer-events-auto ${
+          className={`bg-white border-4 border-primary rounded-2xl shadow-hard-lg max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 pointer-events-auto ui-settings-modal-root ${
             isInspecting ? "opacity-0 pointer-events-none scale-95 invisible" : "scale-100"
           }`}
           onClick={(e) => e.stopPropagation()}
