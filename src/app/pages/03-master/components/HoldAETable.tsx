@@ -550,7 +550,7 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
 
     return (
       <div 
-        className="flex-1 flex flex-col min-h-0 min-w-0 w-full h-full px-0 py-0 m-0 relative overflow-hidden gap-0 bg-white border border-slate-300 dark:border-slate-700 shadow-xs"
+        className="master-ae-table-wrapper hold-dashboard-card flex-1 flex flex-col min-h-0 min-w-0 w-full h-full px-0 py-0 m-0 relative overflow-hidden gap-0 bg-white border border-slate-300 dark:border-slate-700 shadow-xs"
         style={{ borderRadius: "0px", borderWidth: "1px", borderColor: "#cbd5e1" }}
       >
         {/* Top Toolbar Header with Settings Button */}
@@ -677,8 +677,9 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
         </div>
 
           <DataTable
-            className="flex-1 min-h-0 min-w-0 overflow-auto"
+            className="data-table-wrapper flex-1 min-h-0 min-w-0 overflow-auto custom-scrollbar"
             scrollContainerStyle={{ borderRadius: "0", border: "none", overflow: 'auto' }}
+            tableStyle={{ width: '100%', minWidth: '600px' }}
             stickyFirstColumn={false}
             showPagination={true}
             ref={ref}
