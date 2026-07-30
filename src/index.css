@@ -203,6 +203,26 @@
     color: var(--foreground);
 }
 
+/* Make action-area buttons more prominent by default (useful for 'Add' CTAs like Add secret). */
+.actions button[data-slot="button"], .actions .btn-prominent, .actions .btn-primary,
+button[aria-label*="secret" i], button[title*="secret" i], [data-testid*="secret" i], .btn-secret {
+  background: #2563EB !important; /* blue-600 */
+  color: #ffffff !important;
+  box-shadow: 0 10px 24px rgba(37,99,235,0.18) !important;
+  border: none !important;
+  transform: translateY(0) !important;
+}
+.actions button[data-slot="button"]:hover, .actions .btn-prominent:hover, .actions .btn-primary:hover,
+button[aria-label*="secret" i]:hover, button[title*="secret" i]:hover, [data-testid*="secret" i]:hover, .btn-secret:hover {
+  background: #1E40AF !important; /* blue-800 */
+  box-shadow: 0 14px 36px rgba(30,64,175,0.22) !important;
+}
+.actions button[data-slot="button"]:focus-visible, .actions .btn-prominent:focus-visible, .actions .btn-primary:focus-visible,
+button[aria-label*="secret" i]:focus-visible, button[title*="secret" i]:focus-visible, [data-testid*="secret" i]:focus-visible, .btn-secret:focus-visible {
+  outline: 3px solid rgba(37,99,235,0.18) !important;
+  outline-offset: 2px !important;
+}
+
 .dark {
   --background: #5d111a;
   --foreground: #f6f4f0;
@@ -970,4 +990,42 @@ div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-
   border-width: 0px !important;
   outline: none !important;
   box-shadow: none !important;
+}
+
+/* Responsive helpers: prevent overflow, allow breaking long words, and provide table wrapper */
+.break-anywhere {
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+.safe-overflow {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+.table-responsive {
+  width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Small-screen friendly adjustments */
+@media (max-width: 640px) {
+  /* Reduce global table padding to avoid horizontal overflow */
+  table th, table td {
+    padding: 8px 10px !important;
+  }
+
+  /* Force main content to use compact paddings */
+  .content-area {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  /* Ensure root content doesn't force a wider layout */
+  #main-content, .table-container, .data-table-wrapper {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
 }

@@ -2627,7 +2627,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
         <div
           id="table-card"
           ref={tableRef}
-          className={`table-container data-table-wrapper flex flex-col flex-1 min-h-0 w-full max-w-full outline-none overflow-hidden relative ${className || ""} ${hasActiveFilters ? "bg-amber-50/[0.005]" : ""}`}
+          className={`table-container data-table-wrapper flex flex-col flex-1 min-h-0 min-w-0 w-full max-w-full outline-none overflow-hidden relative ${className || ""} ${hasActiveFilters ? "bg-amber-50/[0.005]" : ""}`}
           style={
             {
               borderColor: hasActiveFilters ? "#fbbf24" : "var(--border, #E7DBDC)",
@@ -2647,7 +2647,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
           <div
             ref={scrollContainerRef}
             tabIndex={0}
-            className={`flex-1 overflow-y-auto overflow-x-auto custom-scrollbar outline-none bg-transparent relative min-h-0 transition-opacity duration-100 mb-0 w-full max-w-full ${isStale ? "opacity-60" : "opacity-100"}`}
+            className={`flex-1 overflow-y-auto overflow-x-auto custom-scrollbar outline-none bg-transparent relative min-h-0 min-w-0 transition-opacity duration-100 mb-0 w-full max-w-full ${isStale ? "opacity-60" : "opacity-100"}`}
             onFocus={() => !activeCell && setActiveCellWithSource({ r: 0, c: 0 }, "keyboard")}
             onMouseMove={handleTableMouseMove}
             style={{ 
@@ -3587,7 +3587,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   className="w-full px-3 py-2 text-left text-[0.625rem] font-black uppercase tracking-wider hover:bg-accent/10 flex items-center gap-2.5 transition-colors group text-accent hover:text-accent/80"
                 >
                   <FileText className="w-3.5 h-3.5 text-accent/60 group-hover:text-accent transition-colors" />
-                  <span>Thêm dòng mới</span>
+                  <span className="btn-secret">Thêm dòng mới</span>
                 </button>
 
                 <DropdownMenuSeparator className="bg-primary/10 mx-1" />

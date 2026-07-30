@@ -2353,7 +2353,7 @@ export function AEDataConfig({
                     className="cursor-pointer font-bold uppercase text-[0.6875rem] gap-3 p-3 rounded-xl transition-all hover:bg-primary/5"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>Thêm dòng mới</span>
+                    <span className="btn-secret">Thêm dòng mới</span>
                   </DropdownMenuItem>
 
                   <DropdownMenuItem

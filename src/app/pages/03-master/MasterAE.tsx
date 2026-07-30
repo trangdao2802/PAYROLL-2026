@@ -991,7 +991,7 @@ export function MasterAE() {
                                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
                                   >
                                     <Plus className="w-4 h-4 text-primary" />
-                                    <span className="text-xs font-bold text-slate-700">Thêm dòng mới</span>
+                                    <span className="text-xs font-bold text-slate-700 btn-secret">Thêm dòng mới</span>
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={handleRefreshData}

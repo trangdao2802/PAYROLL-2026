@@ -12,6 +12,9 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-primary text-background hover:bg-[#222]",
+        // New prominent variant for important CTAs (blue + shadow)
+        prominent:
+          "bg-blue-600 text-white shadow-lg hover:bg-blue-700 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-blue-300",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:

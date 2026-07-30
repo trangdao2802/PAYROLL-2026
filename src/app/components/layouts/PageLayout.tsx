@@ -22,7 +22,7 @@ interface PageLayoutProps {
   children: React.ReactNode;
   /** Class thêm vào wrapper ngoài cùng */
   className?: string;
-  /** Padding quanh nội dung (default: p-4 gap-3) */
+  /** Padding quanh nội dung (default: p-4 on mobile, larger on desktop) */
   padding?: string;
 }
 
@@ -30,7 +30,7 @@ export function PageLayout({
   header,
   children,
   className = "",
-  padding = "p-[3rem] gap-[4rem]",
+  padding = "p-4 md:p-[3rem] gap-4 md:gap-[4rem]",
 }: PageLayoutProps) {
   return (
     <div

@@ -3102,7 +3102,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   className="w-full px-3 py-2 text-left text-[0.625rem] font-black uppercase tracking-wider hover:bg-accent/10 flex items-center gap-2.5 transition-colors group text-accent hover:text-accent/80"
                 >
                   <FileText className="w-3.5 h-3.5 text-accent/60 group-hover:text-accent transition-colors" />
-                  <span>Thêm dòng mới</span>
+                  <span className="btn-secret">Thêm dòng mới</span>
                 </button>
 
                 <DropdownMenuSeparator className="bg-primary/10 mx-1" />
