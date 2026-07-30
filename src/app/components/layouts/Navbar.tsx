@@ -70,11 +70,6 @@ const pageTabs: Record<string, { id: string; label: string; icon: React.ElementT
   ],
 };
 
-const configItems = [
-  { to: "/config/centers", icon: ListChecks, label: "Centers Data" },
-  { to: "/config/ae", icon: Users, label: "AE Data" },
-];
-
 interface NavbarProps {
   onToggleMobileMenu: () => void;
   onOpenSettings: () => void;

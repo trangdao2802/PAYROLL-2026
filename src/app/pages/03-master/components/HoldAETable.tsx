@@ -558,7 +558,10 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="font-display font-bold text-xs uppercase tracking-wider text-primary">
-                Benefits & Deductions Summary
+                HOLD AE_MASTER
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-200/60 text-slate-700 font-bold">
+                {filteredData.data.length} dòng
               </span>
             </div>
           </div>

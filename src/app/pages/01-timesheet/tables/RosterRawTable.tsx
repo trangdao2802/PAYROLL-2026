@@ -81,7 +81,8 @@ export function RosterRawTable({
             </h3>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex flex-col items-end">
+
+            <div className="flex flex-col items-end border-l border-border pl-4">
               <span className="text-[8px] font-bold text-foreground/60 uppercase tracking-tighter whitespace-nowrap">SỐ DÒNG</span>
               <span className="text-xs font-black text-foreground">{sanitizedData.length}</span>
             </div>

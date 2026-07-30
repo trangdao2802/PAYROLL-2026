@@ -24,6 +24,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useAppData } from "../../lib/contexts/AppDataContext";
 import { CalendarIcon } from "lucide-react";
+import { MonthPicker } from "../shared/MonthPicker";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -38,7 +39,6 @@ const navItems: { to: string; icon: React.ElementType; label: string }[] = [
   { to: "/audit", icon: ShieldCheck, label: "Audit" },
   { to: "/master-ae", icon: Database, label: "Master" },
   { to: "/hold-dashboard", icon: Wallet, label: "Balance" },
-  { to: "/config/ae", icon: Building2, label: "AE Config" },
 ];
 
 export function LeftSidebar({

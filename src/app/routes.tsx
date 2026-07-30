@@ -8,7 +8,6 @@ import { MasterAE } from "./pages/03-master/MasterAE";
 import { Audit } from "./pages/02-audit/Audit";
 import { BulkPayment } from "./pages/04-balance/BulkPayment";
 import { PivotSheet } from "./pages/04-balance/PivotSheet";
-import { AEDataConfig } from "./pages/03-master/AEDataConfig";
 import { HoldDashboardPage } from "./pages/04-balance/HoldDashboardPage";
 
 export const router = createBrowserRouter([
@@ -23,7 +22,6 @@ export const router = createBrowserRouter([
       { path: "audit", element: <Audit /> },
       { path: "payment", element: <BulkPayment /> },
       { path: "pivot", element: <PivotSheet /> },
-      { path: "config/ae", element: <AEDataConfig /> },
     ],
   },
 ]);

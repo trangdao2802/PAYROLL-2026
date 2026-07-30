@@ -555,15 +555,7 @@ export function TimesheetInputTable({
         style={{ paddingTop: "12px", paddingBottom: "12px" }}
       >
         <div className="flex items-center gap-3 text-[0.625rem] font-bold uppercase tracking-widest text-accent/30">
-          {onRefresh && (
-            <button
-              onClick={onRefresh}
-              className="p-1 text-accent/20 hover:text-accent hover:bg-accent/10 rounded-full transition-colors active:scale-95"
-              title="Làm mới dữ liệu"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
-          )}
+
           <span className="font-normal normal-case tracking-normal text-accent/40">
             {rows.length === 0 ? "0" : (currentPage - 1) * itemsPerPage + 1} -{" "}
             {Math.min(currentPage * itemsPerPage, rows.length)} / {rows.length}

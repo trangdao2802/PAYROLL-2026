@@ -39,6 +39,7 @@ import {
   EyeOff,
   Settings2,
   SlidersHorizontal,
+  RotateCcw,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -213,6 +214,7 @@ interface DataTableProps {
   scrollContainerStyle?: React.CSSProperties;
   tableStyle?: React.CSSProperties;
   ignoreSavedHiddenColumns?: boolean;
+  onResetFilters?: () => void;
 }
 
 const ColumnFilter = ({
@@ -795,6 +797,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
       scrollContainerStyle,
       tableStyle,
       ignoreSavedHiddenColumns = false,
+      onResetFilters,
     },
     ref,
   ) => {
@@ -3275,7 +3278,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
               paddingBottom: "3px"
             }}
           >
-            <div className="flex items-center gap-3 px-3" style={{ paddingLeft: "45px" }}>
+            <div className="flex items-center gap-3 px-3" style={{ paddingLeft: "12px" }}>
               <div className="flex items-center gap-1.5 hidden md:flex">
                 <span className="text-[11px] font-medium text-foreground/60 whitespace-nowrap ml-2">
                   Hiển thị:
