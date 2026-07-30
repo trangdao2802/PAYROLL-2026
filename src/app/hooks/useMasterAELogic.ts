@@ -3,6 +3,7 @@ import { useAppData } from "../lib/contexts/AppDataContext";
 import { toast } from "sonner";
 import { getCenterInfoByAECode, resolveMktAndCenterL07 } from "../lib/utils/center-utils";
 import { parseMoneyToNumber, removeVietnameseTones } from "../lib/utils/data-utils";
+import { mapAE } from "../lib/ae-mapper";
 
 function cleanIDNumber(val: unknown): string {
   if (val === undefined || val === null) return "";
@@ -73,22 +74,33 @@ export function useMasterAELogic() {
         let l07 = row["L07"];
         let business = row["Business"];
 
-        if (aeMap[rawCenterKey]) {
-          l07 = aeMap[rawCenterKey].name;
-          business = aeMap[rawCenterKey].bus;
-        } else {
-          const info = getCenterInfoByAECode(rawCenterVal);
-          if (info) {
-            l07 = info.l07;
-            business = info.bus;
-          }
-        }
+        // Use shared mapper util (includes fuzzy normalization)
+        try {
+          const mapped = mapAE(rawCenterVal, aeMap);
+          l07 = mapped.l07 || l07;
+          business = mapped.business || business;
+        } catch (e) {
+          // Fallback: try previous lookups
+          if (aeMap && aeMap[rawCenterKey]) {
+            l07 = aeMap[rawCenterKey].name;
+            business = aeMap[rawCenterKey].bus;
+          } else {
+            const info = getCenterInfoByAECode(rawCenterVal);
+            if (info) {
+              l07 = info.l07;
+              business = info.bus;
+            }
 
-        // Apply MKT Override logic for consistency
-        const mktRes = resolveMktAndCenterL07(rawCenterVal, "", "", l07);
-        if (mktRes.isMktLocal) {
-          l07 = mktRes.l07;
-          business = mktRes.business;
+            try {
+              const mktRes = resolveMktAndCenterL07(rawCenterVal, "", "", l07);
+              if (mktRes && mktRes.isMktLocal) {
+                l07 = mktRes.l07;
+                business = mktRes.business;
+              }
+            } catch (er) {
+              // ignore
+            }
+          }
         }
 
         return {
