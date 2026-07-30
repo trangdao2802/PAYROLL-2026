@@ -914,7 +914,7 @@ export function MasterAE() {
                           style={{ borderRadius: "0px", borderWidth: "1px", borderColor: "#cbd5e1" }}
                         >
                           {/* Top Toolbar Header with Settings Button */}
-                          <div className="px-6 py-2.5 border border-slate-300 bg-[#FAF9F6] flex items-center justify-between gap-4 shrink-0 select-none" style={{ borderRadius: "0px" }}>
+                          <div className="px-6 py-2.5 border-b border-slate-300 bg-[#FAF9F6] flex items-center justify-between gap-4 shrink-0 select-none" style={{ borderRadius: "0px" }}>
                             <div className="flex items-center gap-4">
                               <div className="flex items-center gap-2">
                                 <span className="font-display font-bold text-xs uppercase tracking-wider text-primary">
@@ -1001,6 +1001,19 @@ export function MasterAE() {
                                     <span className="text-xs font-bold text-slate-700">Làm mới dữ liệu</span>
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
+                                    onClick={() => {
+                                      if (tableRef?.current?.resetTableConfig) {
+                                        tableRef.current.resetTableConfig();
+                                      } else {
+                                        toast.error("Không tìm thấy cấu hình bảng");
+                                      }
+                                    }}
+                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+                                  >
+                                    <RefreshCw className="w-4 h-4 text-amber-600 animate-pulse" />
+                                    <span className="text-xs font-bold text-slate-700">Khôi phục bố cục bảng</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
                                     onClick={() => window.dispatchEvent(new Event("open-ui-settings"))}
                                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
                                   >
@@ -1029,9 +1042,9 @@ export function MasterAE() {
 
                           <DataTable
                             className="!overflow-visible"
-                            scrollContainerStyle={{ borderRadius: "0", border: "1px solid var(--border, #E7DBDC)", borderTop: "none" }}
+                            scrollContainerStyle={{ borderRadius: "0", border: "none" }}
                             storageKey={`master-ae-${activeTab}`}
-                            ignoreSavedHiddenColumns={false}
+                            ignoreSavedHiddenColumns={true}
                             selectable={false}
                             ref={tableRef}
                             columns={columns}

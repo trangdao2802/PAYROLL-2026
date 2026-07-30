@@ -2639,7 +2639,7 @@ export function HoldAddDashboard() {
                     // Month row
                     <tr
                       key={`m-${mk}`}
-                      className="cursor-pointer group hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors"
+                      className="cursor-pointer group transition-colors"
                       onClick={() => toggle(mk)}
                     >
                       <td className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-center text-slate-800 dark:text-slate-200 font-bold !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap text-[13px]">
@@ -2748,7 +2748,7 @@ export function HoldAddDashboard() {
                               return (
                                 <tr
                                   key={e.id}
-                                  className={`group ${isRowDimmed ? "opacity-35 select-none bg-slate-100/50 dark:bg-slate-800/10 italic text-muted-foreground/60 line-through" : "bg-white dark:bg-card"} hover:bg-slate-50 transition-colors`}
+                                  className={`group ${isRowDimmed ? "opacity-35 select-none bg-slate-100/50 dark:bg-slate-800/10 italic text-muted-foreground/60 line-through" : "bg-white dark:bg-card"} transition-colors`}
                                 >
                                   <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-center text-slate-500 dark:text-muted-foreground/60 font-medium whitespace-nowrap text-[13px]">
                                     {ri + 1}

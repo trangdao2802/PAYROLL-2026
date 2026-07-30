@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import * as XLSX from "xlsx";
-import { Download, RefreshCw, Database, Settings, FileSpreadsheet, ChevronDown, Eye } from "lucide-react";
+import { Download, RefreshCw, Database, Settings, FileSpreadsheet } from "lucide-react";
 import { useAppData } from "../../lib/contexts/AppDataContext";
 import { toast } from "sonner";
 
@@ -67,7 +67,7 @@ export function PivotSheet() {
     return "";
   });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isPivotSheetVisible, setIsPivotSheetVisible] = useState(true);
+  const isPivotSheetVisible = true;
   const [rowsPerPage, setRowsPerPage] = useState<number>(50);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [hiddenColumns, setHiddenColumns] = useState<Record<string, boolean>>({});
@@ -445,15 +445,6 @@ export function PivotSheet() {
             </div>
           </div>
 
-          <button
-            onClick={() => setIsPivotSheetVisible(!isPivotSheetVisible)}
-            className={`flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 transition-colors ${isPivotSheetVisible ? "text-slate-700" : "text-primary"} shadow-sm cursor-pointer`}
-            title="Ẩn / hiện card"
-          >
-            <Eye className="w-4 h-4" />
-            <span className="text-xs font-semibold">{isPivotSheetVisible ? "Đang hiện" : "Đang ẩn"}</span>
-          </button>
-
           {/* SETTINGS / ACTION MENU DROPDOWN */}
           <div className="relative" ref={settingsMenuRef}>
             <button
@@ -462,9 +453,8 @@ export function PivotSheet() {
               title="Cài đặt & Tác vụ Pivot"
             >
               <Settings className={`w-4 h-4 text-slate-600 ${isProcessing ? "animate-spin" : ""}`} />
-              <span className="text-xs font-semibold">Cài đặt</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-            </button>
+              <span className="text-xs font-semibold"></span>
+                </button>
 
             {isSettingsOpen && (
               <div className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1 text-slate-700 text-xs font-medium divide-y divide-slate-100">

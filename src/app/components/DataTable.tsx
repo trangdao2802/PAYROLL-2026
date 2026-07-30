@@ -1815,7 +1815,13 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
         localStorage.removeItem(`dt_widths_${storageKey}`);
         localStorage.removeItem(`dt_sort_${storageKey}`);
         localStorage.removeItem(`dt_ipp_${storageKey}`);
-        setHiddenColumns(new Set());
+        const defaultHidden = new Set<string>();
+        columns.forEach((c: any) => {
+          if (c?.hidden) {
+            defaultHidden.add(c.key);
+          }
+        });
+        setHiddenColumns(defaultHidden);
         setColumnWidths({});
         setSortConfig(null);
         setItemsPerPage(50);

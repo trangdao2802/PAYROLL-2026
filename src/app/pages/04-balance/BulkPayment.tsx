@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useAppData } from "../../lib/contexts/AppDataContext";
-import { useBulkPaymentLogic, isPastMonthHold } from "../../hooks/useBulkPaymentLogic";
+import {
+  useBulkPaymentLogic,
+  isPastMonthHold,
+} from "../../hooks/useBulkPaymentLogic";
 import { DEFAULT_CENTERS } from "../../constants";
 import {
   CreditCard,
@@ -76,7 +79,6 @@ import {
 import { DataTable } from "../../components/DataTable";
 import { motion, AnimatePresence } from "motion/react";
 import {
-
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -147,11 +149,12 @@ export function BulkPayment({
   setShowLeftCard?: React.Dispatch<React.SetStateAction<boolean>>;
   searchTerm?: string;
   onSearchTermChange?: (val: string) => void;
-  onTabChange?: (tab: "Sheet1_AE" | "Hold_AE" | "BulkPayment" | "Pivot" | "upload") => void;
+  onTabChange?: (
+    tab: "Sheet1_AE" | "Hold_AE" | "BulkPayment" | "Pivot" | "upload",
+  ) => void;
 } = {}) {
-  
   const { appData, updateAppData } = useAppData();
-  
+
   const {
     globalMonth,
     monthPeriod,
@@ -177,17 +180,28 @@ export function BulkPayment({
     isMonthInStrComp,
   } = useBulkPaymentLogic();
 
+  const [activeBalanceSection, setActiveBalanceSection] = useState<string>("I");
   const [internalSearchTerm, setInternalSearchTerm] = useState("");
-  const searchTerm = externalSearchTerm !== undefined ? externalSearchTerm : internalSearchTerm;
-  const setSearchTerm = externalOnSearchTermChange !== undefined ? externalOnSearchTermChange : setInternalSearchTerm;
+  const searchTerm =
+    externalSearchTerm !== undefined ? externalSearchTerm : internalSearchTerm;
+  const setSearchTerm =
+    externalOnSearchTermChange !== undefined
+      ? externalOnSearchTermChange
+      : setInternalSearchTerm;
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [internalShowLeftCard, setInternalShowLeftCard] = useState(true);
   const [showClearDialog, setShowClearDialog] = useState(false);
-  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<{ row?: any; rows?: any[] } | null>(null);
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<{
+    row?: any;
+    rows?: any[];
+  } | null>(null);
 
-  const [editingCell, setEditingCell] = useState<{ id: string; field: "docId" | "accountNo" | "sourceDocId" | "sourceAccountNo" } | null>(null);
+  const [editingCell, setEditingCell] = useState<{
+    id: string;
+    field: "docId" | "accountNo" | "sourceDocId" | "sourceAccountNo";
+  } | null>(null);
   const [editingValue, setEditingValue] = useState("");
-  
+
   // Expose these as variables for the UI
   const {
     targetMonthLabelComp,
@@ -196,11 +210,17 @@ export function BulkPayment({
     currentMonthNumComp,
     currentYearNumComp,
   } = monthPeriod;
-  
-  const [activeLeftTab, setActiveLeftTab] = useState<"summary" | "adjustments" | "reconcile">("summary");
-  const [rightPanelTab, setRightPanelTab] = useState<"table" | "reconcile" | "visuals">(() => {
+
+  const [activeLeftTab, setActiveLeftTab] = useState<
+    "summary" | "adjustments" | "reconcile"
+  >("summary");
+  const [rightPanelTab, setRightPanelTab] = useState<
+    "table" | "reconcile" | "visuals"
+  >(() => {
     const saved = localStorage.getItem("bulk_payment_right_tab");
-    return (saved === "reconcile" || saved === "table" || saved === "visuals") ? saved : "table";
+    return saved === "reconcile" || saved === "table" || saved === "visuals"
+      ? saved
+      : "table";
   });
 
   useEffect(() => {
@@ -211,20 +231,35 @@ export function BulkPayment({
       }
     };
     window.addEventListener("bulk-payment-set-right-tab", handleSetRightTab);
-    return () => window.removeEventListener("bulk-payment-set-right-tab", handleSetRightTab);
+    return () =>
+      window.removeEventListener(
+        "bulk-payment-set-right-tab",
+        handleSetRightTab,
+      );
   }, []);
-  const [reconcileFilterStatus, setReconcileFilterStatus] = useState<"ALL" | "MATCHED" | "VARIANCE" | "MISSING_INFO" | "DUPLICATE">("VARIANCE");
+  const [reconcileFilterStatus, setReconcileFilterStatus] = useState<
+    "ALL" | "MATCHED" | "VARIANCE" | "MISSING_INFO" | "DUPLICATE"
+  >("VARIANCE");
   const [reconcileSelectedBU, setReconcileSelectedBU] = useState<string>("ALL");
   const [reconcileSearchQuery, setReconcileSearchQuery] = useState<string>("");
   const [showNorthOnly, setShowNorthOnly] = useState(false);
-  const [adjustmentFilter, setAdjustmentFilter] = useState<"ALL" | "HOLD" | "ADD" | "BONUS">("ALL");
+  const [adjustmentFilter, setAdjustmentFilter] = useState<
+    "ALL" | "HOLD" | "ADD" | "BONUS"
+  >("ALL");
 
-  const showLeftCard = propShowLeftCard !== undefined ? propShowLeftCard : internalShowLeftCard;
-  const setShowLeftCard = propSetShowLeftCard !== undefined ? propSetShowLeftCard : setInternalShowLeftCard;
+  const showLeftCard =
+    propShowLeftCard !== undefined ? propShowLeftCard : internalShowLeftCard;
+  const setShowLeftCard =
+    propSetShowLeftCard !== undefined
+      ? propSetShowLeftCard
+      : setInternalShowLeftCard;
 
-
-  const [submittingBatchId, setSubmittingBatchId] = useState<string | null>(null);
-  const [approvedBatches, setApprovedBatches] = useState<Record<string, { receiptId: string; timestamp: string }>>({});
+  const [submittingBatchId, setSubmittingBatchId] = useState<string | null>(
+    null,
+  );
+  const [approvedBatches, setApprovedBatches] = useState<
+    Record<string, { receiptId: string; timestamp: string }>
+  >({});
 
   const transactionBatches = useMemo(() => {
     return [
@@ -235,7 +270,9 @@ export function BulkPayment({
         sheet1Total: calculationSummary.sheet1Total,
         holdTotal: calculationSummary.holdTotal,
         grandTotal: calculationSummary.bankNorthTotal,
-        status: approvedBatches[`BATCH-${globalMonth.replace(".", "")}-NORTH`] ? "APPROVED" : "READY_TO_EXPORT",
+        status: approvedBatches[`BATCH-${globalMonth.replace(".", "")}-NORTH`]
+          ? "APPROVED"
+          : "READY_TO_EXPORT",
         description: "Toàn bộ Bank North (AHN + AHP + ATH + ATN + APT)",
         buses: ["AHN", "AHP", "ATH", "ATN", "APT"],
         txCount: bankExportData.length,
@@ -246,8 +283,11 @@ export function BulkPayment({
         bankType: "OTHER" as BankType,
         sheet1Total: 0,
         holdTotal: 0,
-        grandTotal: calculationSummary.aeTotal - calculationSummary.bankNorthTotal,
-        status: approvedBatches[`BATCH-${globalMonth.replace(".", "")}-OTHER`] ? "APPROVED" : "DRAFT",
+        grandTotal:
+          calculationSummary.aeTotal - calculationSummary.bankNorthTotal,
+        status: approvedBatches[`BATCH-${globalMonth.replace(".", "")}-OTHER`]
+          ? "APPROVED"
+          : "DRAFT",
         description: "Các bộ phận khác & Dự phòng",
         buses: ["OTHER"],
         txCount: 0,
@@ -276,12 +316,12 @@ export function BulkPayment({
       }
       const result = await response.json();
       if (result.status === "success") {
-        setApprovedBatches(prev => ({
+        setApprovedBatches((prev) => ({
           ...prev,
           [batch.id]: {
             receiptId: result.data.receiptId,
             timestamp: result.data.timestamp,
-          }
+          },
         }));
         toast.success(`Phê duyệt đợt chi lương thành công!`, {
           description: `Đợt ${batch.name} đã được phê duyệt thành công qua cổng thanh toán. Receipt: ${result.data.receiptId}`,
@@ -315,144 +355,200 @@ export function BulkPayment({
     const bankExportRows = appData.BankExport?.data || [];
     if (bankExportRows.length > 0) {
       const sum = bankExportRows.reduce((acc: number, r: any) => {
-        return acc + (parseMoneyToNumber(
-          r["Payment Amount"] ?? r["Amount"] ?? r["TOTAL PAYMENT"] ?? r["Số tiền"] ?? r["Thành tiền"] ?? 0
-        ) || 0);
+        return (
+          acc +
+          (parseMoneyToNumber(
+            r["Payment Amount"] ??
+              r["Amount"] ??
+              r["TOTAL PAYMENT"] ??
+              r["Số tiền"] ??
+              r["Thành tiền"] ??
+              0,
+          ) || 0)
+        );
       }, 0);
       if (sum > 0) return sum;
     }
 
-    if (calculationSummary.calculatedTotal > 0) return calculationSummary.calculatedTotal;
+    if (calculationSummary.calculatedTotal > 0)
+      return calculationSummary.calculatedTotal;
     if (calculationSummary.aeTotal > 0) return calculationSummary.aeTotal;
 
     if (dynamicReportStats?.finalTotals) {
-      const sum = Object.values(dynamicReportStats.finalTotals).reduce((a, b) => a + (b || 0), 0);
+      const sum = Object.values(dynamicReportStats.finalTotals).reduce(
+        (a, b) => a + (b || 0),
+        0,
+      );
       if (sum > 0) return sum;
     }
     return 0;
   }, [appData.BankExport?.data, calculationSummary, dynamicReportStats]);
 
-  const handleAuditCellUpdate = useCallback((item: any, field: string, value: any) => {
-    updateAppData((prev) => {
-      const newBankData = [...(prev.BankExport?.data || prev.Bank_North_AE?.data || [])];
-      const bIndex = newBankData.findIndex((r) => r === item.rawRow || r.id === item.rawRow.id);
-      if (bIndex !== -1) {
-        newBankData[bIndex] = { ...newBankData[bIndex], [field]: value };
-      }
-
-      const cleanId = item.docId?.toLowerCase();
-      const newSheet1 = [...prev.Sheet1_AE.data];
-      const s1Index = newSheet1.findIndex((r) => {
-        const rId = String(r["ID Number"] || r["Mã AE"] || "").trim().toLowerCase();
-        return rId && cleanId && rId === cleanId;
-      });
-      if (s1Index !== -1) {
-        if (field === "accountNo" || field === "benefitsAccountNo") newSheet1[s1Index]["Bank Account Number"] = value;
-        if (field === "docId" || field === "grossPlusBenefitsId") newSheet1[s1Index]["ID Number"] = value;
-      }
-
-      const newHold = [...prev.Hold_AE.data];
-      const hIndex = newHold.findIndex((r) => {
-        const rId = String(r["ID Number"] || r["Mã AE"] || "").trim().toLowerCase();
-        return rId && cleanId && rId === cleanId;
-      });
-      if (hIndex !== -1) {
-        if (field === "accountNo" || field === "benefitsAccountNo") newHold[hIndex]["Bank Account Number"] = value;
-        if (field === "docId" || field === "grossPlusBenefitsId") newHold[hIndex]["ID Number"] = value;
-      }
-
-      return {
-        ...prev,
-        BankExport: { ...prev.BankExport, data: newBankData },
-        Sheet1_AE: { ...prev.Sheet1_AE, data: newSheet1 },
-        Hold_AE: { ...prev.Hold_AE, data: newHold }
-      };
-    });
-    toast.success("Đã cập nhật và đồng bộ dữ liệu sang bảng gốc thành công!");
-  }, [updateAppData]);
-
-  const handleAutoFillMissingAccount = useCallback((item: any) => {
-    const idToSync = item.grossPlusBenefitsId || item.docId || "";
-    const accToSync = item.benefitsAccountNo || item.accountNo || "";
-
-    if (!accToSync) {
-      toast.error("Không tìm thấy số tài khoản hợp lệ để điền!");
-      return;
-    }
-
-    updateAppData((prev) => {
-      const cleanId = idToSync.toLowerCase();
-
-      const newSheet1 = [...prev.Sheet1_AE.data];
-      let updatedSheet1 = false;
-      const s1Index = newSheet1.findIndex((r) => {
-        const rId = String(r["ID Number"] || r["Mã AE"] || "").trim().toLowerCase();
-        return rId && cleanId && rId === cleanId;
-      });
-      if (s1Index !== -1) {
-        const currentAcc = newSheet1[s1Index]["Bank Account Number"];
-        if (!currentAcc || String(currentAcc).trim() === "") {
-          newSheet1[s1Index] = {
-            ...newSheet1[s1Index],
-            "Bank Account Number": accToSync,
-            "ID Number": idToSync || newSheet1[s1Index]["ID Number"],
-          };
-          updatedSheet1 = true;
+  const handleAuditCellUpdate = useCallback(
+    (item: any, field: string, value: any) => {
+      updateAppData((prev) => {
+        const newBankData = [
+          ...(prev.BankExport?.data || prev.Bank_North_AE?.data || []),
+        ];
+        const bIndex = newBankData.findIndex(
+          (r) => r === item.rawRow || r.id === item.rawRow.id,
+        );
+        if (bIndex !== -1) {
+          newBankData[bIndex] = { ...newBankData[bIndex], [field]: value };
         }
-      }
 
-      const newHold = [...prev.Hold_AE.data];
-      let updatedHold = false;
-      const hIndex = newHold.findIndex((r) => {
-        const rId = String(r["ID Number"] || r["Mã AE"] || "").trim().toLowerCase();
-        return rId && cleanId && rId === cleanId;
-      });
-      if (hIndex !== -1) {
-        const currentAcc = newHold[hIndex]["Bank Account Number"];
-        if (!currentAcc || String(currentAcc).trim() === "") {
-          newHold[hIndex] = {
-            ...newHold[hIndex],
-            "Bank Account Number": accToSync,
-            "ID Number": idToSync || newHold[hIndex]["ID Number"],
-          };
-          updatedHold = true;
+        const cleanId = item.docId?.toLowerCase();
+        const newSheet1 = [...prev.Sheet1_AE.data];
+        const s1Index = newSheet1.findIndex((r) => {
+          const rId = String(r["ID Number"] || r["Mã AE"] || "")
+            .trim()
+            .toLowerCase();
+          return rId && cleanId && rId === cleanId;
+        });
+        if (s1Index !== -1) {
+          if (field === "accountNo" || field === "benefitsAccountNo")
+            newSheet1[s1Index]["Bank Account Number"] = value;
+          if (field === "docId" || field === "grossPlusBenefitsId")
+            newSheet1[s1Index]["ID Number"] = value;
         }
+
+        const newHold = [...prev.Hold_AE.data];
+        const hIndex = newHold.findIndex((r) => {
+          const rId = String(r["ID Number"] || r["Mã AE"] || "")
+            .trim()
+            .toLowerCase();
+          return rId && cleanId && rId === cleanId;
+        });
+        if (hIndex !== -1) {
+          if (field === "accountNo" || field === "benefitsAccountNo")
+            newHold[hIndex]["Bank Account Number"] = value;
+          if (field === "docId" || field === "grossPlusBenefitsId")
+            newHold[hIndex]["ID Number"] = value;
+        }
+
+        return {
+          ...prev,
+          BankExport: { ...prev.BankExport, data: newBankData },
+          Sheet1_AE: { ...prev.Sheet1_AE, data: newSheet1 },
+          Hold_AE: { ...prev.Hold_AE, data: newHold },
+        };
+      });
+      toast.success("Đã cập nhật và đồng bộ dữ liệu sang bảng gốc thành công!");
+    },
+    [updateAppData],
+  );
+
+  const handleAutoFillMissingAccount = useCallback(
+    (item: any) => {
+      const idToSync = item.grossPlusBenefitsId || item.docId || "";
+      const accToSync = item.benefitsAccountNo || item.accountNo || "";
+
+      if (!accToSync) {
+        toast.error("Không tìm thấy số tài khoản hợp lệ để điền!");
+        return;
       }
 
-      if (updatedSheet1 || updatedHold) {
-        toast.success(`Đã đồng bộ STK [${accToSync}] cho ID [${idToSync}] vào ${updatedSheet1 ? "Sheet1" : ""}${updatedSheet1 && updatedHold ? " & " : ""}${updatedHold ? "Hold" : ""} AE!`);
-      } else {
-        if (s1Index !== -1 || hIndex !== -1) {
-           toast.info(`ID [${idToSync}] đã có số tài khoản trong dữ liệu gốc. Không cần đồng bộ.`);
+      updateAppData((prev) => {
+        const cleanId = idToSync.toLowerCase();
+
+        const newSheet1 = [...prev.Sheet1_AE.data];
+        let updatedSheet1 = false;
+        const s1Index = newSheet1.findIndex((r) => {
+          const rId = String(r["ID Number"] || r["Mã AE"] || "")
+            .trim()
+            .toLowerCase();
+          return rId && cleanId && rId === cleanId;
+        });
+        if (s1Index !== -1) {
+          const currentAcc = newSheet1[s1Index]["Bank Account Number"];
+          if (!currentAcc || String(currentAcc).trim() === "") {
+            newSheet1[s1Index] = {
+              ...newSheet1[s1Index],
+              "Bank Account Number": accToSync,
+              "ID Number": idToSync || newSheet1[s1Index]["ID Number"],
+            };
+            updatedSheet1 = true;
+          }
+        }
+
+        const newHold = [...prev.Hold_AE.data];
+        let updatedHold = false;
+        const hIndex = newHold.findIndex((r) => {
+          const rId = String(r["ID Number"] || r["Mã AE"] || "")
+            .trim()
+            .toLowerCase();
+          return rId && cleanId && rId === cleanId;
+        });
+        if (hIndex !== -1) {
+          const currentAcc = newHold[hIndex]["Bank Account Number"];
+          if (!currentAcc || String(currentAcc).trim() === "") {
+            newHold[hIndex] = {
+              ...newHold[hIndex],
+              "Bank Account Number": accToSync,
+              "ID Number": idToSync || newHold[hIndex]["ID Number"],
+            };
+            updatedHold = true;
+          }
+        }
+
+        if (updatedSheet1 || updatedHold) {
+          toast.success(
+            `Đã đồng bộ STK [${accToSync}] cho ID [${idToSync}] vào ${updatedSheet1 ? "Sheet1" : ""}${updatedSheet1 && updatedHold ? " & " : ""}${updatedHold ? "Hold" : ""} AE!`,
+          );
         } else {
-           toast.warning(`Không tìm thấy ID [${idToSync}] trong Sheet1 hoặc Hold AE để cập nhật.`);
+          if (s1Index !== -1 || hIndex !== -1) {
+            toast.info(
+              `ID [${idToSync}] đã có số tài khoản trong dữ liệu gốc. Không cần đồng bộ.`,
+            );
+          } else {
+            toast.warning(
+              `Không tìm thấy ID [${idToSync}] trong Sheet1 hoặc Hold AE để cập nhật.`,
+            );
+          }
         }
-      }
 
-      return {
-        ...prev,
-        Sheet1_AE: { ...prev.Sheet1_AE, data: newSheet1 },
-        Hold_AE: { ...prev.Hold_AE, data: newHold },
-      };
-    });
-  }, [updateAppData]);
+        return {
+          ...prev,
+          Sheet1_AE: { ...prev.Sheet1_AE, data: newSheet1 },
+          Hold_AE: { ...prev.Hold_AE, data: newHold },
+        };
+      });
+    },
+    [updateAppData],
+  );
 
-  const displayBankExportData = useMemo(() => bankExportData || [], [bankExportData]);
+  const displayBankExportData = useMemo(
+    () => bankExportData || [],
+    [bankExportData],
+  );
 
   const bankExportTotal = useMemo(() => {
-    return (appData.BankExport?.data || [])
-      .reduce((sum: number, r: any) => {
-        return sum + (parseMoneyToNumber(
-          r["Payment Amount"] ?? r["Amount"] ?? r["TOTAL PAYMENT"] ?? r["Số tiền"] ?? r["Thành tiền"] ?? 0
-        ) || 0);
-      }, 0);
+    return (appData.BankExport?.data || []).reduce((sum: number, r: any) => {
+      return (
+        sum +
+        (parseMoneyToNumber(
+          r["Payment Amount"] ??
+            r["Amount"] ??
+            r["TOTAL PAYMENT"] ??
+            r["Số tiền"] ??
+            r["Thành tiền"] ??
+            0,
+        ) || 0)
+      );
+    }, 0);
   }, [appData.BankExport?.data]);
 
   const hasDuplicateIds = useMemo(() => {
-    if (!displayBankExportData || displayBankExportData.length === 0) return false;
+    if (!displayBankExportData || displayBankExportData.length === 0)
+      return false;
     const seen = new Set<string>();
     for (const row of displayBankExportData) {
-      const idVal = row["Document ID"] || row["ID Number"] || row["Document ID / CCCD"] || row["ID"] || row["CCCD"];
+      const idVal =
+        row["Document ID"] ||
+        row["ID Number"] ||
+        row["Document ID / CCCD"] ||
+        row["ID"] ||
+        row["CCCD"];
       if (idVal && String(idVal).trim() !== "") {
         const clean = String(idVal).trim().toLowerCase();
         if (seen.has(clean)) return true;
@@ -464,7 +560,8 @@ export function BulkPayment({
 
   // Unified Reconciliation Audit computation across database tables
   const reconciliationAudit = useMemo(() => {
-    const bankExportRows = appData.BankExport?.data || appData.Bank_North_AE?.data || [];
+    const bankExportRows =
+      appData.BankExport?.data || appData.Bank_North_AE?.data || [];
     const sheet1Rows = appData.Sheet1_AE?.data || [];
     const holdRows = appData.Hold_AE?.data || [];
 
@@ -479,23 +576,48 @@ export function BulkPayment({
     const sheet1RowsByName = new Map<string, any[]>();
 
     sheet1Rows.forEach((r: any) => {
-      const rowMonthStr = String(r["Tháng báo cáo"] || r["_fileMonth"] || r["Tháng"] || r["Month"] || "").trim();
+      const rowMonthStr = String(
+        r["Tháng báo cáo"] || r["_fileMonth"] || r["Tháng"] || r["Month"] || "",
+      ).trim();
       const extracted = monMatchComp(rowMonthStr);
       if (extracted && extracted !== targetMonthLabelComp) return;
       if (!extracted && rowMonthStr && !isMonthInStrComp(rowMonthStr)) return;
 
       activeSheet1RowsList.push(r);
 
-      const id = String(r["ID Number"] || r["Mã AE"] || r["Mã ae"] || r["Document ID"] || r["CCCD"] || "").trim().toLowerCase();
-      const acc = String(r["Bank Account Number"] || r["Beneficiary Account No."] || r["STK"] || r["Số tài khoản"] || "").replace(/\s+/g, "").trim().toLowerCase();
-      const name = removeVietnameseTones(r["Full name"] || r["Beneficiary Name"] || "").trim().toUpperCase();
+      const id = String(
+        r["ID Number"] ||
+          r["Mã AE"] ||
+          r["Mã ae"] ||
+          r["Document ID"] ||
+          r["CCCD"] ||
+          "",
+      )
+        .trim()
+        .toLowerCase();
+      const acc = String(
+        r["Bank Account Number"] ||
+          r["Beneficiary Account No."] ||
+          r["STK"] ||
+          r["Số tài khoản"] ||
+          "",
+      )
+        .replace(/\s+/g, "")
+        .trim()
+        .toLowerCase();
+      const name = removeVietnameseTones(
+        r["Full name"] || r["Beneficiary Name"] || "",
+      )
+        .trim()
+        .toUpperCase();
 
       if (id) {
         const formattedId = formatIdNumber(id).toLowerCase();
         if (!sheet1RowsById.has(id)) sheet1RowsById.set(id, []);
         sheet1RowsById.get(id)!.push(r);
         if (formattedId && formattedId !== id) {
-          if (!sheet1RowsById.has(formattedId)) sheet1RowsById.set(formattedId, []);
+          if (!sheet1RowsById.has(formattedId))
+            sheet1RowsById.set(formattedId, []);
           sheet1RowsById.get(formattedId)!.push(r);
         }
       }
@@ -516,57 +638,108 @@ export function BulkPayment({
     const holdNetByBU = new Map<string, number>();
 
     holdRows.forEach((r: any) => {
-      const rowMonthStr = String(r["Tháng báo cáo"] || r["_fileMonth"] || r["Tháng"] || r["Month"] || "").trim();
+      const rowMonthStr = String(
+        r["Tháng báo cáo"] || r["_fileMonth"] || r["Tháng"] || r["Month"] || "",
+      ).trim();
       const extracted = monMatchComp(rowMonthStr);
       if (extracted && extracted !== targetMonthLabelComp) return;
       if (!extracted && rowMonthStr && !isMonthInStrComp(rowMonthStr)) return;
 
-      const command = String(r["Lệnh"] || "").trim().toUpperCase();
+      const command = String(r["Lệnh"] || "")
+        .trim()
+        .toUpperCase();
       if (command === "-") return;
 
       const sheetSource = String(r["Sheet Source"] || "").toLowerCase();
-      if (sheetSource.includes("sheet 1 ae") || sheetSource.includes("sheet 1")) return;
+      if (sheetSource.includes("sheet 1 ae") || sheetSource.includes("sheet 1"))
+        return;
       if (r._dimmed) return;
 
       activeHoldRowsList.push(r);
 
-      const id = String(r["ID Number"] || r["Mã AE"] || r["Mã ae"] || r["CCCD"] || "").trim().toLowerCase();
-      const acc = String(r["Bank Account Number"] || r["Beneficiary Account No."] || r["STK"] || r["Số tài khoản"] || "").replace(/\s+/g, "").trim().toLowerCase();
-      const name = removeVietnameseTones(r["Full name"] || r["Beneficiary Name"] || "").trim().toUpperCase();
+      const id = String(
+        r["ID Number"] || r["Mã AE"] || r["Mã ae"] || r["CCCD"] || "",
+      )
+        .trim()
+        .toLowerCase();
+      const acc = String(
+        r["Bank Account Number"] ||
+          r["Beneficiary Account No."] ||
+          r["STK"] ||
+          r["Số tài khoản"] ||
+          "",
+      )
+        .replace(/\s+/g, "")
+        .trim()
+        .toLowerCase();
+      const name = removeVietnameseTones(
+        r["Full name"] || r["Beneficiary Name"] || "",
+      )
+        .trim()
+        .toUpperCase();
 
       let amount = parseMoneyToNumber(
-        r["TOTAL PAYMENT"] || r["Payment Amount"] || r["Grand Total"] || r["GRAND TOTAL"] || r["Total Payment"] || 0
+        r["TOTAL PAYMENT"] ||
+          r["Payment Amount"] ||
+          r["Grand Total"] ||
+          r["GRAND TOTAL"] ||
+          r["Total Payment"] ||
+          0,
       );
 
-      const nvCode = String(r["Nghiệp vụ"] || "").trim().toUpperCase();
+      const nvCode = String(r["Nghiệp vụ"] || "")
+        .trim()
+        .toUpperCase();
 
-      let isHold = nvCode === 'H';
-      let isAdd = nvCode === 'A';
-      let isBonus = nvCode === 'B';
-      let isCancel = nvCode === 'C';
+      let isHold = nvCode === "H";
+      let isAdd = nvCode === "A";
+      let isBonus = nvCode === "B";
+      let isCancel = nvCode === "C";
 
       const nghiepVu = String(r["Nghiệp vụ"] || "").toLowerCase();
-      const trangThai = String(r["Tháng phát sinh"] || r["Trạng thái"] || "").toLowerCase();
+      const trangThai = String(
+        r["Tháng phát sinh"] || r["Trạng thái"] || "",
+      ).toLowerCase();
       const tttt = String(r["Tình trạng thanh toán"] || "").trim();
 
       if (!isHold && !isAdd && !isBonus && !isCancel) {
-        isCancel = nghiepVu.includes("cancel") || trangThai.includes("cancel") || sheetSource.includes("cancel") || tttt.toLowerCase().includes("cancel");
-        isBonus = r["Sheet Source"]?.toUpperCase().includes("BONUS") || r["Sheet Source"]?.toUpperCase().includes("SUMMER") || r["Sheet Source"]?.toUpperCase().includes("INSTRUCTORS") || nghiepVu.includes("bonus") || nghiepVu.includes("⏯") || nghiepVu.includes("⏩");
+        isCancel =
+          nghiepVu.includes("cancel") ||
+          trangThai.includes("cancel") ||
+          sheetSource.includes("cancel") ||
+          tttt.toLowerCase().includes("cancel");
+        isBonus =
+          r["Sheet Source"]?.toUpperCase().includes("BONUS") ||
+          r["Sheet Source"]?.toUpperCase().includes("SUMMER") ||
+          r["Sheet Source"]?.toUpperCase().includes("INSTRUCTORS") ||
+          nghiepVu.includes("bonus") ||
+          nghiepVu.includes("⏯") ||
+          nghiepVu.includes("⏩");
         if (!isCancel && !isBonus) {
-          isAdd = r["Sheet Source"]?.toUpperCase().includes("ADD") || (!r["Sheet Source"]?.toUpperCase().includes("HOLD") && amount > 0) || nghiepVu.includes("add") || nghiepVu.includes("release");
+          isAdd =
+            r["Sheet Source"]?.toUpperCase().includes("ADD") ||
+            (!r["Sheet Source"]?.toUpperCase().includes("HOLD") &&
+              amount > 0) ||
+            nghiepVu.includes("add") ||
+            nghiepVu.includes("release");
           isHold = !isAdd;
         }
       }
 
-      const phatSinhStr = String(r["Tháng phát sinh"] || "").trim().replace(/[-_/]/g, ".");
+      const phatSinhStr = String(r["Tháng phát sinh"] || "")
+        .trim()
+        .replace(/[-_/]/g, ".");
       const [mStr, yStr] = phatSinhStr.split(".");
       const mPhatSinh = parseInt(mStr, 10);
       const yPhatSinh = parseInt(yStr, 10);
       let isDiffMonth = false;
       let isPastMonthTrue = false;
       if (!isNaN(mPhatSinh) && !isNaN(yPhatSinh)) {
-        isDiffMonth = (yPhatSinh !== currentYearNumComp || mPhatSinh !== currentMonthNumComp);
-        isPastMonthTrue = (yPhatSinh < currentYearNumComp || (yPhatSinh === currentYearNumComp && mPhatSinh < currentMonthNumComp));
+        isDiffMonth =
+          yPhatSinh !== currentYearNumComp || mPhatSinh !== currentMonthNumComp;
+        isPastMonthTrue =
+          yPhatSinh < currentYearNumComp ||
+          (yPhatSinh === currentYearNumComp && mPhatSinh < currentMonthNumComp);
       }
 
       if (isHold && isDiffMonth) amount = 0;
@@ -574,7 +747,7 @@ export function BulkPayment({
       if (isBonus && isDiffMonth) amount = 0;
       if (isCancel && !isPastMonthTrue) amount = 0;
 
-      const finalSign = (isCancel || isHold) ? -1 : 1;
+      const finalSign = isCancel || isHold ? -1 : 1;
       const signedAmount = finalSign * Math.abs(amount);
 
       if (id) {
@@ -600,13 +773,34 @@ export function BulkPayment({
       if (bu === "AHN_HP") bu = "AHP";
 
       if (!bu || bu === "UNKNOWN") {
-        const textToMatch = [ r["Sheet Source"], r["CENTER NOTE"], r["Mã ae"], r["Note"], r["Full name"] ]
-          .map(v => String(v || "").toUpperCase()).join(" ");
-        if (textToMatch.includes("HN") || textToMatch.includes("AHN")) bu = "AHN";
-        else if (textToMatch.includes("AHP") || textToMatch.includes("HAIPHONG")) bu = "AHP";
-        else if (textToMatch.includes("ATH") || textToMatch.includes("THANH HOA")) bu = "ATH";
-        else if (textToMatch.includes("ATN") || textToMatch.includes("THAI NGUYEN")) bu = "ATN";
-        else if (textToMatch.includes("APT") || textToMatch.includes("PHU THO")) bu = "APT";
+        const textToMatch = [
+          r["Sheet Source"],
+          r["CENTER NOTE"],
+          r["Mã ae"],
+          r["Note"],
+          r["Full name"],
+        ]
+          .map((v) => String(v || "").toUpperCase())
+          .join(" ");
+        if (textToMatch.includes("HN") || textToMatch.includes("AHN"))
+          bu = "AHN";
+        else if (
+          textToMatch.includes("AHP") ||
+          textToMatch.includes("HAIPHONG")
+        )
+          bu = "AHP";
+        else if (
+          textToMatch.includes("ATH") ||
+          textToMatch.includes("THANH HOA")
+        )
+          bu = "ATH";
+        else if (
+          textToMatch.includes("ATN") ||
+          textToMatch.includes("THAI NGUYEN")
+        )
+          bu = "ATN";
+        else if (textToMatch.includes("APT") || textToMatch.includes("PHU THO"))
+          bu = "APT";
         else bu = "AHN";
       }
 
@@ -615,7 +809,15 @@ export function BulkPayment({
 
     const docIdCounts = new Map<string, number>();
     bankExportRows.forEach((r: any) => {
-      const docId = String(r["Document ID"] || r["ID Number"] || r["Document ID / CCCD"] || r["CCCD"] || "").trim().toLowerCase();
+      const docId = String(
+        r["Document ID"] ||
+          r["ID Number"] ||
+          r["Document ID / CCCD"] ||
+          r["CCCD"] ||
+          "",
+      )
+        .trim()
+        .toLowerCase();
       if (docId) {
         docIdCounts.set(docId, (docIdCounts.get(docId) || 0) + 1);
       }
@@ -634,7 +836,8 @@ export function BulkPayment({
       sheet1Amount: number;
       holdAmount: number;
       variance: number;
-      status: "MATCHED" | "VARIANCE" | "MISSING_INFO" | "DUPLICATE" | "NOT_IN_SHEET1";
+      status:
+        "MATCHED" | "VARIANCE" | "MISSING_INFO" | "DUPLICATE" | "NOT_IN_SHEET1";
       issues: string[];
       rawRow: any;
       benefitsAccountNo: string;
@@ -656,7 +859,7 @@ export function BulkPayment({
       byNameMap: Map<string, any[]>,
       cDocId: string,
       cAcc: string,
-      cName: string
+      cName: string,
     ) => {
       const searchDocId = cDocId;
       const formattedSearchDocId = formatIdNumber(cDocId).toLowerCase();
@@ -675,7 +878,16 @@ export function BulkPayment({
       if (cName && byNameMap.has(cName)) {
         const list = byNameMap.get(cName) || [];
         const filtered = list.filter((r) => {
-          const rId = String(r["ID Number"] || r["Mã AE"] || r["Mã ae"] || r["Document ID"] || r["CCCD"] || "").trim().toLowerCase();
+          const rId = String(
+            r["ID Number"] ||
+              r["Mã AE"] ||
+              r["Mã ae"] ||
+              r["Document ID"] ||
+              r["CCCD"] ||
+              "",
+          )
+            .trim()
+            .toLowerCase();
           // Reject if candidate row has an ID number that conflicts with Bank Export's searchDocId
           if (searchDocId && rId && rId !== searchDocId) return false;
           return true;
@@ -688,16 +900,41 @@ export function BulkPayment({
 
     bankExportRows.forEach((row: any, index: number) => {
       const serialNo = String(row["Payment Serial Number"] || index + 1);
-      const name = String(row["Beneficiary Name"] || row["Full name"] || row["Họ tên"] || "N/A").trim();
-      const rawDocId = String(row["Document ID"] || row["ID Number"] || row["Document ID / CCCD"] || row["CCCD"] || "").trim();
-      const accountNo = String(row["Beneficiary Account No."] || row["Bank Account Number"] || row["Số tài khoản"] || "").trim();
-      const bankName = String(row["Beneficiary Bank Swift Code / IFSC Code"] || row["Beneficiary Bank"] || row["Ngân hàng"] || "").trim();
-      let bu = String(row["_fileBank"] || row["Business"] || row["BU"] || "Unknown").trim();
+      const name = String(
+        row["Beneficiary Name"] || row["Full name"] || row["Họ tên"] || "N/A",
+      ).trim();
+      const rawDocId = String(
+        row["Document ID"] ||
+          row["ID Number"] ||
+          row["Document ID / CCCD"] ||
+          row["CCCD"] ||
+          "",
+      ).trim();
+      const accountNo = String(
+        row["Beneficiary Account No."] ||
+          row["Bank Account Number"] ||
+          row["Số tài khoản"] ||
+          "",
+      ).trim();
+      const bankName = String(
+        row["Beneficiary Bank Swift Code / IFSC Code"] ||
+          row["Beneficiary Bank"] ||
+          row["Ngân hàng"] ||
+          "",
+      ).trim();
+      let bu = String(
+        row["_fileBank"] || row["Business"] || row["BU"] || "Unknown",
+      ).trim();
       if (bu === "AHN_HP") bu = "AHP";
 
-      const actualAmount = parseMoneyToNumber(
-        row["Payment Amount"] ?? row["Amount"] ?? row["TOTAL PAYMENT"] ?? row["Số tiền"] ?? 0
-      ) || 0;
+      const actualAmount =
+        parseMoneyToNumber(
+          row["Payment Amount"] ??
+            row["Amount"] ??
+            row["TOTAL PAYMENT"] ??
+            row["Số tiền"] ??
+            0,
+        ) || 0;
 
       totalActualSum += actualAmount;
 
@@ -712,7 +949,7 @@ export function BulkPayment({
         sheet1RowsByName,
         cleanDocId,
         cleanAcc,
-        cleanName
+        cleanName,
       );
 
       const matchedHoldRowsList = findMatchingRows(
@@ -721,15 +958,21 @@ export function BulkPayment({
         holdRowsByName,
         cleanDocId,
         cleanAcc,
-        cleanName
+        cleanName,
       );
 
       // Extract true ID Number from matched Sheet1 / Hold row if rawDocId is missing or equal to bank account
       let displayDocId = formatIdNumber(rawDocId);
-      const primaryMatchedRow = matchedSheet1RowsList[0] || matchedHoldRowsList[0];
+      const primaryMatchedRow =
+        matchedSheet1RowsList[0] || matchedHoldRowsList[0];
       if (primaryMatchedRow) {
         const realIdFromSheet = formatIdNumber(
-          primaryMatchedRow["ID Number"] || primaryMatchedRow["Mã AE"] || primaryMatchedRow["Mã ae"] || primaryMatchedRow["CCCD"] || primaryMatchedRow["Document ID"] || ""
+          primaryMatchedRow["ID Number"] ||
+            primaryMatchedRow["Mã AE"] ||
+            primaryMatchedRow["Mã ae"] ||
+            primaryMatchedRow["CCCD"] ||
+            primaryMatchedRow["Document ID"] ||
+            "",
         );
         if (realIdFromSheet) {
           displayDocId = realIdFromSheet;
@@ -746,9 +989,14 @@ export function BulkPayment({
       if (matchedSheet1RowsList.length > 0) {
         matchedSheet1RowsList.forEach((r) => {
           matchedSheet1Rows.add(r);
-          const amt = parseMoneyToNumber(
-            r["TOTAL PAYMENT"] ?? r["Grand Total"] ?? r["GRAND TOTAL"] ?? r["Payment Amount"] ?? 0
-          ) || 0;
+          const amt =
+            parseMoneyToNumber(
+              r["TOTAL PAYMENT"] ??
+                r["Grand Total"] ??
+                r["GRAND TOTAL"] ??
+                r["Payment Amount"] ??
+                0,
+            ) || 0;
           sheet1Amount += amt;
         });
       } else {
@@ -760,39 +1008,70 @@ export function BulkPayment({
       matchedHoldRowsList.forEach((r) => {
         matchedHoldRows.add(r);
         let amount = parseMoneyToNumber(
-          r["TOTAL PAYMENT"] || r["Payment Amount"] || r["Grand Total"] || r["GRAND TOTAL"] || r["Total Payment"] || 0
+          r["TOTAL PAYMENT"] ||
+            r["Payment Amount"] ||
+            r["Grand Total"] ||
+            r["GRAND TOTAL"] ||
+            r["Total Payment"] ||
+            0,
         );
 
         const nghiepVu = String(r["Nghiệp vụ"] || "").toLowerCase();
-        const trangThai = String(r["Tháng phát sinh"] || r["Trạng thái"] || "").toLowerCase();
+        const trangThai = String(
+          r["Tháng phát sinh"] || r["Trạng thái"] || "",
+        ).toLowerCase();
         const sheetSource = String(r["Sheet Source"] || "").toLowerCase();
         const tttt = String(r["Tình trạng thanh toán"] || "").trim();
 
-        const nvCode = String(r["Nghiệp vụ"] || "").trim().toUpperCase();
+        const nvCode = String(r["Nghiệp vụ"] || "")
+          .trim()
+          .toUpperCase();
 
-        let isHold = nvCode === 'H';
-        let isAdd = nvCode === 'A';
-        let isBonus = nvCode === 'B';
-        let isCancel = nvCode === 'C';
+        let isHold = nvCode === "H";
+        let isAdd = nvCode === "A";
+        let isBonus = nvCode === "B";
+        let isCancel = nvCode === "C";
 
         if (!isHold && !isAdd && !isBonus && !isCancel) {
-          isCancel = nghiepVu.includes("cancel") || trangThai.includes("cancel") || sheetSource.includes("cancel") || tttt.toLowerCase().includes("cancel");
-          isBonus = r["Sheet Source"]?.toUpperCase().includes("BONUS") || r["Sheet Source"]?.toUpperCase().includes("SUMMER") || r["Sheet Source"]?.toUpperCase().includes("INSTRUCTORS") || nghiepVu.includes("bonus") || nghiepVu.includes("⏯") || nghiepVu.includes("⏩");
+          isCancel =
+            nghiepVu.includes("cancel") ||
+            trangThai.includes("cancel") ||
+            sheetSource.includes("cancel") ||
+            tttt.toLowerCase().includes("cancel");
+          isBonus =
+            r["Sheet Source"]?.toUpperCase().includes("BONUS") ||
+            r["Sheet Source"]?.toUpperCase().includes("SUMMER") ||
+            r["Sheet Source"]?.toUpperCase().includes("INSTRUCTORS") ||
+            nghiepVu.includes("bonus") ||
+            nghiepVu.includes("⏯") ||
+            nghiepVu.includes("⏩");
           if (!isCancel && !isBonus) {
-            isAdd = r["Sheet Source"]?.toUpperCase().includes("ADD") || (!r["Sheet Source"]?.toUpperCase().includes("HOLD") && amount > 0) || nghiepVu.includes("add") || nghiepVu.includes("release");
+            isAdd =
+              r["Sheet Source"]?.toUpperCase().includes("ADD") ||
+              (!r["Sheet Source"]?.toUpperCase().includes("HOLD") &&
+                amount > 0) ||
+              nghiepVu.includes("add") ||
+              nghiepVu.includes("release");
             isHold = !isAdd;
           }
         }
 
-        const phatSinhStr = String(r["Tháng phát sinh"] || "").trim().replace(/[-_/]/g, ".");
+        const phatSinhStr = String(r["Tháng phát sinh"] || "")
+          .trim()
+          .replace(/[-_/]/g, ".");
         const [mStr, yStr] = phatSinhStr.split(".");
         const mPhatSinh = parseInt(mStr, 10);
         const yPhatSinh = parseInt(yStr, 10);
         let isDiffMonth = false;
         let isPastMonthTrue = false;
         if (!isNaN(mPhatSinh) && !isNaN(yPhatSinh)) {
-          isDiffMonth = (yPhatSinh !== currentYearNumComp || mPhatSinh !== currentMonthNumComp);
-          isPastMonthTrue = (yPhatSinh < currentYearNumComp || (yPhatSinh === currentYearNumComp && mPhatSinh < currentMonthNumComp));
+          isDiffMonth =
+            yPhatSinh !== currentYearNumComp ||
+            mPhatSinh !== currentMonthNumComp;
+          isPastMonthTrue =
+            yPhatSinh < currentYearNumComp ||
+            (yPhatSinh === currentYearNumComp &&
+              mPhatSinh < currentMonthNumComp);
         }
 
         if (isHold && isDiffMonth) amount = 0;
@@ -800,7 +1079,7 @@ export function BulkPayment({
         if (isBonus && isDiffMonth) amount = 0;
         if (isCancel && !isPastMonthTrue) amount = 0;
 
-        const finalSign = (isCancel || isHold) ? -1 : 1;
+        const finalSign = isCancel || isHold ? -1 : 1;
         const signedAmount = finalSign * Math.abs(amount);
         holdAmount += signedAmount;
       });
@@ -811,7 +1090,12 @@ export function BulkPayment({
       totalExpectedSum += expectedAmount;
       const variance = actualAmount - expectedAmount;
 
-      let status: "MATCHED" | "VARIANCE" | "MISSING_INFO" | "DUPLICATE" | "NOT_IN_SHEET1" = "MATCHED";
+      let status:
+        | "MATCHED"
+        | "VARIANCE"
+        | "MISSING_INFO"
+        | "DUPLICATE"
+        | "NOT_IN_SHEET1" = "MATCHED";
 
       if (!accountNo || accountNo.length < 3) {
         status = "MISSING_INFO";
@@ -824,9 +1108,13 @@ export function BulkPayment({
       } else if (Math.abs(variance) >= 1) {
         status = "VARIANCE";
         if (sheet1Amount > 0 && holdAmount !== 0) {
-          issues.push(`Lệch số tiền (Sheet1: ${formatMoneyVND(sheet1Amount)}, Hold: ${holdAmount >= 0 ? "+" : ""}${formatMoneyVND(holdAmount)})`);
+          issues.push(
+            `Lệch số tiền (Sheet1: ${formatMoneyVND(sheet1Amount)}, Hold: ${holdAmount >= 0 ? "+" : ""}${formatMoneyVND(holdAmount)})`,
+          );
         } else {
-          issues.push(`Lệch số tiền (${variance > 0 ? "+" : ""}${formatMoneyVND(variance)})`);
+          issues.push(
+            `Lệch số tiền (${variance > 0 ? "+" : ""}${formatMoneyVND(variance)})`,
+          );
         }
         varianceCount++;
       } else {
@@ -834,11 +1122,35 @@ export function BulkPayment({
         matchedCount++;
       }
 
-      const benefitsAccountNo = String(primaryMatchedRow?.["Bank Account Number"] || row["Bank Account Number"] || row["Beneficiary Account No."] || "").trim();
-      const grossPlusBenefitsId = formatIdNumber(primaryMatchedRow?.["ID Number"] || primaryMatchedRow?.["Mã AE"] || displayDocId || "");
-      
-      const s1Acc = String(matchedSheet1RowsList[0]?.["Bank Account Number"] || matchedSheet1RowsList[0]?.["Beneficiary Account No."] || "").replace(/\s+/g, "").trim().toLowerCase();
-      const hAcc = String(matchedHoldRowsList[0]?.["Bank Account Number"] || matchedHoldRowsList[0]?.["Beneficiary Account No."] || "").replace(/\s+/g, "").trim().toLowerCase();
+      const benefitsAccountNo = String(
+        primaryMatchedRow?.["Bank Account Number"] ||
+          row["Bank Account Number"] ||
+          row["Beneficiary Account No."] ||
+          "",
+      ).trim();
+      const grossPlusBenefitsId = formatIdNumber(
+        primaryMatchedRow?.["ID Number"] ||
+          primaryMatchedRow?.["Mã AE"] ||
+          displayDocId ||
+          "",
+      );
+
+      const s1Acc = String(
+        matchedSheet1RowsList[0]?.["Bank Account Number"] ||
+          matchedSheet1RowsList[0]?.["Beneficiary Account No."] ||
+          "",
+      )
+        .replace(/\s+/g, "")
+        .trim()
+        .toLowerCase();
+      const hAcc = String(
+        matchedHoldRowsList[0]?.["Bank Account Number"] ||
+          matchedHoldRowsList[0]?.["Beneficiary Account No."] ||
+          "",
+      )
+        .replace(/\s+/g, "")
+        .trim()
+        .toLowerCase();
       const bAcc = accountNo.replace(/\s+/g, "").trim().toLowerCase();
 
       const s1HasMatch = matchedSheet1RowsList.length > 0;
@@ -896,17 +1208,20 @@ export function BulkPayment({
     });
 
     const buList = ["AHN", "AHP", "ATH", "ATN", "APT", "OTHER"];
-    const buMatrix: Record<string, {
-      bu: string;
-      expectedTotal: number;
-      sheet1Total: number;
-      holdTotal: number;
-      actualTotal: number;
-      variance: number;
-      txCount: number;
-      matchedTxCount: number;
-      status: "MATCHED" | "VARIANCE";
-    }> = {};
+    const buMatrix: Record<
+      string,
+      {
+        bu: string;
+        expectedTotal: number;
+        sheet1Total: number;
+        holdTotal: number;
+        actualTotal: number;
+        variance: number;
+        txCount: number;
+        matchedTxCount: number;
+        status: "MATCHED" | "VARIANCE";
+      }
+    > = {};
 
     buList.forEach((bu) => {
       const sheet1ForBu = dynamicReportStats?.sheet1Totals?.[bu] || 0;
@@ -916,7 +1231,9 @@ export function BulkPayment({
       const buTxs = transactionAuditList.filter((t) => t.bu === bu);
       const actual = buTxs.reduce((sum, t) => sum + t.actualAmount, 0);
       const varAmount = actual - expected;
-      const matchedCountInBu = buTxs.filter((t) => t.status === "MATCHED").length;
+      const matchedCountInBu = buTxs.filter(
+        (t) => t.status === "MATCHED",
+      ).length;
 
       buMatrix[bu] = {
         bu,
@@ -931,46 +1248,76 @@ export function BulkPayment({
       };
     });
 
-    const targetNetTotal = calculationSummary.calculatedTotal || totalExpectedSum;
+    const targetNetTotal =
+      calculationSummary.calculatedTotal || totalExpectedSum;
     const matchedExpectedSum = totalExpectedSum;
     const unexportedAmount = targetNetTotal - matchedExpectedSum;
     const netVariance = totalActualSum - targetNetTotal;
-    
+
     const getHoldRowExpectedAmount = (r: any) => {
       let amount = parseMoneyToNumber(
-        r["TOTAL PAYMENT"] || r["Payment Amount"] || r["Grand Total"] || r["GRAND TOTAL"] || r["Total Payment"] || 0
+        r["TOTAL PAYMENT"] ||
+          r["Payment Amount"] ||
+          r["Grand Total"] ||
+          r["GRAND TOTAL"] ||
+          r["Total Payment"] ||
+          0,
       );
 
       const nghiepVu = String(r["Nghiệp vụ"] || "").toLowerCase();
-      const trangThai = String(r["Tháng phát sinh"] || r["Trạng thái"] || "").toLowerCase();
+      const trangThai = String(
+        r["Tháng phát sinh"] || r["Trạng thái"] || "",
+      ).toLowerCase();
       const sheetSource = String(r["Sheet Source"] || "").toLowerCase();
       const tttt = String(r["Tình trạng thanh toán"] || "").trim();
 
-      const nvCode = String(r["Nghiệp vụ"] || "").trim().toUpperCase();
+      const nvCode = String(r["Nghiệp vụ"] || "")
+        .trim()
+        .toUpperCase();
 
-      let isHold = nvCode === 'H';
-      let isAdd = nvCode === 'A';
-      let isBonus = nvCode === 'B';
-      let isCancel = nvCode === 'C';
+      let isHold = nvCode === "H";
+      let isAdd = nvCode === "A";
+      let isBonus = nvCode === "B";
+      let isCancel = nvCode === "C";
 
       if (!isHold && !isAdd && !isBonus && !isCancel) {
-        isCancel = nghiepVu.includes("cancel") || trangThai.includes("cancel") || sheetSource.includes("cancel") || tttt.toLowerCase().includes("cancel");
-        isBonus = r["Sheet Source"]?.toUpperCase().includes("BONUS") || r["Sheet Source"]?.toUpperCase().includes("SUMMER") || r["Sheet Source"]?.toUpperCase().includes("INSTRUCTORS") || nghiepVu.includes("bonus") || nghiepVu.includes("⏯") || nghiepVu.includes("⏩");
+        isCancel =
+          nghiepVu.includes("cancel") ||
+          trangThai.includes("cancel") ||
+          sheetSource.includes("cancel") ||
+          tttt.toLowerCase().includes("cancel");
+        isBonus =
+          r["Sheet Source"]?.toUpperCase().includes("BONUS") ||
+          r["Sheet Source"]?.toUpperCase().includes("SUMMER") ||
+          r["Sheet Source"]?.toUpperCase().includes("INSTRUCTORS") ||
+          nghiepVu.includes("bonus") ||
+          nghiepVu.includes("⏯") ||
+          nghiepVu.includes("⏩");
         if (!isCancel && !isBonus) {
-          isAdd = r["Sheet Source"]?.toUpperCase().includes("ADD") || (!r["Sheet Source"]?.toUpperCase().includes("HOLD") && amount > 0) || nghiepVu.includes("add") || nghiepVu.includes("release");
+          isAdd =
+            r["Sheet Source"]?.toUpperCase().includes("ADD") ||
+            (!r["Sheet Source"]?.toUpperCase().includes("HOLD") &&
+              amount > 0) ||
+            nghiepVu.includes("add") ||
+            nghiepVu.includes("release");
           isHold = !isAdd;
         }
       }
 
-      const phatSinhStr = String(r["Tháng phát sinh"] || "").trim().replace(/[-_/]/g, ".");
+      const phatSinhStr = String(r["Tháng phát sinh"] || "")
+        .trim()
+        .replace(/[-_/]/g, ".");
       const [mStr, yStr] = phatSinhStr.split(".");
       const mPhatSinh = parseInt(mStr, 10);
       const yPhatSinh = parseInt(yStr, 10);
       let isDiffMonth = false;
       let isPastMonthTrue = false;
       if (!isNaN(mPhatSinh) && !isNaN(yPhatSinh)) {
-        isDiffMonth = (yPhatSinh !== currentYearNumComp || mPhatSinh !== currentMonthNumComp);
-        isPastMonthTrue = (yPhatSinh < currentYearNumComp || (yPhatSinh === currentYearNumComp && mPhatSinh < currentMonthNumComp));
+        isDiffMonth =
+          yPhatSinh !== currentYearNumComp || mPhatSinh !== currentMonthNumComp;
+        isPastMonthTrue =
+          yPhatSinh < currentYearNumComp ||
+          (yPhatSinh === currentYearNumComp && mPhatSinh < currentMonthNumComp);
       }
 
       if (isHold && isDiffMonth) amount = 0;
@@ -978,12 +1325,16 @@ export function BulkPayment({
       if (isBonus && isDiffMonth) amount = 0;
       if (isCancel && !isPastMonthTrue) amount = 0;
 
-      const finalSign = (isCancel || isHold) ? -1 : 1;
+      const finalSign = isCancel || isHold ? -1 : 1;
       return finalSign * Math.abs(amount);
     };
 
-    const unmatchedSheet1Rows = activeSheet1RowsList.filter(r => !matchedSheet1Rows.has(r));
-    const unmatchedHoldRows = activeHoldRowsList.filter(r => !matchedHoldRows.has(r));
+    const unmatchedSheet1Rows = activeSheet1RowsList.filter(
+      (r) => !matchedSheet1Rows.has(r),
+    );
+    const unmatchedHoldRows = activeHoldRowsList.filter(
+      (r) => !matchedHoldRows.has(r),
+    );
 
     let finalVarianceCount = varianceCount;
     let finalMatchedCount = matchedCount;
@@ -992,17 +1343,38 @@ export function BulkPayment({
     const unmatchedMap = new Map<string, any>();
 
     unmatchedSheet1Rows.forEach((r, idx) => {
-      const expectedAmount = parseMoneyToNumber(
-        r["TOTAL PAYMENT"] ?? r["Grand Total"] ?? r["GRAND TOTAL"] ?? r["Payment Amount"] ?? 0
-      ) || 0;
+      const expectedAmount =
+        parseMoneyToNumber(
+          r["TOTAL PAYMENT"] ??
+            r["Grand Total"] ??
+            r["GRAND TOTAL"] ??
+            r["Payment Amount"] ??
+            0,
+        ) || 0;
 
       if (Math.abs(expectedAmount) < 1) return;
 
-      const name = String(r["Full name"] || r["Beneficiary Name"] || "N/A").trim();
-      const rawDocId = String(r["ID Number"] || r["Mã AE"] || r["Mã ae"] || r["CCCD"] || r["Document ID"] || "").trim();
+      const name = String(
+        r["Full name"] || r["Beneficiary Name"] || "N/A",
+      ).trim();
+      const rawDocId = String(
+        r["ID Number"] ||
+          r["Mã AE"] ||
+          r["Mã ae"] ||
+          r["CCCD"] ||
+          r["Document ID"] ||
+          "",
+      ).trim();
       const displayDocId = formatIdNumber(rawDocId);
-      const accountNo = String(r["Bank Account Number"] || r["Beneficiary Account No."] || "").trim();
-      const bankName = String(r["Beneficiary Bank Swift Code / IFSC Code"] || r["Beneficiary Bank"] || r["Ngân hàng"] || "").trim();
+      const accountNo = String(
+        r["Bank Account Number"] || r["Beneficiary Account No."] || "",
+      ).trim();
+      const bankName = String(
+        r["Beneficiary Bank Swift Code / IFSC Code"] ||
+          r["Beneficiary Bank"] ||
+          r["Ngân hàng"] ||
+          "",
+      ).trim();
       let bu = String(r["BU"] || r["Business"] || "Unknown").trim();
       if (bu === "AHN_HP") bu = "AHP";
 
@@ -1030,7 +1402,7 @@ export function BulkPayment({
           targetTabForAccLink: "Sheet1_AE",
         });
       }
-      
+
       const item = unmatchedMap.get(key);
       item.sheet1Amount += expectedAmount;
       item.expectedAmount += expectedAmount;
@@ -1042,11 +1414,27 @@ export function BulkPayment({
 
       if (Math.abs(expectedAmount) < 1) return;
 
-      const name = String(r["Full name"] || r["Beneficiary Name"] || "N/A").trim();
-      const rawDocId = String(r["ID Number"] || r["Mã AE"] || r["Mã ae"] || r["CCCD"] || r["Document ID"] || "").trim();
+      const name = String(
+        r["Full name"] || r["Beneficiary Name"] || "N/A",
+      ).trim();
+      const rawDocId = String(
+        r["ID Number"] ||
+          r["Mã AE"] ||
+          r["Mã ae"] ||
+          r["CCCD"] ||
+          r["Document ID"] ||
+          "",
+      ).trim();
       const displayDocId = formatIdNumber(rawDocId);
-      const accountNo = String(r["Bank Account Number"] || r["Beneficiary Account No."] || "").trim();
-      const bankName = String(r["Beneficiary Bank Swift Code / IFSC Code"] || r["Beneficiary Bank"] || r["Ngân hàng"] || "").trim();
+      const accountNo = String(
+        r["Bank Account Number"] || r["Beneficiary Account No."] || "",
+      ).trim();
+      const bankName = String(
+        r["Beneficiary Bank Swift Code / IFSC Code"] ||
+          r["Beneficiary Bank"] ||
+          r["Ngân hàng"] ||
+          "",
+      ).trim();
       let bu = String(r["BU"] || r["Business"] || "Unknown").trim();
       if (bu === "AHN_HP") bu = "AHP";
 
@@ -1085,17 +1473,22 @@ export function BulkPayment({
     for (const item of unmatchedMap.values()) {
       if (Math.abs(item.variance) < 1) {
         item.status = "MATCHED";
-        item.issues.push("Sheet 1 và Hold bù trừ hết (Target = 0), trùng khớp với Bank AE (0)");
+        item.issues.push(
+          "Sheet 1 và Hold bù trừ hết (Target = 0), trùng khớp với Bank AE (0)",
+        );
         finalMatchedCount++;
       } else {
         item.status = "VARIANCE";
-        item.issues.push("Bảng nguồn có dữ liệu nhưng Bank Export không có, không bù trừ hết (Target ≠ 0)");
+        item.issues.push(
+          "Bảng nguồn có dữ liệu nhưng Bank Export không có, không bù trừ hết (Target ≠ 0)",
+        );
         finalVarianceCount++;
       }
       transactionAuditList.push(item);
     }
 
-    const isBankRowsFullyMatched = varianceCount === 0 && missingInfoCount === 0 && duplicateCount === 0;
+    const isBankRowsFullyMatched =
+      varianceCount === 0 && missingInfoCount === 0 && duplicateCount === 0;
 
     return {
       transactionAuditList,
@@ -1113,7 +1506,19 @@ export function BulkPayment({
       isBankRowsFullyMatched,
       isFullyMatched: Math.abs(netVariance) < 1 && isBankRowsFullyMatched,
     };
-  }, [appData.BankExport?.data, appData.Bank_North_AE?.data, appData.Sheet1_AE?.data, appData.Hold_AE?.data, dynamicReportStats, calculationSummary, currentMonthNumComp, currentYearNumComp, targetMonthLabelComp, monMatchComp, isMonthInStrComp]);
+  }, [
+    appData.BankExport?.data,
+    appData.Bank_North_AE?.data,
+    appData.Sheet1_AE?.data,
+    appData.Hold_AE?.data,
+    dynamicReportStats,
+    calculationSummary,
+    currentMonthNumComp,
+    currentYearNumComp,
+    targetMonthLabelComp,
+    monMatchComp,
+    isMonthInStrComp,
+  ]);
 
   const filteredTransactionAudits = useMemo(() => {
     return reconciliationAudit.transactionAuditList.filter((item) => {
@@ -1129,14 +1534,18 @@ export function BulkPayment({
       }
       if (reconcileSearchQuery.trim()) {
         const q = reconcileSearchQuery.trim().toLowerCase();
-        const qClean = q.replace(/^0+/, '');
+        const qClean = q.replace(/^0+/, "");
         const matchName = item.name.toLowerCase().includes(q);
         const matchDocId =
           item.docId.toLowerCase().includes(q) ||
           formatIdNumber(item.docId).toLowerCase().includes(q) ||
           (qClean && item.docId.toLowerCase().includes(qClean)) ||
-          (item.grossPlusBenefitsId && item.grossPlusBenefitsId.toLowerCase().includes(q));
-        const matchAcc = item.accountNo.toLowerCase().includes(q) || (item.benefitsAccountNo && item.benefitsAccountNo.toLowerCase().includes(q));
+          (item.grossPlusBenefitsId &&
+            item.grossPlusBenefitsId.toLowerCase().includes(q));
+        const matchAcc =
+          item.accountNo.toLowerCase().includes(q) ||
+          (item.benefitsAccountNo &&
+            item.benefitsAccountNo.toLowerCase().includes(q));
         const matchBu = item.bu.toLowerCase().includes(q);
         if (!matchName && !matchDocId && !matchAcc && !matchBu) {
           return false;
@@ -1144,11 +1553,19 @@ export function BulkPayment({
       }
       return true;
     });
-  }, [reconciliationAudit.transactionAuditList, reconcileSelectedBU, reconcileFilterStatus, reconcileSearchQuery]);
+  }, [
+    reconciliationAudit.transactionAuditList,
+    reconcileSelectedBU,
+    reconcileFilterStatus,
+    reconcileSearchQuery,
+  ]);
 
   const handleAutoFillMissingAccountBulk = useCallback(() => {
-    const itemsToSync = filteredTransactionAudits.filter(item => 
-      item.status === "MISSING_INFO" || item.status === "VARIANCE" || item.status === "MATCHED"
+    const itemsToSync = filteredTransactionAudits.filter(
+      (item) =>
+        item.status === "MISSING_INFO" ||
+        item.status === "VARIANCE" ||
+        item.status === "MATCHED",
     );
 
     if (itemsToSync.length === 0) {
@@ -1171,7 +1588,9 @@ export function BulkPayment({
         let rowUpdated = false;
 
         const s1Index = newSheet1.findIndex((r) => {
-          const rId = String(r["ID Number"] || r["Mã AE"] || "").trim().toLowerCase();
+          const rId = String(r["ID Number"] || r["Mã AE"] || "")
+            .trim()
+            .toLowerCase();
           return rId && cleanId && rId === cleanId;
         });
         if (s1Index !== -1) {
@@ -1187,7 +1606,9 @@ export function BulkPayment({
         }
 
         const hIndex = newHold.findIndex((r) => {
-          const rId = String(r["ID Number"] || r["Mã AE"] || "").trim().toLowerCase();
+          const rId = String(r["ID Number"] || r["Mã AE"] || "")
+            .trim()
+            .toLowerCase();
           return rId && cleanId && rId === cleanId;
         });
         if (hIndex !== -1) {
@@ -1201,14 +1622,16 @@ export function BulkPayment({
             rowUpdated = true;
           }
         }
-        
+
         if (rowUpdated) syncCount++;
       });
 
       if (syncCount > 0) {
         toast.success(`Đã đồng bộ hàng loạt STK cho ${syncCount} bản ghi!`);
       } else {
-        toast.info(`Các dòng hiện tại đã có STK hoặc không đủ thông tin để đồng bộ.`);
+        toast.info(
+          `Các dòng hiện tại đã có STK hoặc không đủ thông tin để đồng bộ.`,
+        );
       }
 
       return {
@@ -1252,41 +1675,45 @@ export function BulkPayment({
         t.status === "MATCHED"
           ? "KHỚP 100%"
           : t.status === "VARIANCE"
-          ? "CHÊNH LỆCH"
-          : t.status === "MISSING_INFO"
-          ? "THIẾU THÔNG TIN"
-          : t.status === "DUPLICATE"
-          ? "TRÙNG LẶP ID"
-          : "KHÔNG CÓ TRONG SHEET1",
+            ? "CHÊNH LỆCH"
+            : t.status === "MISSING_INFO"
+              ? "THIẾU THÔNG TIN"
+              : t.status === "DUPLICATE"
+                ? "TRÙNG LẶP ID"
+                : "KHÔNG CÓ TRONG SHEET1",
       "Ghi chú / Vấn đề": t.issues.join("; "),
     }));
     const ws2 = XLSX.utils.json_to_sheet(txData);
     XLSX.utils.book_append_sheet(wb, ws2, "Chi_Tiet_Doi_Soat_Giao_Dich");
 
-    XLSX.writeFile(wb, `Bao_Cao_Doi_Soat_Thanh_Toan_${globalMonth.replace(".", "_")}.xlsx`);
+    XLSX.writeFile(
+      wb,
+      `Bao_Cao_Doi_Soat_Thanh_Toan_${globalMonth.replace(".", "_")}.xlsx`,
+    );
     toast.success("Đã xuất file Excel Đối soát Thanh toán thành công!");
   };
 
   const columns = useMemo(() => {
-    const baseHeaders = appData.BankExport?.headers && appData.BankExport.headers.length > 0
-      ? [...appData.BankExport.headers]
-      : [
-          "Payment Serial Number",
-          "Tháng báo cáo",
-          "Transaction Type Code",
-          "Payment Type",
-          "Customer Reference No",
-          "Beneficiary Account No.",
-          "Beneficiary Name",
-          "Document ID",
-          "Place of Issue",
-          "ID Issuance Date",
-          "Beneficiary Bank Swift Code / IFSC Code",
-          "Transaction Currency",
-          "Payment Amount",
-          "Charge Type",
-          "Payment details",
-        ];
+    const baseHeaders =
+      appData.BankExport?.headers && appData.BankExport.headers.length > 0
+        ? [...appData.BankExport.headers]
+        : [
+            "Payment Serial Number",
+            "Tháng báo cáo",
+            "Transaction Type Code",
+            "Payment Type",
+            "Customer Reference No",
+            "Beneficiary Account No.",
+            "Beneficiary Name",
+            "Document ID",
+            "Place of Issue",
+            "ID Issuance Date",
+            "Beneficiary Bank Swift Code / IFSC Code",
+            "Transaction Currency",
+            "Payment Amount",
+            "Charge Type",
+            "Payment details",
+          ];
 
     if (displayBankExportData && displayBankExportData.length > 0) {
       const allKeys = Object.keys(displayBankExportData[0]);
@@ -1323,14 +1750,24 @@ export function BulkPayment({
 
     const isNoCol = (h: string) => {
       const u = String(h).trim().toUpperCase();
-      return u === "NO." || u === "NO" || u === "STT" || u === "PAYMENT SERIAL NUMBER";
+      return (
+        u === "NO." ||
+        u === "NO" ||
+        u === "STT" ||
+        u === "PAYMENT SERIAL NUMBER"
+      );
     };
 
     const firstNoIdx = cleanBaseHeaders.findIndex(isNoCol);
     if (firstNoIdx !== -1) {
       const actualNo = cleanBaseHeaders[firstNoIdx];
-      cleanBaseHeaders = cleanBaseHeaders.filter((h, idx) => idx === firstNoIdx || !isNoCol(h));
-      cleanBaseHeaders = [actualNo, ...cleanBaseHeaders.filter(h => h !== actualNo)];
+      cleanBaseHeaders = cleanBaseHeaders.filter(
+        (h, idx) => idx === firstNoIdx || !isNoCol(h),
+      );
+      cleanBaseHeaders = [
+        actualNo,
+        ...cleanBaseHeaders.filter((h) => h !== actualNo),
+      ];
     }
 
     return cleanBaseHeaders.map((header) => {
@@ -1352,19 +1789,29 @@ export function BulkPayment({
         }
       }
 
-      const isDocumentIdCol = h === "DOCUMENT ID" || h === "DOC ID" || h.includes("DOCUMENT ID");
+      const isDocumentIdCol =
+        h === "DOCUMENT ID" || h === "DOC ID" || h.includes("DOCUMENT ID");
 
       return {
         key: header,
         label: header,
         type,
         align: type === "currency" ? ("right" as const) : ("left" as const),
-        render: isDocumentIdCol ? (val: any, row: any) => {
-          if (val && !row._virtual_docId) {
-            row._virtual_docId = val;
-          }
-          return <span className="text-slate-300 italic select-none" title="Để trống trên form ngân hàng (lưu ảo ẩn)">-</span>;
-        } : undefined,
+        render: isDocumentIdCol
+          ? (val: any, row: any) => {
+              if (val && !row._virtual_docId) {
+                row._virtual_docId = val;
+              }
+              return (
+                <span
+                  className="text-slate-300 italic select-none"
+                  title="Để trống trên form ngân hàng (lưu ảo ẩn)"
+                >
+                  -
+                </span>
+              );
+            }
+          : undefined,
       };
     });
   }, [appData.BankExport?.headers, displayBankExportData]);
@@ -1375,31 +1822,80 @@ export function BulkPayment({
       initial="hidden"
       animate="visible"
       className="flex-1 w-full min-h-0 flex flex-row gap-2 bg-transparent overflow-hidden p-0 relative"
-      style={{ borderWidth: "0px", paddingBottom: "0px", paddingTop: "0px", paddingLeft: "0px", paddingRight: "0px" }}
+      style={{
+        borderWidth: "0px",
+        paddingBottom: "0px",
+        paddingTop: "0px",
+        paddingLeft: "0px",
+        paddingRight: "0px",
+      }}
     >
       {/* Left Panel - Actions & Info (Unified Scrollable Card) */}
       {showLeftCard && (
-        <div 
+        <div
           className="w-[320px] bg-white border-r border-slate-200 flex flex-col gap-0 shrink-0 overflow-hidden min-h-0 relative select-text shadow-sm h-full rounded-l-2xl"
-          style={{ borderRadius: "0px", backgroundColor: "#faf6fa", paddingLeft: "0px", paddingRight: "0px", marginRight: "20px" }}
+          style={{
+            borderRadius: "0px",
+            backgroundColor: "#faf6fa",
+            paddingLeft: "0px",
+            paddingRight: "0px",
+            marginRight: "20px",
+          }}
         >
           {/* Header */}
-          <div 
+          <div
             className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-white sticky top-0 z-20 shrink-0"
-            style={{ paddingLeft: "0px", paddingTop: "12px", paddingBottom: "12px", paddingRight: "0px", backgroundColor: "#f5f4f7", borderColor: "#ede5f0", borderWidth: "0.3px" }}
+            style={{
+              paddingLeft: "0px",
+              paddingTop: "12px",
+              paddingBottom: "12px",
+              paddingRight: "0px",
+              backgroundColor: "#f5f4f7",
+              borderColor: "#ede5f0",
+              borderWidth: "0.3px",
+            }}
           >
-            <div className="flex flex-col gap-0.5" style={{ borderRadius: "0px", paddingLeft: "12px", paddingRight: "12px", paddingBottom: "12px", paddingTop: "12px" }}>
-              <div style={{ paddingLeft: "6px", paddingRight: "6px", paddingBottom: "6px", paddingTop: "6px", backgroundColor: "#fbf2f8", borderWidth: "0.5px", borderStyle: "solid", borderColor: "#fbf2f8" }}>
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary block" style={{ fontSize: "10px" }}>
+            <div
+              className="flex flex-col gap-0.5"
+              style={{
+                borderRadius: "0px",
+                paddingLeft: "12px",
+                paddingRight: "12px",
+                paddingBottom: "12px",
+                paddingTop: "12px",
+              }}
+            >
+              <div
+                style={{
+                  paddingLeft: "6px",
+                  paddingRight: "6px",
+                  paddingBottom: "6px",
+                  paddingTop: "6px",
+                  backgroundColor: "#fbf2f8",
+                  borderWidth: "0.5px",
+                  borderStyle: "solid",
+                  borderColor: "#fbf2f8",
+                }}
+              >
+                <span
+                  className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary block"
+                  style={{ fontSize: "10px" }}
+                >
                   Statement
                 </span>
-                <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight font-display" style={{ fontSize: "14px" }}>
+                <h2
+                  className="text-sm font-black text-slate-900 uppercase tracking-tight font-display"
+                  style={{ fontSize: "14px" }}
+                >
                   Reconciliation
                 </h2>
               </div>
             </div>
-            
-            <div className="flex items-center gap-1.5" style={{ paddingTop: "2px", paddingBottom: "3px" }}>
+
+            <div
+              className="flex items-center gap-1.5"
+              style={{ paddingTop: "2px", paddingBottom: "3px" }}
+            >
               <button
                 onClick={handleCopyReport}
                 className="p-1.5 text-slate-500 hover:text-slate-950 transition-all active:scale-95 bg-slate-50 hover:bg-slate-100 rounded-lg shrink-0 border border-slate-200/60 flex items-center justify-center cursor-pointer"
@@ -1408,51 +1904,51 @@ export function BulkPayment({
               >
                 <Copy className="w-3.5 h-3.5" />
               </button>
-
-              <button
-                onClick={() => setShowLeftCard(false)}
-                className="p-1.5 text-slate-400 hover:text-primary transition-all active:scale-95 bg-slate-50 hover:bg-slate-100 rounded-lg shrink-0 border border-slate-200/60 cursor-pointer"
-                title="Ẩn điều khiển"
-                style={{ fontSize: "11px" }}
-              >
-                <PanelLeftClose className="w-3.5 h-3.5" />
-              </button>
             </div>
           </div>
 
-          <div 
+          <div
             className="flex items-center gap-1 p-1.5 bg-slate-50/50 border-b border-slate-100 shrink-0"
-            style={{ borderRadius: "0px", borderWidth: "0px", paddingTop: "20px", paddingBottom: "20px" }}
+            style={{
+              borderRadius: "0px",
+              borderWidth: "0px",
+              paddingTop: "20px",
+              paddingBottom: "20px",
+            }}
           >
             {[
               { id: "summary", label: "Overview", icon: Layers },
-              { id: "adjustments", label: `Adj (${dynamicReportStats.holdAddItems.length})`, icon: Wrench },
-              { id: "reconcile", label: `Balance (${formatMoneyVND(calculationSummary.aeTotal).replace(" ₫", "")})`, icon: Scale }
+              {
+                id: "adjustments",
+                label: `Adj (${dynamicReportStats.holdAddItems.length})`,
+                icon: Wrench,
+              },
+              { id: "reconcile", label: `Balance`, icon: Scale },
             ].map((t) => (
               <button
                 key={t.id}
                 onClick={() => setActiveLeftTab(t.id as any)}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[9.5px] font-extrabold uppercase tracking-wider transition-all cursor-pointer active:scale-[0.98] active:translate-y-[1px] ${
                   activeLeftTab === t.id
-                    ? "bg-white text-primary shadow-xs border border-slate-200/80"
-                    : "text-slate-400 hover:text-slate-700"
+                    ? "bg-slate-800 text-white shadow-md border border-slate-700"
+                    : "bg-white text-slate-500 border border-slate-200/80 hover:text-slate-800 hover:bg-slate-50 shadow-xs"
                 }`}
-                style={{
-                  ...(t.id === "summary" ? { fontSize: "9px", lineHeight: "15px", color: "#774949" } : {}),
-                  ...(t.id === "adjustments" ? { fontSize: "9px", backgroundColor: "#e4a6b7", color: "#6c3c3c" } : {}),
-                  ...(t.id === "reconcile" ? { paddingTop: "6px", paddingBottom: "6px" } : {})
-                }}
               >
-                <t.icon className="w-3 h-3" />
+                <t.icon className="w-3.5 h-3.5" />
                 <span>{t.label}</span>
               </button>
             ))}
           </div>
 
           {/* Scrollable contents */}
-          <div 
+          <div
             className="flex-1 overflow-y-auto custom-scrollbar p-5 flex flex-col gap-6"
-            style={{ paddingTop: "15px", paddingLeft: "15px", paddingBottom: "15px", paddingRight: "15px" }}
+            style={{
+              paddingTop: "15px",
+              paddingLeft: "15px",
+              paddingBottom: "15px",
+              paddingRight: "15px",
+            }}
           >
             <AnimatePresence mode="wait">
               {activeLeftTab === "summary" && (
@@ -1463,10 +1959,14 @@ export function BulkPayment({
                   exit={{ opacity: 0, y: -5 }}
                   transition={{ duration: 0.15 }}
                   className="flex flex-col gap-6"
-                  style={{ display: "flex", flexDirection: "column", gap: "24px" }}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "24px",
+                  }}
                 >
                   {/* Total Overview - Premium Minimal Dark Style */}
-                  <div 
+                  <div
                     className="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 px-4 shadow-md flex flex-col justify-center relative overflow-hidden group"
                     style={{ height: "47.7476px" }}
                   >
@@ -1475,20 +1975,29 @@ export function BulkPayment({
                       TỔNG CHI LƯƠNG ĐỢT NÀY
                     </span>
                     <div className="flex items-baseline gap-1.5 relative z-10">
-                      <p 
+                      <p
                         className="text-2xl font-black text-white font-mono tracking-tighter leading-none"
                         style={{ fontSize: "27px", height: "28.0047px" }}
                       >
                         {formatMoneyVND(totalPayoutSum).replace(" ₫", "")}
                       </p>
                       <div style={{ fontSize: "10px" }}>
-                        <span className="font-black text-slate-500 uppercase tracking-widest">VND</span>
+                        <span className="font-black text-slate-500 uppercase tracking-widest">
+                          VND
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   {/* BU breakdown metrics - REDESIGNED FOR SWISS HIGH DENSITY */}
-                  <div className="flex flex-col gap-4" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <div
+                    className="flex flex-col gap-4"
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "16px",
+                    }}
+                  >
                     <div className="flex items-center justify-between px-1">
                       <span className="text-[9.5px] font-extrabold text-slate-500 uppercase tracking-[0.2em] font-sans flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-primary" />
@@ -1496,127 +2005,201 @@ export function BulkPayment({
                       </span>
                     </div>
 
-                    <div className="space-y-4" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                      {["AHN", "AHP", "ATH", "ATN", "APT", "Unknown"].map((biz) => {
-                         const sheet1Val = dynamicReportStats.sheet1Totals[biz] || 0;
-                         const holdAddItems = dynamicReportStats.holdAddItems.filter(i => i.biz === biz);
-                         
-                         const holdOnly = holdAddItems
-                           .filter(i => i.type === 'HOLD')
-                           .reduce((sum, i) => sum + i.amount, 0);
-                         
-                         const addOnly = holdAddItems
-                           .filter(i => i.type === 'ADD')
-                           .reduce((sum, i) => sum + i.amount, 0);
-                         
-                         const bonusOnly = holdAddItems
-                           .filter(i => i.type === 'BONUS')
-                           .reduce((sum, i) => sum + i.amount, 0);
-                         
-                         const cancelOnly = holdAddItems
-                           .filter(i => i.type === 'CANCEL')
-                           .reduce((sum, i) => sum + i.amount, 0);
+                    <div
+                      className="space-y-4"
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "16px",
+                      }}
+                    >
+                      {["AHN", "AHP", "ATH", "ATN", "APT", "Unknown"].map(
+                        (biz) => {
+                          const sheet1Val =
+                            dynamicReportStats.sheet1Totals[biz] || 0;
+                          const holdAddItems =
+                            dynamicReportStats.holdAddItems.filter(
+                              (i) => i.biz === biz,
+                            );
 
-                         const finalTotal = dynamicReportStats.finalTotals[biz] || (sheet1Val + holdOnly + addOnly + bonusOnly + cancelOnly);
+                          const holdOnly = holdAddItems
+                            .filter((i) => i.type === "HOLD")
+                            .reduce((sum, i) => sum + i.amount, 0);
 
-                         if (sheet1Val === 0 && holdOnly === 0 && addOnly === 0 && bonusOnly === 0 && cancelOnly === 0) return null;
+                          const addOnly = holdAddItems
+                            .filter((i) => i.type === "ADD")
+                            .reduce((sum, i) => sum + i.amount, 0);
 
-                         return (
-                           <div key={biz} className="flex flex-col gap-2">
-                             <div className="flex items-center justify-between px-1 border-b border-slate-100 pb-1">
-                               <span className="font-extrabold text-slate-900 font-sans text-[10px] uppercase tracking-wider">{biz} GROUP</span>
-                               <button
-                                 onClick={() => {
-                                   const text = `BU:\t${biz}\n` +
-                                     `🎀 GROSS PAY:\t${formatMoneyVND(sheet1Val).replace(" ₫", "")} VND\n` +
-                                     `🎀 DEDUCTIONS & BENEFITS:\t\n` +
-                                     `  🐣 HOLD:\t${holdOnly !== 0 ? `-${formatMoneyVND(Math.abs(holdOnly)).replace(" ₫", "")}` : "0"} VND\n` +
-                                     `  🐣 ADD:\t${addOnly !== 0 ? `+${formatMoneyVND(Math.abs(addOnly)).replace(" ₫", "")}` : "0"} VND\n` +
-                                     `  🐣 BONUS:\t${bonusOnly !== 0 ? `+${formatMoneyVND(Math.abs(bonusOnly)).replace(" ₫", "")}` : "0"} VND\n` +
-                                     (cancelOnly !== 0 ? `  🐣 CANCEL:\t-${formatMoneyVND(Math.abs(cancelOnly)).replace(" ₫", "")} VND\n` : "") +
-                                     `🎀 NET PAY:\t${formatMoneyVND(finalTotal).replace(" ₫", "")} VND`;
-                                   navigator.clipboard.writeText(text);
-                                   toast.success("Đã sao chép tổng hợp BU");
-                                 }}
-                                 className="p-1 text-slate-400 hover:text-primary transition-colors cursor-pointer active:scale-90"
-                               >
-                                 <Copy className="w-3.5 h-3.5" />
-                               </button>
-                             </div>
-                             
-                             <div className="bg-slate-50/40 rounded-xl p-3 border border-slate-200/60 flex flex-col gap-2 shadow-xs transition-all hover:border-slate-300">
-                               <div className="flex justify-between items-center">
-                                 <span className="text-slate-600 font-extrabold font-sans text-[10px] uppercase tracking-wider leading-none">
-                                   🎀 GROSS PAY:
-                                 </span>
-                                 <span className="font-bold text-slate-800 font-mono text-[11px] tracking-tight">
-                                   {formatMoneyVND(sheet1Val).replace(" ₫", "")} VND
-                                 </span>
-                               </div>
+                          const bonusOnly = holdAddItems
+                            .filter((i) => i.type === "BONUS")
+                            .reduce((sum, i) => sum + i.amount, 0);
 
-                               {/* DEDUCTIONS & BENEFITS */}
-                               <div className="flex flex-col gap-1 mt-0.5">
-                                 <span className="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider leading-none">
-                                   🎀 DEDUCTIONS & BENEFITS:
-                                 </span>
-                                 
-                                 <div className="flex flex-col gap-1 pl-3 border-l-2 border-slate-200/80 my-0.5">
-                                   <div className="flex justify-between items-center text-[10px]">
-                                     <span className="text-slate-600 font-medium font-sans">🐣 HOLD:</span>
-                                     <span className={`font-mono font-bold ${holdOnly !== 0 ? 'text-amber-600' : 'text-slate-400'}`}>
-                                       {holdOnly !== 0 ? `-${formatMoneyVND(Math.abs(holdOnly)).replace(" ₫", "")}` : "0"} VND
-                                     </span>
-                                   </div>
+                          const cancelOnly = holdAddItems
+                            .filter((i) => i.type === "CANCEL")
+                            .reduce((sum, i) => sum + i.amount, 0);
 
-                                   <div className="flex justify-between items-center text-[10px]">
-                                     <span className="text-slate-600 font-medium font-sans">🐣 ADD:</span>
-                                     <span className={`font-mono font-bold ${addOnly !== 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
-                                       {addOnly !== 0 ? `+${formatMoneyVND(Math.abs(addOnly)).replace(" ₫", "")}` : "0"} VND
-                                     </span>
-                                   </div>
+                          const finalTotal =
+                            dynamicReportStats.finalTotals[biz] ||
+                            sheet1Val +
+                              holdOnly +
+                              addOnly +
+                              bonusOnly +
+                              cancelOnly;
 
-                                   <div className="flex justify-between items-center text-[10px]">
-                                     <span className="text-slate-600 font-medium font-sans">🐣 BONUS:</span>
-                                     <span className={`font-mono font-bold ${bonusOnly !== 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
-                                       {bonusOnly !== 0 ? `+${formatMoneyVND(Math.abs(bonusOnly)).replace(" ₫", "")}` : "0"} VND
-                                     </span>
-                                   </div>
+                          if (
+                            sheet1Val === 0 &&
+                            holdOnly === 0 &&
+                            addOnly === 0 &&
+                            bonusOnly === 0 &&
+                            cancelOnly === 0
+                          )
+                            return null;
 
-                                   {cancelOnly !== 0 && (
-                                     <div className="flex justify-between items-center text-[10px]">
-                                       <span className="text-slate-600 font-medium font-sans">🐣 CANCEL:</span>
-                                       <span className="font-mono font-bold text-amber-600">
-                                         -{formatMoneyVND(Math.abs(cancelOnly)).replace(" ₫", "")} VND
-                                       </span>
-                                     </div>
-                                   )}
-                                 </div>
-                               </div>
+                          return (
+                            <div key={biz} className="flex flex-col gap-2">
+                              <div className="flex items-center justify-between px-1 border-b border-slate-100 pb-1">
+                                <span className="font-extrabold text-slate-900 font-sans text-[10px] uppercase tracking-wider">
+                                  {biz} GROUP
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    const text =
+                                      `BU:\t${biz}\n` +
+                                      `🎀 GROSS PAY:\t${formatMoneyVND(sheet1Val).replace(" ₫", "")} VND\n` +
+                                      `🎀 DEDUCTIONS & BENEFITS:\t\n` +
+                                      `  🐣 HOLD:\t${holdOnly !== 0 ? `-${formatMoneyVND(Math.abs(holdOnly)).replace(" ₫", "")}` : "0"} VND\n` +
+                                      `  🐣 ADD:\t${addOnly !== 0 ? `+${formatMoneyVND(Math.abs(addOnly)).replace(" ₫", "")}` : "0"} VND\n` +
+                                      `  🐣 BONUS:\t${bonusOnly !== 0 ? `+${formatMoneyVND(Math.abs(bonusOnly)).replace(" ₫", "")}` : "0"} VND\n` +
+                                      (cancelOnly !== 0
+                                        ? `  🐣 CANCEL:\t-${formatMoneyVND(Math.abs(cancelOnly)).replace(" ₫", "")} VND\n`
+                                        : "") +
+                                      `🎀 NET PAY:\t${formatMoneyVND(finalTotal).replace(" ₫", "")} VND`;
+                                    navigator.clipboard.writeText(text);
+                                    toast.success("Đã sao chép tổng hợp BU");
+                                  }}
+                                  className="p-1 text-slate-400 hover:text-primary transition-colors cursor-pointer active:scale-90"
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
 
-                               <div className="pt-2 border-t border-slate-200/60 mt-0.5 flex justify-between items-center">
-                                 <span className="text-[10.5px] font-extrabold text-slate-900 uppercase tracking-tight">
-                                   🎀 NET PAY:
-                                 </span>
-                                 <span className="text-xs font-black text-slate-950 font-mono tracking-tight">
-                                   {formatMoneyVND(finalTotal).replace(" ₫", "")} VND
-                                 </span>
-                               </div>
-                             </div>
-                           </div>
-                         );
-                       })}
+                              <div className="bg-slate-50/40 rounded-xl p-3 border border-slate-200/60 flex flex-col gap-2 shadow-xs transition-all hover:border-slate-300">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-slate-600 font-extrabold font-sans text-[10px] uppercase tracking-wider leading-none">
+                                    🎀 GROSS PAY:
+                                  </span>
+                                  <span className="font-bold text-slate-800 font-mono text-[11px] tracking-tight">
+                                    {formatMoneyVND(sheet1Val).replace(
+                                      " ₫",
+                                      "",
+                                    )}{" "}
+                                    VND
+                                  </span>
+                                </div>
+
+                                {/* DEDUCTIONS & BENEFITS */}
+                                <div className="flex flex-col gap-1 mt-0.5">
+                                  <span className="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider leading-none">
+                                    🎀 DEDUCTIONS & BENEFITS:
+                                  </span>
+
+                                  <div className="flex flex-col gap-1 pl-3 border-l-2 border-slate-200/80 my-0.5">
+                                    <div className="flex justify-between items-center text-[10px]">
+                                      <span className="text-slate-600 font-medium font-sans">
+                                        🐣 HOLD:
+                                      </span>
+                                      <span
+                                        className={`font-mono font-bold ${holdOnly !== 0 ? "text-amber-600" : "text-slate-400"}`}
+                                      >
+                                        {holdOnly !== 0
+                                          ? `-${formatMoneyVND(Math.abs(holdOnly)).replace(" ₫", "")}`
+                                          : "0"}{" "}
+                                        VND
+                                      </span>
+                                    </div>
+
+                                    <div className="flex justify-between items-center text-[10px]">
+                                      <span className="text-slate-600 font-medium font-sans">
+                                        🐣 ADD:
+                                      </span>
+                                      <span
+                                        className={`font-mono font-bold ${addOnly !== 0 ? "text-emerald-600" : "text-slate-400"}`}
+                                      >
+                                        {addOnly !== 0
+                                          ? `+${formatMoneyVND(Math.abs(addOnly)).replace(" ₫", "")}`
+                                          : "0"}{" "}
+                                        VND
+                                      </span>
+                                    </div>
+
+                                    <div className="flex justify-between items-center text-[10px]">
+                                      <span className="text-slate-600 font-medium font-sans">
+                                        🐣 BONUS:
+                                      </span>
+                                      <span
+                                        className={`font-mono font-bold ${bonusOnly !== 0 ? "text-emerald-600" : "text-slate-400"}`}
+                                      >
+                                        {bonusOnly !== 0
+                                          ? `+${formatMoneyVND(Math.abs(bonusOnly)).replace(" ₫", "")}`
+                                          : "0"}{" "}
+                                        VND
+                                      </span>
+                                    </div>
+
+                                    {cancelOnly !== 0 && (
+                                      <div className="flex justify-between items-center text-[10px]">
+                                        <span className="text-slate-600 font-medium font-sans">
+                                          🐣 CANCEL:
+                                        </span>
+                                        <span className="font-mono font-bold text-amber-600">
+                                          -
+                                          {formatMoneyVND(
+                                            Math.abs(cancelOnly),
+                                          ).replace(" ₫", "")}{" "}
+                                          VND
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="pt-2 border-t border-slate-200/60 mt-0.5 flex justify-between items-center">
+                                  <span className="text-[10.5px] font-extrabold text-slate-900 uppercase tracking-tight">
+                                    🎀 NET PAY:
+                                  </span>
+                                  <span className="text-xs font-black text-slate-950 font-mono tracking-tight">
+                                    {formatMoneyVND(finalTotal).replace(
+                                      " ₫",
+                                      "",
+                                    )}{" "}
+                                    VND
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        },
+                      )}
                     </div>
                   </div>
 
                   {/* General Info */}
                   <div className="grid grid-cols-2 gap-3.5">
                     <div className="bg-[#FAF9F6] border border-slate-200/80 p-3.5 rounded-xl flex flex-col gap-1.5 shadow-xs">
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider font-sans">Tháng báo cáo</span>
-                      <span className="text-xs font-black text-slate-800 font-mono leading-none">{appData.globalMonth || "03.2026"}</span>
+                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider font-sans">
+                        Tháng báo cáo
+                      </span>
+                      <span className="text-xs font-black text-slate-800 font-mono leading-none">
+                        {appData.globalMonth || "03.2026"}
+                      </span>
                     </div>
                     <div className="bg-[#FAF9F6] border border-slate-200/80 p-3.5 rounded-xl flex flex-col gap-1.5 shadow-xs">
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider font-sans">Số dòng dữ liệu</span>
-                      <span className="text-xs font-black text-slate-800 font-mono leading-none">{(appData.BankExport?.data || []).length}</span>
+                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider font-sans">
+                        Số dòng dữ liệu
+                      </span>
+                      <span className="text-xs font-black text-slate-800 font-mono leading-none">
+                        {(appData.BankExport?.data || []).length}
+                      </span>
                     </div>
                   </div>
                 </motion.div>
@@ -1632,48 +2215,73 @@ export function BulkPayment({
                   className="flex flex-col gap-4"
                 >
                   {(() => {
-                    const sidebarAdjustmentsFiltered = (dynamicReportStats?.holdAddItems || []).filter(item => item.type === adjustmentFilter);
+                    const sidebarAdjustmentsFiltered = (
+                      dynamicReportStats?.holdAddItems || []
+                    ).filter((item) => item.type === adjustmentFilter);
                     return (
                       <>
                         {/* Categorized filter selection */}
                         <div className="flex flex-wrap gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100">
-                          {(["ALL", "HOLD", "ADD", "BONUS"] as const).map((f) => {
-                            const count = f === "ALL"
-                              ? dynamicReportStats.holdAddItems.length
-                              : dynamicReportStats.holdAddItems.filter(item => item.type === f).length;
-                            return (
-                              <button
-                                key={f}
-                                onClick={() => setAdjustmentFilter(f)}
-                                className={`flex-1 py-1 text-[9.5px] font-bold tracking-wide transition-all rounded-md cursor-pointer ${
-                                  adjustmentFilter === f
-                                    ? "bg-white text-primary shadow-xs border border-slate-200/50"
-                                    : "text-slate-500 hover:text-slate-800"
-                                }`}
-                              >
-                                {f} ({count})
-                              </button>
-                            );
-                          })}
+                          {(["ALL", "HOLD", "ADD", "BONUS"] as const).map(
+                            (f) => {
+                              const count =
+                                f === "ALL"
+                                  ? dynamicReportStats.holdAddItems.length
+                                  : dynamicReportStats.holdAddItems.filter(
+                                      (item) => item.type === f,
+                                    ).length;
+                              return (
+                                <button
+                                  key={f}
+                                  onClick={() => setAdjustmentFilter(f)}
+                                  className={`flex-1 py-1 text-[9.5px] font-bold tracking-wide transition-all rounded-md cursor-pointer ${
+                                    adjustmentFilter === f
+                                      ? "bg-white text-primary shadow-xs border border-slate-200/50"
+                                      : "text-slate-500 hover:text-slate-800"
+                                  }`}
+                                >
+                                  {f} ({count})
+                                </button>
+                              );
+                            },
+                          )}
                         </div>
 
                         {/* Adjustment Item list */}
                         <div className="space-y-2.5 max-h-[350px] overflow-y-auto custom-scrollbar pr-1">
                           {adjustmentFilter === "ALL" ? (
                             (() => {
-                              const buMap: Record<string, { HOLD: number; ADD: number; BONUS: number; CANCEL: number; totalCount: number }> = {};
-                              const items = dynamicReportStats.holdAddItems || [];
+                              const buMap: Record<
+                                string,
+                                {
+                                  HOLD: number;
+                                  ADD: number;
+                                  BONUS: number;
+                                  CANCEL: number;
+                                  totalCount: number;
+                                }
+                              > = {};
+                              const items =
+                                dynamicReportStats.holdAddItems || [];
                               items.forEach((item) => {
                                 const bu = item.biz || "Unknown";
                                 if (!buMap[bu]) {
-                                  buMap[bu] = { HOLD: 0, ADD: 0, BONUS: 0, CANCEL: 0, totalCount: 0 };
+                                  buMap[bu] = {
+                                    HOLD: 0,
+                                    ADD: 0,
+                                    BONUS: 0,
+                                    CANCEL: 0,
+                                    totalCount: 0,
+                                  };
                                 }
                                 const t = item.type; // 'HOLD' | 'ADD' | 'CANCEL' | 'BONUS'
                                 buMap[bu][t] += Math.abs(item.amount);
                                 buMap[bu].totalCount += 1;
                               });
 
-                              const activeBUs = Object.entries(buMap).filter(([_, data]) => data.totalCount > 0);
+                              const activeBUs = Object.entries(buMap).filter(
+                                ([_, data]) => data.totalCount > 0,
+                              );
 
                               if (activeBUs.length === 0) {
                                 return (
@@ -1684,9 +2292,14 @@ export function BulkPayment({
                               }
 
                               return activeBUs.map(([buName, buData]) => (
-                                <div key={buName} className="bg-white border border-slate-200/60 rounded-2xl p-4 shadow-xs flex flex-col gap-3 hover:border-slate-300 transition-colors">
+                                <div
+                                  key={buName}
+                                  className="bg-white border border-slate-200/60 rounded-2xl p-4 shadow-xs flex flex-col gap-3 hover:border-slate-300 transition-colors"
+                                >
                                   <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                                    <span className="font-bold text-slate-800 text-sm tracking-wide font-sans">{buName}</span>
+                                    <span className="font-bold text-slate-800 text-sm tracking-wide font-sans">
+                                      {buName}
+                                    </span>
                                     <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100/80">
                                       {buData.totalCount} khoản phát sinh
                                     </span>
@@ -1694,80 +2307,126 @@ export function BulkPayment({
                                   <div className="grid grid-cols-2 gap-2 text-[11px]">
                                     {/* HOLD */}
                                     <div className="flex items-center justify-between p-1.5 bg-rose-50/30 rounded-lg border border-rose-100/30">
-                                      <span className="text-rose-500 font-bold uppercase tracking-wider text-[9px]">HOLD:</span>
+                                      <span className="text-rose-500 font-bold uppercase tracking-wider text-[9px]">
+                                        HOLD:
+                                      </span>
                                       <span className="text-rose-600 font-extrabold font-mono">
-                                        {buData.HOLD > 0 ? `-${formatMoneyVND(buData.HOLD).replace(" ₫", "")}` : "0"}
+                                        {buData.HOLD > 0
+                                          ? `-${formatMoneyVND(buData.HOLD).replace(" ₫", "")}`
+                                          : "0"}
                                       </span>
                                     </div>
                                     {/* ADD */}
                                     <div className="flex items-center justify-between p-1.5 bg-emerald-50/30 rounded-lg border border-emerald-100/30">
-                                      <span className="text-emerald-500 font-bold uppercase tracking-wider text-[9px]">ADD:</span>
+                                      <span className="text-emerald-500 font-bold uppercase tracking-wider text-[9px]">
+                                        ADD:
+                                      </span>
                                       <span className="text-emerald-600 font-extrabold font-mono">
-                                        {buData.ADD > 0 ? `+${formatMoneyVND(buData.ADD).replace(" ₫", "")}` : "0"}
+                                        {buData.ADD > 0
+                                          ? `+${formatMoneyVND(buData.ADD).replace(" ₫", "")}`
+                                          : "0"}
                                       </span>
                                     </div>
                                     {/* BONUS */}
                                     <div className="flex items-center justify-between p-1.5 bg-amber-50/30 rounded-lg border border-amber-100/30">
-                                      <span className="text-amber-600 font-bold uppercase tracking-wider text-[9px]">BONUS:</span>
+                                      <span className="text-amber-600 font-bold uppercase tracking-wider text-[9px]">
+                                        BONUS:
+                                      </span>
                                       <span className="text-amber-700 font-extrabold font-mono">
-                                        {buData.BONUS > 0 ? `+${formatMoneyVND(buData.BONUS).replace(" ₫", "")}` : "0"}
+                                        {buData.BONUS > 0
+                                          ? `+${formatMoneyVND(buData.BONUS).replace(" ₫", "")}`
+                                          : "0"}
                                       </span>
                                     </div>
                                     {/* CANCEL */}
                                     <div className="flex items-center justify-between p-1.5 bg-slate-50 rounded-lg border border-slate-200/30">
-                                      <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">CANCEL:</span>
+                                      <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">
+                                        CANCEL:
+                                      </span>
                                       <span className="text-slate-500 font-extrabold font-mono">
-                                        {buData.CANCEL > 0 ? `-${formatMoneyVND(buData.CANCEL).replace(" ₫", "")}` : "0"}
+                                        {buData.CANCEL > 0
+                                          ? `-${formatMoneyVND(buData.CANCEL).replace(" ₫", "")}`
+                                          : "0"}
                                       </span>
                                     </div>
                                   </div>
                                 </div>
                               ));
                             })()
-                          ) : (
-                            sidebarAdjustmentsFiltered.length > 0 ? (
-                              sidebarAdjustmentsFiltered.map((item, idx) => {
-                                const isAdd = item.type === 'ADD';
-                                const isBonusItem = item.type === 'BONUS';
-                                const isCancelItem = item.type === 'CANCEL';
-                                
-                                let badgeClass = "bg-rose-50 text-rose-600 border-rose-100 text-[9px]";
-                                let badgeLabel = "HOLD";
-                                if (isAdd) {
-                                  badgeClass = "bg-emerald-50 text-emerald-600 border-emerald-100 text-[9px]";
-                                  badgeLabel = "ADD";
-                                } else if (isBonusItem) {
-                                  badgeClass = "bg-amber-50 text-amber-600 border-amber-200/50 text-[9px]";
-                                  badgeLabel = "BONUS";
-                                } else if (isCancelItem) {
-                                  badgeClass = "bg-slate-100 text-slate-500 border-slate-200 text-[9px]";
-                                  badgeLabel = "CANCEL";
-                                }
+                          ) : sidebarAdjustmentsFiltered.length > 0 ? (
+                            sidebarAdjustmentsFiltered.map((item, idx) => {
+                              const isAdd = item.type === "ADD";
+                              const isBonusItem = item.type === "BONUS";
+                              const isCancelItem = item.type === "CANCEL";
 
-                                const moneyColor = (isAdd || isBonusItem) ? "text-emerald-600" : "text-rose-600";
-                                const moneyPrefix = (isAdd || isBonusItem) ? "+" : "";
+                              let badgeClass =
+                                "bg-rose-50 text-rose-600 border-rose-100 text-[9px]";
+                              let badgeLabel = "HOLD";
+                              if (isAdd) {
+                                badgeClass =
+                                  "bg-emerald-50 text-emerald-600 border-emerald-100 text-[9px]";
+                                badgeLabel = "ADD";
+                              } else if (isBonusItem) {
+                                badgeClass =
+                                  "bg-amber-50 text-amber-600 border-amber-200/50 text-[9px]";
+                                badgeLabel = "BONUS";
+                              } else if (isCancelItem) {
+                                badgeClass =
+                                  "bg-slate-100 text-slate-500 border-slate-200 text-[9px]";
+                                badgeLabel = "CANCEL";
+                              }
 
-                                return (
-                                  <div key={idx} className="flex flex-col p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 hover:bg-slate-50 transition-colors gap-1.5">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-bold text-slate-800 font-sans text-xs">{item.biz}</span>
-                                        <span className={`font-bold px-1.5 py-0.5 rounded-full border leading-none shrink-0 font-sans ${badgeClass}`}>{badgeLabel}</span>
-                                      </div>
-                                      <span className={`font-extrabold text-xs shrink-0 font-sans ${moneyColor}`}>
-                                        {moneyPrefix}{formatMoneyVND(item.amount).replace(" ₫", "")}
+                              const moneyColor =
+                                isAdd || isBonusItem
+                                  ? "text-emerald-600"
+                                  : "text-rose-600";
+                              const moneyPrefix =
+                                isAdd || isBonusItem ? "+" : "";
+
+                              return (
+                                <div
+                                  key={idx}
+                                  className="flex flex-col p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 hover:bg-slate-50 transition-colors gap-1.5"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-bold text-slate-800 font-sans text-xs">
+                                        {item.biz}
+                                      </span>
+                                      <span
+                                        className={`font-bold px-1.5 py-0.5 rounded-full border leading-none shrink-0 font-sans ${badgeClass}`}
+                                      >
+                                        {badgeLabel}
                                       </span>
                                     </div>
-                                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
-                                      <span className="truncate max-w-[200px]" title={item.reason}>{item.reason}</span>
-                                      <span className="shrink-0">{item.month}</span>
-                                    </div>
+                                    <span
+                                      className={`font-extrabold text-xs shrink-0 font-sans ${moneyColor}`}
+                                    >
+                                      {moneyPrefix}
+                                      {formatMoneyVND(item.amount).replace(
+                                        " ₫",
+                                        "",
+                                      )}
+                                    </span>
                                   </div>
-                                );
-                              })
-                            ) : (
-                              <div className="text-[10px] text-slate-400 italic py-4 text-center font-sans">Không tìm thấy khoản điều chỉnh nào</div>
-                            )
+                                  <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                                    <span
+                                      className="truncate max-w-[200px]"
+                                      title={item.reason}
+                                    >
+                                      {item.reason}
+                                    </span>
+                                    <span className="shrink-0">
+                                      {item.month}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className="text-[10px] text-slate-400 italic py-4 text-center font-sans">
+                              Không tìm thấy khoản điều chỉnh nào
+                            </div>
                           )}
                         </div>
                       </>
@@ -1789,7 +2448,8 @@ export function BulkPayment({
                     <div className="flex items-center justify-between border-b border-slate-200/40 pb-2">
                       <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest font-sans flex items-center gap-1.5">
                         <Scale className="w-3.5 h-3.5 text-primary" />
-                        BÁO CÁO CHI TIẾT THEO BU ({appData.globalMonth || "01.2026"})
+                        BÁO CÁO CHI TIẾT THEO BU (
+                        {appData.globalMonth || "01.2026"})
                       </span>
                       <button
                         onClick={handleCopyReconciliationSummary}
@@ -1801,252 +2461,391 @@ export function BulkPayment({
                     </div>
 
                     <div className="text-[10px] text-slate-500 font-sans italic">
-                      Số dòng dữ liệu: <span className="font-bold font-mono text-slate-800">{(appData.BankExport?.data || []).length}</span> dòng
+                      Số dòng dữ liệu:{" "}
+                      <span className="font-bold font-mono text-slate-800">
+                        {(appData.BankExport?.data || []).length}
+                      </span>{" "}
+                      dòng
                     </div>
 
-                    {/* SECTION I: GROSS PAY */}
+                    {/* SECTIONS CONSOLIDATED */}
                     {(() => {
-                      const sheet1TotalsMap = dynamicReportStats?.sheet1Totals || {};
-                      const grossPayTotal = Object.values(sheet1TotalsMap).reduce((a, b) => a + b, 0);
-                      const buEntries = Object.entries(sheet1TotalsMap).filter(([_, amt]) => amt !== 0);
-
-                      return (
-                        <div className="bg-white border border-slate-200 rounded-xl p-2.5 flex flex-col gap-1.5 shadow-2xs">
-                          <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
-                            <span className="font-bold text-slate-800 font-sans text-[11px] uppercase">I. GROSS PAY</span>
-                            <span className="font-black text-slate-900 font-mono text-[12px]">
-                              {formatMoneyVND(grossPayTotal).replace(" ₫", "")}
-                            </span>
-                          </div>
-                          <div className="flex flex-col gap-1 pl-1 pt-0.5">
-                            {buEntries.length > 0 ? (
-                              buEntries.map(([biz, amt]) => (
-                                <div key={biz} className="flex justify-between items-center text-[10px]">
-                                  <span className="text-slate-600 font-medium font-sans">- {biz}:</span>
-                                  <span className="font-semibold text-slate-800 font-mono">
-                                    {formatMoneyVND(amt).replace(" ₫", "")}
-                                  </span>
-                                </div>
-                              ))
-                            ) : (
-                              <span className="text-[10px] text-slate-400 italic">- Không có dữ liệu Sheet 1</span>
-                            )}
-                          </div>
-                        </div>
+                      const sheet1TotalsMap =
+                        dynamicReportStats?.sheet1Totals || {};
+                      const grossPayTotal = Object.values(
+                        sheet1TotalsMap,
+                      ).reduce((a, b) => a + b, 0);
+                      const buEntries1 = Object.entries(sheet1TotalsMap).filter(
+                        ([_, amt]) => amt !== 0,
                       );
-                    })()}
 
-                    {/* SECTION II: DEDUCTIONS AND BENEFITS */}
-                    {(() => {
-                      const holdAddItems = dynamicReportStats?.holdAddItems || [];
-                      const deductionsTotal = holdAddItems.reduce((sum, item) => sum + item.amount, 0);
+                      const holdAddItems =
+                        dynamicReportStats?.holdAddItems || [];
+                      const deductionsTotal = holdAddItems.reduce(
+                        (sum, item) => sum + item.amount,
+                        0,
+                      );
 
-                      const formatMonthTag = (mStr: string) => {
+                      const formatMonthTag = (mStr) => {
                         if (!mStr) return "";
-                        const match = String(mStr).match(new RegExp("(\\d{1,2})[/._\\s-]+(\\d{2,4})"));
+                        const match = String(mStr).match(
+                          new RegExp("(\\d{1,2})[/._\\s-]+(\\d{2,4})"),
+                        );
                         if (match) {
-                          const m = match[1].padStart(2, '0');
-                          const y = match[2].length === 4 ? match[2].slice(2) : match[2];
+                          const m = match[1].padStart(2, "0");
+                          const y =
+                            match[2].length === 4
+                              ? match[2].slice(2)
+                              : match[2];
                           return `T${m}.${y}`;
                         }
-                        const clean = String(mStr).replace(/^Tháng\s*/i, "T").replace(/\s+/g, "").trim();
+                        const clean = String(mStr)
+                          .replace(/^Tháng\s*/i, "T")
+                          .replace(/\s+/g, "")
+                          .trim();
                         return clean ? `${clean}` : "";
                       };
 
-                      const buGroups: Record<string, { total: number; itemsMap: Record<string, number> }> = {};
-                      holdAddItems.forEach(item => {
-                        if (!buGroups[item.biz]) buGroups[item.biz] = { total: 0, itemsMap: {} };
+                      const buGroups = {};
+                      holdAddItems.forEach((item) => {
+                        if (!buGroups[item.biz])
+                          buGroups[item.biz] = { total: 0, itemsMap: {} };
                         buGroups[item.biz].total += item.amount;
 
                         const mTag = formatMonthTag(item.month);
                         const key = `${item.type}${mTag ? `_${mTag}` : ""}`;
-                        buGroups[item.biz].itemsMap[key] = (buGroups[item.biz].itemsMap[key] || 0) + item.amount;
+                        buGroups[item.biz].itemsMap[key] =
+                          (buGroups[item.biz].itemsMap[key] || 0) + item.amount;
                       });
-
                       const groupEntries = Object.entries(buGroups);
 
-                      return (
-                        <div className="bg-white border border-slate-200 rounded-xl p-2.5 flex flex-col gap-1.5 shadow-2xs">
-                          <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
-                            <span className="font-bold text-slate-800 font-sans text-[11px] uppercase">II. DEDUCTIONS AND BENEFITS</span>
-                            <span className={`font-black font-mono text-[12px] ${deductionsTotal >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-                              {deductionsTotal >= 0 ? "+" : ""}{formatMoneyVND(deductionsTotal).replace(" ₫", "")}
-                            </span>
-                          </div>
-                          <div className="flex flex-col gap-2 pl-1 pt-0.5">
-                            {groupEntries.length > 0 ? (
-                              groupEntries.map(([biz, grp]) => (
-                                <div key={biz} className="flex flex-col gap-1 border-b border-slate-100/60 pb-1.5 last:border-0 last:pb-0">
-                                  <div className="flex justify-between items-center text-[11px]">
-                                    <span className="font-bold text-amber-700 font-sans flex items-center gap-1">
-                                      🚩 {biz}:
-                                    </span>
-                                    <span className={`font-bold font-mono ${grp.total >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-                                      {grp.total >= 0 ? "+" : ""}{formatMoneyVND(grp.total).replace(" ₫", "")}
-                                    </span>
-                                  </div>
-                                  <div className="flex flex-col gap-0.5 pl-3">
-                                    {Object.entries(grp.itemsMap).map(([key, amount]) => (
-                                      <div key={key} className="flex justify-between items-center text-[10px]">
-                                        <span className="text-slate-500 font-sans">
-                                          + [{key}]:
-                                        </span>
-                                        <span className={`font-semibold font-mono ${amount >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-                                          {amount >= 0 ? "+" : ""}{formatMoneyVND(amount).replace(" ₫", "")}
-                                        </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              ))
-                            ) : (
-                              <span className="text-[10px] text-slate-400 italic">+ Không có khoản điều chỉnh</span>
-                            )}
-                          </div>
-                        </div>
+                      const finalTotalsMap =
+                        dynamicReportStats?.finalTotals || {};
+                      const netPayTotal = Object.values(finalTotalsMap).reduce(
+                        (a, b) => a + b,
+                        0,
                       );
-                    })()}
-
-                    {/* SECTION III: NET PAY */}
-                    {(() => {
-                      const finalTotalsMap = dynamicReportStats?.finalTotals || {};
-                      const netPayTotal = Object.values(finalTotalsMap).reduce((a, b) => a + b, 0);
-                      const buEntries = Object.entries(finalTotalsMap).filter(([_, amt]) => amt !== 0);
-
-                      return (
-                        <div className="bg-white border border-slate-200 rounded-xl p-2.5 flex flex-col gap-1.5 shadow-2xs">
-                          <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
-                            <span className="font-bold text-slate-800 font-sans text-[11px] uppercase">III. NET PAY</span>
-                            <span className="font-black text-emerald-700 font-mono text-[12px]">
-                              {formatMoneyVND(netPayTotal).replace(" ₫", "")}
-                            </span>
-                          </div>
-                          <div className="flex flex-col gap-1 pl-1 pt-0.5">
-                            {buEntries.length > 0 ? (
-                              buEntries.map(([biz, amt]) => (
-                                <div key={biz} className="flex justify-between items-center text-[10px]">
-                                  <span className="text-slate-600 font-medium font-sans">- {biz}:</span>
-                                  <span className="font-semibold text-slate-800 font-mono">
-                                    {formatMoneyVND(amt).replace(" ₫", "")}
-                                  </span>
-                                </div>
-                              ))
-                            ) : (
-                              <span className="text-[10px] text-slate-400 italic">- Không có dữ liệu</span>
-                            )}
-                          </div>
-                        </div>
+                      const buEntries3 = Object.entries(finalTotalsMap).filter(
+                        ([_, amt]) => amt !== 0,
                       );
-                    })()}
 
-                    {/* SECTION IV: ACCOUNT RECONCILIATION */}
-                    {(() => {
-                      const netPayTotal = Object.values(dynamicReportStats?.finalTotals || {}).reduce((a, b) => a + b, 0);
-                      const bankExportTotal = (appData.BankExport?.data || [])
-                        .reduce((sum: number, r: any) => {
-                          return sum + (parseMoneyToNumber(
-                            r["Payment Amount"] ?? r["Amount"] ?? r["TOTAL PAYMENT"] ?? r["Số tiền"] ?? r["Thành tiền"] ?? 0
-                          ) || 0);
-                        }, 0);
+                      const bankExportTotal = (
+                        appData.BankExport?.data || []
+                      ).reduce(
+                        (sum, r) =>
+                          sum +
+                          (parseMoneyToNumber(
+                            r["Payment Amount"] ??
+                              r["Amount"] ??
+                              r["TOTAL PAYMENT"] ??
+                              r["Số tiền"] ??
+                              r["Thành tiền"] ??
+                              0,
+                          ) || 0),
+                        0,
+                      );
 
-                      const totalBulkPayment = bankExportTotal > 0 ? bankExportTotal : (calculationSummary.aeTotal || netPayTotal);
-                      const totalAcc = calculationSummary.calculatedTotal || netPayTotal;
+                      const totalBulkPayment =
+                        bankExportTotal > 0
+                          ? bankExportTotal
+                          : calculationSummary.aeTotal || netPayTotal;
+                      const totalAcc =
+                        calculationSummary.calculatedTotal || netPayTotal;
                       const bonusTotal = dynamicReportStats?.bonusTotal || 0;
-                      const sameMonthHold = dynamicReportStats?.sameMonthHoldTotal || 0;
-                      const diffMonthAdd = dynamicReportStats?.diffMonthAddTotal || 0;
-                      const totalBankAe = calculationSummary.calculatedTotal - calculationSummary.diff;
+                      const sameMonthHold =
+                        dynamicReportStats?.sameMonthHoldTotal || 0;
+                      const diffMonthAdd =
+                        dynamicReportStats?.diffMonthAddTotal || 0;
+                      const totalBankAe =
+                        calculationSummary.calculatedTotal -
+                        calculationSummary.diff;
                       const diff = totalAcc - totalBulkPayment;
 
                       return (
-                        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col gap-2 text-white shadow-md">
-                          <div className="border-b border-slate-800 pb-1.5 flex justify-between items-center">
-                            <span className="font-extrabold text-white font-sans text-[11px] uppercase tracking-wider">
-                              IV. ĐỐI SOÁT
-                            </span>
-                            <span className="font-black text-emerald-400 font-mono text-[13px]">
-                              {formatMoneyVND(totalAcc).replace(" ₫", "")}
-                            </span>
+                        <div
+                          className={`border rounded-xl p-3 flex flex-col gap-1.5 shadow-sm transition-colors ${
+                            activeBalanceSection === "I"
+                              ? "bg-indigo-50/40 border-indigo-100"
+                              : activeBalanceSection === "II"
+                                ? "bg-rose-50/40 border-rose-100"
+                                : activeBalanceSection === "III"
+                                  ? "bg-emerald-50/40 border-emerald-100"
+                                  : "bg-sky-50/40 border-sky-100"
+                          }`}
+                        >
+                          <div
+                            className={`flex justify-between items-center border-b pb-1.5 relative ${
+                              activeBalanceSection === "I"
+                                ? "border-indigo-200/50"
+                                : activeBalanceSection === "II"
+                                  ? "border-rose-200/50"
+                                  : activeBalanceSection === "III"
+                                    ? "border-emerald-200/50"
+                                    : "border-sky-200/50"
+                            }`}
+                          >
+                            <select
+                              value={activeBalanceSection}
+                              onChange={(e) =>
+                                setActiveBalanceSection(e.target.value)
+                              }
+                              className={`appearance-none outline-none border-0 bg-transparent font-extrabold font-sans text-[10px] uppercase cursor-pointer w-full tracking-wider ${
+                                activeBalanceSection === "I"
+                                  ? "text-indigo-900"
+                                  : activeBalanceSection === "II"
+                                    ? "text-rose-900"
+                                    : activeBalanceSection === "III"
+                                      ? "text-emerald-900"
+                                      : "text-sky-900"
+                              }`}
+                            >
+                              <option value="I">I. GROSS PAY</option>
+                              <option value="II">
+                                II. DEDUCTIONS & BENEFITS
+                              </option>
+                              <option value="III">III. NET PAY</option>
+                              <option value="IV">IV. ĐỐI SOÁT</option>
+                            </select>
+                            <ChevronDown
+                              className={`w-3.5 h-3.5 absolute right-1 pointer-events-none ${
+                                activeBalanceSection === "I"
+                                  ? "text-indigo-400"
+                                  : activeBalanceSection === "II"
+                                    ? "text-rose-400"
+                                    : activeBalanceSection === "III"
+                                      ? "text-emerald-400"
+                                      : "text-sky-400"
+                              }`}
+                            />
                           </div>
-                          <div className="flex flex-col gap-1.5 pt-1 text-[10.5px]">
-                            <div className="flex justify-between items-center">
-                              <span className="text-slate-300 font-medium font-sans flex items-center gap-1">
-                                🐙 TỔNG AE:
-                              </span>
-                              <span className="font-bold text-sky-400 font-mono">
-                                {formatMoneyVND(totalBulkPayment).replace(" ₫", "")}
-                              </span>
-                            </div>
-                            <div className="text-[9px] text-slate-400 font-sans italic pl-5 -mt-1">
-                            </div>
 
-                            <div className="flex justify-between items-center mt-1">
-                              <span className="text-slate-300 font-medium font-sans flex items-center gap-1">
-                                🐙 TỔNG ACC:
-                              </span>
-                              <span className="font-extrabold text-emerald-400 font-mono">
-                                {formatMoneyVND(totalAcc).replace(" ₫", "")}
-                              </span>
-                            </div>
-                            <div className="flex flex-col gap-0.5 pl-4 border-l-2 border-slate-800 my-0.5">
-                              <div className="flex justify-between items-center text-[10px]">
-                                <span className="text-slate-400 font-sans flex items-center gap-1">
-                                  🦄 BONUS:
-                                </span>
-                                <span className="font-semibold text-slate-200 font-mono">
-                                  {formatMoneyVND(bonusTotal).replace(" ₫", "")}
-                                </span>
-                              </div>
-                              <div className="flex justify-between items-center text-[10px]">
-                                <span className="text-slate-400 font-sans flex items-center gap-1">
-                                  🦄 HOLD:
-                                </span>
-                                <span className="font-semibold text-rose-400 font-mono">
-                                  -{formatMoneyVND(sameMonthHold).replace(" ₫", "")}
-                                </span>
-                              </div>
-                              <div className="flex justify-between items-center text-[10px]">
-                                <span className="text-slate-400 font-sans flex items-center gap-1">
-                                  🦄 ADD:
-                                </span>
-                                <span className="font-semibold text-emerald-400 font-mono">
-                                  +{formatMoneyVND(diffMonthAdd).replace(" ₫", "")}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="flex justify-between items-center border-t border-slate-800/80 pt-1.5">
-                              <span className="text-slate-300 font-medium font-sans flex items-center gap-1">
-                                🐙 TỔNG BANK AE:
-                              </span>
-                              <span className="font-bold text-white font-mono">
-                                {formatMoneyVND(totalBankAe).replace(" ₫", "")}
-                              </span>
-                            </div>
-
-                            {/* Breakdown by file */}
-                            <div className="flex flex-col gap-0.5 pl-4 border-l-2 border-slate-800 my-0.5">
-                              {Object.entries(calculationSummary.aeTotalsByFile || {}).map(([fileName, amount]) => (
-                                <div key={fileName} className="flex justify-between items-center text-[9px]">
-                                  <span className="text-slate-400 font-sans truncate max-w-[150px]">
-                                    - {fileName}:
+                          <div className="flex flex-col gap-1.5 pl-1 pt-1.5">
+                            {activeBalanceSection === "I" && (
+                              <>
+                                {buEntries1.length > 0 ? (
+                                  buEntries1.map(([biz, amt]) => (
+                                    <div
+                                      key={biz}
+                                      className="flex justify-between items-center text-[10px]"
+                                    >
+                                      <span className="text-indigo-800/80 font-semibold font-sans flex items-center gap-1.5">
+                                        <div className="w-1.5 h-1.5 bg-indigo-300 rounded-full"></div>{" "}
+                                        {biz}:
+                                      </span>
+                                      <span className="font-bold text-indigo-950 font-mono tracking-tight">
+                                        {formatMoneyVND(amt).replace(" ₫", "")}
+                                      </span>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] text-indigo-400 italic">
+                                    - Không có dữ liệu Sheet 1
                                   </span>
-                                  <span className="font-semibold text-slate-300 font-mono">
-                                    {formatMoneyVND(amount).replace(" ₫", "")}
+                                )}
+                                <div className="flex justify-between items-center mt-2 pt-2 border-t border-indigo-200/50 font-bold text-indigo-950 text-[10px] tracking-wider uppercase">
+                                  <span>TOTAL GROSS PAY:</span>
+                                  <span className="font-black font-mono tracking-tight">
+                                    {formatMoneyVND(grossPayTotal).replace(
+                                      " ₫",
+                                      "",
+                                    )}
                                   </span>
                                 </div>
-                              ))}
-                            </div>
+                              </>
+                            )}
+                            {activeBalanceSection === "II" && (
+                              <div className="flex flex-col gap-2.5">
+                                {groupEntries.length > 0 ? (
+                                  groupEntries.map(([biz, grp]) => (
+                                    <div
+                                      key={biz}
+                                      className="flex flex-col gap-1.5 border-b border-rose-200/40 pb-2 last:border-0 last:pb-0"
+                                    >
+                                      <div className="flex justify-between items-center text-[10.5px]">
+                                        <span className="font-extrabold text-rose-900 font-sans flex items-center gap-1.5 tracking-wide">
+                                          <div className="w-1.5 h-1.5 bg-rose-400 rounded-sm rotate-45"></div>{" "}
+                                          {biz}:
+                                        </span>
+                                        <span
+                                          className={`font-bold font-mono tracking-tight ${grp.total >= 0 ? "text-emerald-600" : "text-rose-700"}`}
+                                        >
+                                          {grp.total >= 0 ? "+" : ""}
+                                          {formatMoneyVND(grp.total).replace(
+                                            " ₫",
+                                            "",
+                                          )}
+                                        </span>
+                                      </div>
+                                      <div className="flex flex-col gap-1 pl-3">
+                                        {Object.entries(grp.itemsMap).map(
+                                          ([key, amount]) => (
+                                            <div
+                                              key={key}
+                                              className="flex justify-between items-center text-[10px]"
+                                            >
+                                              <span className="text-rose-800/70 font-semibold font-sans flex items-center gap-1.5">
+                                                <div className="w-1 h-1 bg-rose-300 rounded-full"></div>{" "}
+                                                [{key}]:
+                                              </span>
+                                              <span
+                                                className={`font-semibold font-mono tracking-tight ${amount >= 0 ? "text-emerald-600" : "text-rose-600"}`}
+                                              >
+                                                {amount >= 0 ? "+" : ""}
+                                                {formatMoneyVND(amount).replace(
+                                                  " ₫",
+                                                  "",
+                                                )}
+                                              </span>
+                                            </div>
+                                          ),
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] text-rose-400 italic">
+                                    Không có khoản điều chỉnh
+                                  </span>
+                                )}
+                                <div className="flex justify-between items-center mt-1 pt-2 border-t border-rose-200/50 font-bold text-rose-950 text-[10px] tracking-wider uppercase">
+                                  <span>TOTAL DEDUCTIONS:</span>
+                                  <span
+                                    className={`font-black font-mono tracking-tight ${deductionsTotal >= 0 ? "text-emerald-700" : "text-rose-700"}`}
+                                  >
+                                    {deductionsTotal >= 0 ? "+" : ""}
+                                    {formatMoneyVND(deductionsTotal).replace(
+                                      " ₫",
+                                      "",
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                            {activeBalanceSection === "III" && (
+                              <>
+                                {buEntries3.length > 0 ? (
+                                  buEntries3.map(([biz, amt]) => (
+                                    <div
+                                      key={biz}
+                                      className="flex justify-between items-center text-[10px]"
+                                    >
+                                      <span className="text-emerald-800/80 font-semibold font-sans flex items-center gap-1.5">
+                                        <div className="w-1.5 h-1.5 bg-emerald-400 rounded-sm"></div>{" "}
+                                        {biz}:
+                                      </span>
+                                      <span className="font-bold text-emerald-950 font-mono tracking-tight">
+                                        {formatMoneyVND(amt).replace(" ₫", "")}
+                                      </span>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] text-emerald-400 italic">
+                                    Không có dữ liệu
+                                  </span>
+                                )}
+                                <div className="flex justify-between items-center mt-2 pt-2 border-t border-emerald-200/50 font-bold text-emerald-950 text-[10px] tracking-wider uppercase">
+                                  <span>TOTAL NET PAY:</span>
+                                  <span className="font-black text-emerald-700 font-mono tracking-tight">
+                                    {formatMoneyVND(netPayTotal).replace(
+                                      " ₫",
+                                      "",
+                                    )}
+                                  </span>
+                                </div>
+                              </>
+                            )}
 
-                            <div className="flex justify-between items-center border-t border-slate-800/80 pt-1.5">
-                              <span className="text-slate-300 font-medium font-sans flex items-center gap-1">
-                                🐙 LỆCH ACC & AE:
-                              </span>
-                              <span className={`font-black font-mono ${diff === 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                                {formatMoneyVND(diff).replace(" ₫", "")}
-                              </span>
-                            </div>
-                            <div className="text-[9px] text-slate-400 font-sans italic pl-5 -mt-1">
-                            </div>
+                            {activeBalanceSection === "IV" && (
+                              <div className="flex flex-col gap-2 pt-1 text-[10.5px]">
+                                <div className="flex justify-between items-center border-b border-sky-100/50 pb-1.5">
+                                  <span className="text-sky-900 font-bold font-sans flex items-center gap-1.5 tracking-wide">
+                                    <div className="w-1.5 h-1.5 bg-sky-400 rounded-full"></div>{" "}
+                                    TỔNG AE:
+                                  </span>
+                                  <span className="font-bold text-sky-700 font-mono tracking-tight">
+                                    {formatMoneyVND(totalBulkPayment).replace(
+                                      " ₫",
+                                      "",
+                                    )}
+                                  </span>
+                                </div>
+
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sky-900 font-bold font-sans flex items-center gap-1.5 tracking-wide">
+                                    <div className="w-1.5 h-1.5 bg-sky-400 rounded-full"></div>{" "}
+                                    TỔNG ACC:
+                                  </span>
+                                  <span className="font-bold text-sky-700 font-mono tracking-tight">
+                                    {formatMoneyVND(totalAcc).replace(" ₫", "")}
+                                  </span>
+                                </div>
+
+                                <div className="flex flex-col gap-1 pl-4 border-l-2 border-sky-200/50 my-1 py-1">
+                                  <div className="flex justify-between items-center text-[10px]">
+                                    <span className="text-sky-800/80 font-semibold font-sans flex items-center gap-1.5">
+                                      <div className="w-1 h-1 bg-sky-300 rounded-sm"></div>{" "}
+                                      BONUS:
+                                    </span>
+                                    <span className="font-semibold text-sky-900 font-mono tracking-tight">
+                                      {formatMoneyVND(bonusTotal).replace(
+                                        " ₫",
+                                        "",
+                                      )}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center text-[10px]">
+                                    <span className="text-sky-800/80 font-semibold font-sans flex items-center gap-1.5">
+                                      <div className="w-1 h-1 bg-sky-300 rounded-sm"></div>{" "}
+                                      HOLD:
+                                    </span>
+                                    <span className="font-semibold text-rose-500 font-mono tracking-tight">
+                                      -
+                                      {formatMoneyVND(sameMonthHold).replace(
+                                        " ₫",
+                                        "",
+                                      )}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center text-[10px]">
+                                    <span className="text-sky-800/80 font-semibold font-sans flex items-center gap-1.5">
+                                      <div className="w-1 h-1 bg-sky-300 rounded-sm"></div>{" "}
+                                      ADD:
+                                    </span>
+                                    <span className="font-semibold text-emerald-500 font-mono tracking-tight">
+                                      +
+                                      {formatMoneyVND(diffMonthAdd).replace(
+                                        " ₫",
+                                        "",
+                                      )}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex justify-between items-center border-t border-sky-100/50 pt-2">
+                                  <span className="text-sky-900 font-bold font-sans flex items-center gap-1.5 tracking-wide">
+                                    <div className="w-1.5 h-1.5 bg-sky-400 rounded-full"></div>{" "}
+                                    TỔNG BANK AE:
+                                  </span>
+                                  <span className="font-bold text-sky-700 font-mono tracking-tight">
+                                    {formatMoneyVND(totalBankAe).replace(
+                                      " ₫",
+                                      "",
+                                    )}
+                                  </span>
+                                </div>
+
+                                <div className="flex justify-between items-center border-t border-sky-200/60 mt-1 pt-2">
+                                  <span className="font-bold text-sky-950 font-sans text-[10px] tracking-wider uppercase">
+                                    LỆCH (DIFF):
+                                  </span>
+                                  <span
+                                    className={`font-black font-mono tracking-tight ${diff !== 0 ? "text-rose-600 bg-rose-50 px-1.5 rounded" : "text-emerald-600 bg-emerald-50 px-1.5 rounded"}`}
+                                  >
+                                    {formatMoneyVND(diff).replace(" ₫", "")}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
@@ -2087,9 +2886,7 @@ export function BulkPayment({
                 ) : (
                   <FileSpreadsheet className="w-4 h-4 shrink-0" />
                 )}
-                <span className="shrink-0">
-                  TẠO BẢNG KÊ THEO SỐ AE
-                </span>
+                <span className="shrink-0">TẠO BẢNG KÊ THEO SỐ AE</span>
               </button>
             </div>
           </div>
@@ -2097,14 +2894,30 @@ export function BulkPayment({
       )}
 
       {/* Right Panel - Data View */}
-      <div 
+      <div
         className="flex-1 bg-white border border-slate-300 dark:border-slate-700 rounded-xl flex flex-col overflow-hidden min-h-0 shadow-xs relative pb-0 h-full"
-        style={{ borderRadius: "12px", borderWidth: "1px", borderColor: "#cbd5e1", marginLeft: "0px", paddingTop: "0px", paddingLeft: "0px", paddingRight: "0px", paddingBottom: "0px" }}
+        style={{
+          borderRadius: "12px",
+          borderWidth: "1px",
+          borderColor: "#cbd5e1",
+          marginLeft: "0px",
+          paddingTop: "0px",
+          paddingLeft: "0px",
+          paddingRight: "0px",
+          paddingBottom: "0px",
+        }}
       >
         {/* Interactive Top bar with title, 📋 toggle button, tabs, and general actions */}
-        <div 
+        <div
           className="px-4 py-2 border-b border-slate-200/80 bg-[#FAF9F6] dark:bg-slate-900 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 shrink-0 select-none"
-          style={{ paddingTop: "0px", paddingBottom: "0px", paddingLeft: "12px", paddingRight: "12px", height: "73px", minHeight: "73px" }}
+          style={{
+            paddingTop: "0px",
+            paddingBottom: "0px",
+            paddingLeft: "12px",
+            paddingRight: "12px",
+            height: "73px",
+            minHeight: "73px",
+          }}
         >
           <div className="flex items-center gap-3 shrink-0">
             <button
@@ -2114,57 +2927,42 @@ export function BulkPayment({
                   ? "bg-white text-slate-700 border-slate-200/80 hover:bg-slate-100"
                   : "bg-slate-900 text-white border-slate-900 shadow-md hover:bg-black"
               }`}
-              title={showLeftCard ? "Ẩn bảng điều khiển" : "Hiện bảng điều khiển"}
+              title={
+                showLeftCard ? "Ẩn bảng điều khiển" : "Hiện bảng điều khiển"
+              }
             >
               <span className="text-sm leading-none select-none">📋</span>
             </button>
 
-
-
             {displayBankExportData.length > 0 && (
-              <div 
-                className="flex items-center gap-3"
-                style={{ borderWidth: "0.6px", paddingBottom: "0px" }}
+              <div
+                className="flex items-center gap-3 border-0 bg-transparent"
+                style={{ paddingBottom: "0px" }}
               >
-                <div 
-                  className="flex bg-transparent p-0.5 border-0 shadow-none gap-1"
-                  style={{ borderRadius: "0px", paddingTop: "4px", paddingBottom: "4px", paddingLeft: "5px", paddingRight: "5px", marginLeft: "0px", borderWidth: "0px", backgroundColor: "transparent", boxShadow: "none" }}
-                >
-                  {[
-                    { id: "table", label: "Transactions", icon: Table },
-                    { id: "reconcile", label: "Đối soát", icon: Scale, badge: reconciliationAudit.varianceCount + reconciliationAudit.missingInfoCount },
-                    { id: "visuals", label: "Analytics", icon: TrendingUp }
-                  ].map((t) => {
-                    const Icon = t.icon;
-                    return (
-                      <button
-                        key={t.id}
-                        onClick={() => {
-                          setRightPanelTab(t.id as any);
-                          localStorage.setItem("bulk_payment_right_tab", t.id);
-                        }}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all cursor-pointer text-[9px] active:scale-95 ${
-                          rightPanelTab === t.id
-                            ? "bg-white text-primary shadow-sm border border-slate-100"
-                            : "text-muted-foreground/50 hover:text-foreground"
-                        }`}
-                        style={t.id === "visuals" ? { paddingLeft: "5px", paddingRight: "5px", height: "35.3443px" } : undefined}
-                      >
-                        <Icon className="w-3.5 h-3.5" />
-                        <span style={t.id === "visuals" ? { height: "28.4788px", width: "86.0802px", display: "inline-flex", alignItems: "center", justifyContent: "center" } : undefined}>
-                          {t.label}
-                        </span>
-                        {t.badge && t.badge > 0 ? (
-                          <span 
-                            className="bg-rose-500 text-white font-extrabold text-[8px] px-1.5 py-0.2 rounded-full leading-none"
-                            style={t.id === "reconcile" ? { lineHeight: "23px", fontWeight: "bold", height: "21.9982px" } : undefined}
-                          >
-                            {t.badge}
-                          </span>
-                        ) : null}
-                      </button>
-                    );
-                  })}
+                <div className="flex items-center relative border-0">
+                  <select
+                    value={rightPanelTab}
+                    onChange={(e) => {
+                      setRightPanelTab(e.target.value as any);
+                      localStorage.setItem(
+                        "bulk_payment_right_tab",
+                        e.target.value,
+                      );
+                    }}
+                    className="appearance-none bg-transparent border-0 outline-none font-black text-slate-800 uppercase tracking-widest text-[11px] cursor-pointer pr-6 py-1"
+                  >
+                    <option value="table">TRANSACTIONS</option>
+                    <option value="reconcile">
+                      ĐỐI SOÁT{" "}
+                      {reconciliationAudit.varianceCount +
+                        reconciliationAudit.missingInfoCount >
+                      0
+                        ? `(${reconciliationAudit.varianceCount + reconciliationAudit.missingInfoCount})`
+                        : ""}
+                    </option>
+                    <option value="visuals">ANALYTICS</option>
+                  </select>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-1 pointer-events-none" />
                 </div>
 
                 {rightPanelTab !== "table" && (
@@ -2182,24 +2980,33 @@ export function BulkPayment({
 
             {/* General Summary Stats - Compacted */}
             {displayBankExportData.length > 0 && rightPanelTab === "table" && (
-              <div 
+              <div
                 className="hidden lg:flex items-center gap-5 border-l border-slate-200 pl-5 h-8 ml-2"
                 style={{ width: "300.295px", paddingRight: "20px" }}
               >
                 <div className="flex flex-col leading-tight">
-                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Bulk Payment (Bank)</span>
+                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                    Bulk Payment (Bank)
+                  </span>
                   <span className="text-[11px] font-black font-mono text-sky-600">
                     {formatMoneyVND(bankExportTotal).replace(" ₫", "")}
                   </span>
                 </div>
                 <div className="flex flex-col leading-tight">
-                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Total ACC</span>
+                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                    Total ACC
+                  </span>
                   <span className="text-[11px] font-black font-mono text-emerald-600">
-                    {formatMoneyVND(calculationSummary.calculatedTotal).replace(" ₫", "")}
+                    {formatMoneyVND(calculationSummary.calculatedTotal).replace(
+                      " ₫",
+                      "",
+                    )}
                   </span>
                 </div>
                 <div className="flex flex-col leading-tight">
-                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Records</span>
+                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                    Records
+                  </span>
                   <span className="text-[11px] font-black font-mono text-slate-700">
                     {displayBankExportData.length}
                   </span>
@@ -2218,9 +3025,14 @@ export function BulkPayment({
                   <Settings className="w-4 h-4 text-slate-600" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-xl shadow-lg border border-slate-200 bg-white z-50">
+              <DropdownMenuContent
+                align="end"
+                className="w-56 p-1.5 rounded-xl shadow-lg border border-slate-200 bg-white z-50"
+              >
                 <DropdownMenuItem
-                  onClick={() => window.dispatchEvent(new Event("open-ui-settings"))}
+                  onClick={() =>
+                    window.dispatchEvent(new Event("open-ui-settings"))
+                  }
                   className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer hover:bg-slate-50 text-slate-700 font-bold text-xs"
                 >
                   <Settings className="w-4 h-4 text-slate-500" />
@@ -2260,7 +3072,8 @@ export function BulkPayment({
                 Chưa có dữ liệu bảng kê đối soát
               </h3>
               <p className="text-[10px] text-slate-400 font-sans max-w-sm mb-8 leading-relaxed font-bold uppercase tracking-wider">
-                Hệ thống tự động đồng bộ chi phí AE Final và các khoản điều chỉnh để tạo file chuyển khoản ngân hàng.
+                Hệ thống tự động đồng bộ chi phí AE Final và các khoản điều
+                chỉnh để tạo file chuyển khoản ngân hàng.
               </p>
 
               <button
@@ -2278,7 +3091,10 @@ export function BulkPayment({
             </div>
           </div>
         ) : (
-          <div className="flex-1 min-h-0 bg-white dark:bg-card relative z-10 flex flex-col rounded-none border-0 overflow-hidden" style={{ backgroundColor: "#f5f4f7" }}>
+          <div
+            className="flex-1 min-h-0 bg-white dark:bg-card relative z-10 flex flex-col rounded-none border-0 overflow-hidden"
+            style={{ backgroundColor: "#f5f4f7" }}
+          >
             <AnimatePresence mode="wait">
               {rightPanelTab === "table" && (
                 <motion.div
@@ -2287,8 +3103,23 @@ export function BulkPayment({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.1 }}
-                  className="w-full h-full flex-1 min-h-0 flex flex-col p-0 relative master-ae-table-wrapper pivot-table-container"
-                  style={{ height: "100%", width: "100%", paddingTop: "0px", paddingLeft: "0px", paddingRight: "0px", paddingBottom: "0px", marginTop: "0px", marginLeft: "0px", marginRight: "0px", marginBottom: "0px", borderWidth: "0px", borderStyle: "none", borderRadius: "0px", overflow: "hidden" }}
+                  className="w-full h-full flex-1 min-h-0 flex flex-col p-0 relative"
+                  style={{
+                    height: "100%",
+                    width: "100%",
+                    paddingTop: "0px",
+                    paddingLeft: "0px",
+                    paddingRight: "0px",
+                    paddingBottom: "0px",
+                    marginTop: "0px",
+                    marginLeft: "0px",
+                    marginRight: "0px",
+                    marginBottom: "0px",
+                    borderWidth: "0px",
+                    borderStyle: "none",
+                    borderRadius: "0px",
+                    overflow: "hidden",
+                  }}
                 >
                   <DataTable
                     columns={columns}
@@ -2307,15 +3138,15 @@ export function BulkPayment({
                     footerClassName="bg-[var(--table-header-bg,#FAF9F6)] text-slate-800 border-t border-slate-300 font-bold"
                     borderless={false}
                     stickyFirstColumn={false}
-                    style={{ 
-                      "--table-padding": "0.2rem 0.5rem",
-                      "--font-mono": "'JetBrains Mono', monospace"
-                    } as React.CSSProperties}
+                    style={
+                      {
+                        "--table-padding": "0.2rem 0.5rem",
+                        "--font-mono": "'JetBrains Mono', monospace",
+                      } as React.CSSProperties
+                    }
                   />
                 </motion.div>
               )}
-
-
 
               {rightPanelTab === "reconcile" && (
                 <motion.div
@@ -2325,24 +3156,52 @@ export function BulkPayment({
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.1 }}
                   className="flex-1 min-h-0 flex flex-col gap-3 p-4 bg-[#FAF9F6] overflow-hidden"
-                  style={{ borderWidth: "0px", paddingLeft: "0px", paddingRight: "0px", paddingBottom: "0px", paddingTop: "0px" }}
+                  style={{
+                    borderWidth: "0px",
+                    paddingLeft: "0px",
+                    paddingRight: "0px",
+                    paddingBottom: "0px",
+                    paddingTop: "0px",
+                  }}
                 >
                   {/* Filter Tabs by Reconciliation Status */}
-                  <div 
+                  <div
                     className="shrink-0 flex flex-wrap items-center justify-between gap-3 p-3 bg-white rounded-none border border-slate-200/80 shadow-xs"
-                    style={{ paddingBottom: "12px", borderWidth: "0px", marginTop: "12px", borderRadius: "0px" }}
+                    style={{
+                      paddingBottom: "12px",
+                      borderWidth: "0px",
+                      marginTop: "12px",
+                      borderRadius: "0px",
+                    }}
                   >
                     <div className="flex flex-wrap items-center gap-1.5">
                       {[
-                        { id: "ALL", label: `Cần xử lý (${reconciliationAudit.varianceCount + reconciliationAudit.missingInfoCount + reconciliationAudit.duplicateCount})` },
-                        { id: "VARIANCE", label: `⚠️ Lệch số tiền (${reconciliationAudit.varianceCount})` },
-                        { id: "MISSING_INFO", label: `🔴 Thiếu STK/ID (${reconciliationAudit.missingInfoCount})` },
-                        { id: "DUPLICATE", label: `⚠️ Trùng ID (${reconciliationAudit.duplicateCount})` },
-                        { id: "MATCHED", label: `✅ Khớp (${reconciliationAudit.matchedCount})` },
+                        {
+                          id: "ALL",
+                          label: `Cần xử lý (${reconciliationAudit.varianceCount + reconciliationAudit.missingInfoCount + reconciliationAudit.duplicateCount})`,
+                        },
+                        {
+                          id: "VARIANCE",
+                          label: `⚠️ Lệch số tiền (${reconciliationAudit.varianceCount})`,
+                        },
+                        {
+                          id: "MISSING_INFO",
+                          label: `🔴 Thiếu STK/ID (${reconciliationAudit.missingInfoCount})`,
+                        },
+                        {
+                          id: "DUPLICATE",
+                          label: `⚠️ Trùng ID (${reconciliationAudit.duplicateCount})`,
+                        },
+                        {
+                          id: "MATCHED",
+                          label: `✅ Khớp (${reconciliationAudit.matchedCount})`,
+                        },
                       ].map((tab) => (
                         <button
                           key={tab.id}
-                          onClick={() => setReconcileFilterStatus(tab.id as any)}
+                          onClick={() =>
+                            setReconcileFilterStatus(tab.id as any)
+                          }
                           className={`px-3 py-1.5 rounded-[20px] text-[10px] font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
                             reconcileFilterStatus === tab.id
                               ? "bg-slate-900 text-white shadow-xs"
@@ -2357,60 +3216,155 @@ export function BulkPayment({
 
                     <div className="flex items-center gap-2 shrink-0">
                       <Popover>
-                      <PopoverTrigger asChild>
-                        <button className="w-7 h-7 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer shadow-2xs" title="Xem nguyên tắc đối soát chi tiết">
-                          i
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent align="end" className="w-80 p-4 rounded-none shadow-xl bg-white border-amber-200 text-slate-700 text-xs space-y-2" style={{ borderRadius: "0px" }}>
-                        <div className="font-bold text-amber-950 uppercase tracking-wider text-[10px]">Nguyên tắc đối soát chi tiết:</div>
-                        <p>1. <strong>Tập trung chênh lệch:</strong> Mặc định lọc hiển thị các khoản lệch số tiền, trùng ID, thiếu STK.</p>
-                        <p>2. <strong>Công thức Target:</strong> Tổng Bank Acc = SHEET 1 + HOLD AE.</p>
-                        <p>3. <strong>Đồng bộ hai chiều:</strong> Bấm nút ⚡ Đồng bộ trên dòng cần xử lý để tự động điền STK/ID sang bảng đích.</p>
-                      </PopoverContent>
-                    </Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            className="w-7 h-7 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer shadow-2xs"
+                            title="Xem nguyên tắc đối soát chi tiết"
+                          >
+                            i
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="end"
+                          className="w-80 p-4 rounded-none shadow-xl bg-white border-amber-200 text-slate-700 text-xs space-y-2"
+                          style={{ borderRadius: "0px" }}
+                        >
+                          <div className="font-bold text-amber-950 uppercase tracking-wider text-[10px]">
+                            Nguyên tắc đối soát chi tiết:
+                          </div>
+                          <p>
+                            1. <strong>Tập trung chênh lệch:</strong> Mặc định
+                            lọc hiển thị các khoản lệch số tiền, trùng ID, thiếu
+                            STK.
+                          </p>
+                          <p>
+                            2. <strong>Công thức Target:</strong> Tổng Bank Acc
+                            = SHEET 1 + HOLD AE.
+                          </p>
+                          <p>
+                            3. <strong>Đồng bộ hai chiều:</strong> Bấm nút ⚡
+                            Đồng bộ trên dòng cần xử lý để tự động điền STK/ID
+                            sang bảng đích.
+                          </p>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                   </div>
-                </div>
 
                   {/* Transaction Audit Table */}
-                  <div 
+                  <div
                     className="flex-1 min-h-0 relative border border-slate-200/80 rounded-none bg-white shadow-xs overflow-auto custom-scrollbar"
                     style={{ borderWidth: "0.5px", borderRadius: "0px" }}
                   >
-                    <table className="w-full text-left border-separate border-spacing-0 text-[11px] font-sans">
+                    <table className="w-full min-w-max text-left border-separate border-spacing-0 text-[11px] font-sans">
                       <thead className="sticky top-0 bg-slate-200 text-slate-800 z-30 shadow-sm">
                         <tr>
-                          <th rowSpan={2} className="p-2.5 font-bold uppercase tracking-wider text-[9px] w-12 text-center border-r border-b border-slate-300 bg-slate-200 align-middle whitespace-normal">STT</th>
-                          <th rowSpan={2} className="p-2.5 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle text-center whitespace-normal">ID NUMBER</th>
-                          <th rowSpan={2} className="p-2.5 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle text-center whitespace-normal">HỌ VÀ TÊN</th>
-                          <th rowSpan={2} className="p-2.5 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle text-center whitespace-normal">BANK ACC NO_AE</th>
-                          <th rowSpan={2} className="p-2.5 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle text-center whitespace-normal">BANK ACC NO_ACC</th>
-                          <th rowSpan={2} className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle whitespace-normal">Thực Tế (Bank)</th>
-                          <th colSpan={2} className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-b border-r border-slate-300 bg-slate-300 text-slate-900 whitespace-normal">Target (Sheet1 + Hold)</th>
-                          <th rowSpan={2} className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-300 text-slate-900 align-middle whitespace-normal">TỔNG BANK ACC</th>
-                          <th rowSpan={2} className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle whitespace-normal">Đồng Bộ STK</th>
-                          <th rowSpan={2} className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle whitespace-normal">Chênh Lệch</th>
-                          <th rowSpan={2} className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-b border-slate-300 bg-slate-200 align-middle whitespace-normal">Trạng Thái / Vấn Đề</th>
+                          <th
+                            rowSpan={2}
+                            className="p-2.5 font-bold uppercase tracking-wider text-[9px] w-12 text-center border-r border-b border-slate-300 bg-slate-200 align-middle whitespace-normal"
+                          >
+                            STT
+                          </th>
+                          <th
+                            rowSpan={2}
+                            className="p-2.5 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle text-center whitespace-normal"
+                          >
+                            ID NUMBER
+                          </th>
+                          <th
+                            rowSpan={2}
+                            className="p-2.5 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle text-center whitespace-normal"
+                          >
+                            HỌ VÀ TÊN
+                          </th>
+                          <th
+                            rowSpan={2}
+                            className="p-2.5 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle text-center whitespace-normal"
+                          >
+                            BANK ACC NO_AE
+                          </th>
+                          <th
+                            rowSpan={2}
+                            className="p-2.5 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle text-center whitespace-normal"
+                          >
+                            BANK ACC NO_ACC
+                          </th>
+                          <th
+                            rowSpan={2}
+                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle whitespace-normal"
+                          >
+                            Thực Tế (Bank)
+                          </th>
+                          <th
+                            colSpan={2}
+                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-b border-r border-slate-300 bg-slate-300 text-slate-900 whitespace-normal"
+                          >
+                            Target (Sheet1 + Hold)
+                          </th>
+                          <th
+                            rowSpan={2}
+                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-300 text-slate-900 align-middle whitespace-normal"
+                          >
+                            TỔNG BANK ACC
+                          </th>
+                          <th
+                            rowSpan={2}
+                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle whitespace-normal"
+                          >
+                            Đồng Bộ STK
+                          </th>
+                          <th
+                            rowSpan={2}
+                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle whitespace-normal"
+                          >
+                            Chênh Lệch
+                          </th>
+                          <th
+                            rowSpan={2}
+                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-b border-slate-300 bg-slate-200 align-middle whitespace-normal"
+                          >
+                            Trạng Thái / Vấn Đề
+                          </th>
                         </tr>
                         <tr>
-                          <th className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-250 bg-slate-300 text-slate-800 whitespace-normal">SHEET 1</th>
-                          <th className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-250 bg-slate-300 text-slate-800 whitespace-normal">HOLD AE</th>
+                          <th className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-250 bg-slate-300 text-slate-800 whitespace-normal">
+                            SHEET 1
+                          </th>
+                          <th className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-250 bg-slate-300 text-slate-800 whitespace-normal">
+                            HOLD AE
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredTransactionAudits.length === 0 ? (
                           <tr>
-                            <td colSpan={12} className="p-8 text-center text-slate-400 italic border-b border-slate-200">
-                              Không tìm thấy giao dịch nào phù hợp với điều kiện lọc
+                            <td
+                              colSpan={12}
+                              className="p-8 text-center text-slate-400 italic border-b border-slate-200"
+                            >
+                              Không tìm thấy giao dịch nào phù hợp với điều kiện
+                              lọc
                             </td>
                           </tr>
                         ) : (
                           filteredTransactionAudits.map((item) => {
-                            const isUnmatched = item.id.startsWith("unmatched-");
+                            const isUnmatched =
+                              item.id.startsWith("unmatched-");
                             const isMatched = item.status === "MATCHED";
-                            const isAlreadySynced = item.accountNo && item.benefitsAccountNo && item.accountNo === item.benefitsAccountNo;
-                            const canSync = !isUnmatched && !isMatched && !isAlreadySynced && (item.status === "MISSING_INFO" || item.status === "VARIANCE" || !item.accountNo || !item.benefitsAccountNo);
-                            const totalTargetBankAcc = item.sheet1Amount + item.holdAmount;
+                            const isAlreadySynced =
+                              item.accountNo &&
+                              item.benefitsAccountNo &&
+                              item.accountNo === item.benefitsAccountNo;
+                            const canSync =
+                              !isUnmatched &&
+                              !isMatched &&
+                              !isAlreadySynced &&
+                              (item.status === "MISSING_INFO" ||
+                                item.status === "VARIANCE" ||
+                                !item.accountNo ||
+                                !item.benefitsAccountNo);
+                            const totalTargetBankAcc =
+                              item.sheet1Amount + item.holdAmount;
 
                             return (
                               <tr
@@ -2419,95 +3373,175 @@ export function BulkPayment({
                                   isUnmatched
                                     ? "bg-amber-50/50 font-semibold"
                                     : item.status === "VARIANCE"
-                                    ? "bg-amber-50/30"
-                                    : item.status === "MISSING_INFO"
-                                    ? "bg-rose-50/30"
-                                    : item.status === "DUPLICATE"
-                                    ? "bg-purple-50/30"
-                                    : "bg-white"
+                                      ? "bg-amber-50/30"
+                                      : item.status === "MISSING_INFO"
+                                        ? "bg-rose-50/30"
+                                        : item.status === "DUPLICATE"
+                                          ? "bg-purple-50/30"
+                                          : "bg-white"
                                 }`}
                               >
                                 <td className="p-2.5 text-center font-mono font-bold text-slate-400 text-[10px] border-b border-r border-slate-200">
                                   {isUnmatched ? "DISC" : item.serialNo}
                                 </td>
-                                <td 
+                                <td
                                   className="p-2.5 font-bold text-slate-800 border-b border-r border-slate-200 cursor-pointer"
                                   title="Click để chuyển tới bảng nguồn Gross Pay / Hold AE"
                                   onClick={() => {
                                     if (onTabChange) {
-                                      const targetTab = item.targetTabForAccLink || (item.sheet1Amount > 0 ? "Sheet1_AE" : "Hold_AE");
-                                      localStorage.setItem("bulk_payment_right_tab", "reconcile");
-                                      localStorage.setItem("master_ae_search", item.docId || "");
+                                      const targetTab =
+                                        item.targetTabForAccLink ||
+                                        (item.sheet1Amount > 0
+                                          ? "Sheet1_AE"
+                                          : "Hold_AE");
+                                      localStorage.setItem(
+                                        "bulk_payment_right_tab",
+                                        "reconcile",
+                                      );
+                                      localStorage.setItem(
+                                        "master_ae_search",
+                                        item.docId || "",
+                                      );
                                       onTabChange(targetTab);
-                                      window.dispatchEvent(new CustomEvent("master-ae-filter", { detail: { search: item.docId || "", from: "BulkPayment" } }));
-                                      toast.info(`Đã chuyển tới bảng ${targetTab === "Sheet1_AE" ? "Gross Pay" : "HOLD AE"} và lọc ID NUMBER: ${item.docId || ""}`);
+                                      window.dispatchEvent(
+                                        new CustomEvent("master-ae-filter", {
+                                          detail: {
+                                            search: item.docId || "",
+                                            from: "BulkPayment",
+                                          },
+                                        }),
+                                      );
+                                      toast.info(
+                                        `Đã chuyển tới bảng ${targetTab === "Sheet1_AE" ? "Gross Pay" : "HOLD AE"} và lọc ID NUMBER: ${item.docId || ""}`,
+                                      );
                                     }
                                   }}
                                 >
                                   <div className="font-mono font-bold text-slate-900 text-[13px] leading-[19.5px] flex items-center gap-1">
-                                    <span>{formatIdNumber(item.docId) || "N/A"}</span>
+                                    <span>
+                                      {formatIdNumber(item.docId) || "N/A"}
+                                    </span>
                                     <ExternalLink className="w-3 h-3 text-sky-500 opacity-70" />
                                   </div>
                                 </td>
                                 <td className="p-2.5 text-[10px] text-slate-700 font-medium border-b border-r border-slate-200">
-                                  {item.name && item.name !== "N/A" ? item.name : "-"}
+                                  {item.name && item.name !== "N/A"
+                                    ? item.name
+                                    : "-"}
                                 </td>
-                                <td 
+                                <td
                                   className={`p-2.5 border-b border-r border-slate-200 ${!isUnmatched ? "cursor-pointer" : ""}`}
-                                  title={!isUnmatched ? "Click để xem giao dịch bên Bank Export" : undefined}
+                                  title={
+                                    !isUnmatched
+                                      ? "Click để xem giao dịch bên Bank Export"
+                                      : undefined
+                                  }
                                   onClick={() => {
                                     if (isUnmatched) return;
-                                    setSearchTerm(item.accountNo || item.docId || "");
+                                    setSearchTerm(
+                                      item.accountNo || item.docId || "",
+                                    );
                                     setRightPanelTab("table");
-                                    localStorage.setItem("bulk_payment_right_tab", "table");
-                                    toast.info(`Đã chuyển tới Bank Export và lọc: ${item.accountNo || item.docId}`);
+                                    localStorage.setItem(
+                                      "bulk_payment_right_tab",
+                                      "table",
+                                    );
+                                    toast.info(
+                                      `Đã chuyển tới Bank Export và lọc: ${item.accountNo || item.docId}`,
+                                    );
                                   }}
                                 >
                                   <div className="font-mono font-semibold text-sky-600 flex items-center gap-1">
-                                    <span>{item.accountNo || "⚠️ Chưa có STK"}</span>
-                                    {!isUnmatched && <ExternalLink className="w-3 h-3 opacity-70" />}
+                                    <span>
+                                      {item.accountNo || "⚠️ Chưa có STK"}
+                                    </span>
+                                    {!isUnmatched && (
+                                      <ExternalLink className="w-3 h-3 opacity-70" />
+                                    )}
                                   </div>
                                   {item.bankName && item.bankName !== "N/A" && (
-                                    <div className="text-[10px] text-slate-400 font-medium truncate max-w-[150px]">{item.bankName}</div>
+                                    <div className="text-[10px] text-slate-400 font-medium truncate max-w-[150px]">
+                                      {item.bankName}
+                                    </div>
                                   )}
                                 </td>
-                                <td 
+                                <td
                                   className="p-2.5 font-mono border-b border-r border-slate-200 cursor-pointer"
                                   title="Click để chuyển tới bảng nguồn Gross Pay / Hold AE"
                                   onClick={() => {
                                     if (onTabChange) {
-                                      const targetTab = item.targetTabForAccLink;
-                                      localStorage.setItem("bulk_payment_right_tab", "reconcile");
-                                      const targetSearch = item.docId || item.grossPlusBenefitsId || "";
-                                      localStorage.setItem("master_ae_search", targetSearch);
+                                      const targetTab =
+                                        item.targetTabForAccLink;
+                                      localStorage.setItem(
+                                        "bulk_payment_right_tab",
+                                        "reconcile",
+                                      );
+                                      const targetSearch =
+                                        item.docId ||
+                                        item.grossPlusBenefitsId ||
+                                        "";
+                                      localStorage.setItem(
+                                        "master_ae_search",
+                                        targetSearch,
+                                      );
                                       onTabChange(targetTab);
-                                      window.dispatchEvent(new CustomEvent("master-ae-filter", { detail: { search: targetSearch, from: "BulkPayment" } }));
-                                      toast.info(`Đã chuyển tới bảng ${targetTab === "Sheet1_AE" ? "Gross Pay" : "HOLD AE"} và lọc ID NUMBER: ${targetSearch}`);
+                                      window.dispatchEvent(
+                                        new CustomEvent("master-ae-filter", {
+                                          detail: {
+                                            search: targetSearch,
+                                            from: "BulkPayment",
+                                          },
+                                        }),
+                                      );
+                                      toast.info(
+                                        `Đã chuyển tới bảng ${targetTab === "Sheet1_AE" ? "Gross Pay" : "HOLD AE"} và lọc ID NUMBER: ${targetSearch}`,
+                                      );
                                     }
                                   }}
                                 >
                                   <div className="font-mono font-semibold text-sky-600 flex items-center gap-1">
-                                    <span>{item.benefitsAccountNo || item.accountNo || "⚠️ Chưa có STK"}</span>
+                                    <span>
+                                      {item.benefitsAccountNo ||
+                                        item.accountNo ||
+                                        "⚠️ Chưa có STK"}
+                                    </span>
                                     <ExternalLink className="w-3 h-3 opacity-70" />
                                   </div>
                                 </td>
                                 <td className="p-2.5 text-right font-mono font-bold text-emerald-700 border-b border-r border-slate-200">
-                                  {formatMoneyVND(item.actualAmount).replace(" ₫", "")}
+                                  {formatMoneyVND(item.actualAmount).replace(
+                                    " ₫",
+                                    "",
+                                  )}
                                 </td>
                                 <td className="p-2.5 text-right font-mono text-slate-600 border-b border-r border-slate-200 bg-slate-50/40">
-                                  {formatMoneyVND(item.sheet1Amount).replace(" ₫", "")}
+                                  {formatMoneyVND(item.sheet1Amount).replace(
+                                    " ₫",
+                                    "",
+                                  )}
                                 </td>
                                 <td className="p-2.5 text-right font-mono text-slate-600 border-b border-r border-slate-200 bg-slate-50/40">
-                                  {item.holdAmount >= 0 ? "+" : ""}{formatMoneyVND(item.holdAmount).replace(" ₫", "")}
+                                  {item.holdAmount >= 0 ? "+" : ""}
+                                  {formatMoneyVND(item.holdAmount).replace(
+                                    " ₫",
+                                    "",
+                                  )}
                                 </td>
                                 <td className="p-2.5 text-right font-mono font-black text-slate-900 border-b border-r border-slate-200 bg-amber-50/40">
-                                  {formatMoneyVND(totalTargetBankAcc).replace(" ₫", "")}
+                                  {formatMoneyVND(totalTargetBankAcc).replace(
+                                    " ₫",
+                                    "",
+                                  )}
                                 </td>
-                                <td className={`p-2.5 text-center border-b border-r border-slate-200 ${!canSync ? "bg-slate-100/80 select-none" : "bg-white"}`}>
+                                <td
+                                  className={`p-2.5 text-center border-b border-r border-slate-200 ${!canSync ? "bg-slate-100/80 select-none" : "bg-white"}`}
+                                >
                                   {canSync ? (
                                     <button
                                       type="button"
-                                      onClick={() => handleAutoFillMissingAccount(item)}
+                                      onClick={() =>
+                                        handleAutoFillMissingAccount(item)
+                                      }
                                       className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition-all text-[10px] cursor-pointer shadow-xs flex items-center gap-1 mx-auto active:scale-95"
                                       title="Tự động điền STK & ID vào bảng đích"
                                     >
@@ -2520,36 +3554,49 @@ export function BulkPayment({
                                     </span>
                                   )}
                                 </td>
-                                <td className={`p-2.5 text-right font-mono font-black border-b border-r border-slate-200 ${
-                                  Math.abs(item.variance) < 1 ? "text-emerald-600" : "text-rose-600"
-                                }`}>
-                                  {item.variance > 0 ? "+" : ""}{formatMoneyVND(item.variance).replace(" ₫", "")}
+                                <td
+                                  className={`p-2.5 text-right font-mono font-black border-b border-r border-slate-200 ${
+                                    Math.abs(item.variance) < 1
+                                      ? "text-emerald-600"
+                                      : "text-rose-600"
+                                  }`}
+                                >
+                                  {item.variance > 0 ? "+" : ""}
+                                  {formatMoneyVND(item.variance).replace(
+                                    " ₫",
+                                    "",
+                                  )}
                                 </td>
                                 <td className="p-2.5 text-center border-b border-slate-200">
                                   <div className="flex flex-col items-center gap-1">
-                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold border leading-none ${
-                                      item.status === "MATCHED"
-                                        ? "bg-emerald-50 text-emerald-600 border-emerald-200"
-                                        : item.status === "VARIANCE"
-                                        ? "bg-amber-50 text-amber-700 border-amber-200"
-                                        : item.status === "MISSING_INFO"
-                                        ? "bg-rose-50 text-rose-600 border-rose-200"
-                                        : item.status === "DUPLICATE"
-                                        ? "bg-purple-50 text-purple-700 border-purple-200"
-                                        : "bg-slate-100 text-slate-600 border-slate-200"
-                                    }`}>
+                                    <span
+                                      className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold border leading-none ${
+                                        item.status === "MATCHED"
+                                          ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                                          : item.status === "VARIANCE"
+                                            ? "bg-amber-50 text-amber-700 border-amber-200"
+                                            : item.status === "MISSING_INFO"
+                                              ? "bg-rose-50 text-rose-600 border-rose-200"
+                                              : item.status === "DUPLICATE"
+                                                ? "bg-purple-50 text-purple-700 border-purple-200"
+                                                : "bg-slate-100 text-slate-600 border-slate-200"
+                                      }`}
+                                    >
                                       {item.status === "MATCHED"
                                         ? "KHỚP 100%"
                                         : item.status === "VARIANCE"
-                                        ? "CHÊNH LỆCH"
-                                        : item.status === "MISSING_INFO"
-                                        ? "THIẾU STK"
-                                        : item.status === "DUPLICATE"
-                                        ? "TRÙNG ID"
-                                        : "KHÔNG CÓ TRONG SHEET1"}
+                                          ? "CHÊNH LỆCH"
+                                          : item.status === "MISSING_INFO"
+                                            ? "THIẾU STK"
+                                            : item.status === "DUPLICATE"
+                                              ? "TRÙNG ID"
+                                              : "KHÔNG CÓ TRONG SHEET1"}
                                     </span>
                                     {item.issues.length > 0 && (
-                                      <span className="text-[9px] text-rose-700 font-extrabold max-w-[140px] truncate" title={item.issues.join(", ")}>
+                                      <span
+                                        className="text-[9px] text-rose-700 font-extrabold max-w-[140px] truncate"
+                                        title={item.issues.join(", ")}
+                                      >
                                         {item.issues.join(", ")}
                                       </span>
                                     )}
@@ -2578,17 +3625,30 @@ export function BulkPayment({
                     {/* Header summary of remaining hold */}
                     <div className="bg-[#FFFEFA] border border-primary/10 rounded-2xl p-6 shadow-[0_2px_15px_rgba(0,0,0,0.02)] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6">
                       <div className="max-w-md">
-                        <h4 className="font-display font-normal text-primary text-lg tracking-tight">Thống kê số dư Hold</h4>
+                        <h4 className="font-display font-normal text-primary text-lg tracking-tight">
+                          Thống kê số dư Hold
+                        </h4>
                         <p className="text-[10px] font-medium text-primary/50 uppercase tracking-[0.05em] block mt-1 leading-relaxed">
-                          Số dư còn Hold được tính bằng tổng các khoản Hold của tháng phát sinh trừ đi các khoản Add (giải toả) đã thực hiện.
+                          Số dư còn Hold được tính bằng tổng các khoản Hold của
+                          tháng phát sinh trừ đi các khoản Add (giải toả) đã
+                          thực hiện.
                         </p>
                       </div>
                       <div className="bg-white border border-primary/5 p-4 rounded-xl flex items-center justify-between gap-8 shrink-0 min-w-[280px] shadow-sm">
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-[9px] font-bold text-primary/40 uppercase tracking-widest block">Tổng số dư còn Hold</span>
+                          <span className="text-[9px] font-bold text-primary/40 uppercase tracking-widest block">
+                            Tổng số dư còn Hold
+                          </span>
                           <span className="text-2xl font-display font-normal text-rose-600 block mt-1 leading-none">
-                            {formatMoneyVND(remainingHoldByMonth.reduce((sum, item) => sum + item.remaining, 0)).replace(" ₫", "")}
-                            <span className="text-xs ml-1 font-sans font-bold opacity-60 italic">VND</span>
+                            {formatMoneyVND(
+                              remainingHoldByMonth.reduce(
+                                (sum, item) => sum + item.remaining,
+                                0,
+                              ),
+                            ).replace(" ₫", "")}
+                            <span className="text-xs ml-1 font-sans font-bold opacity-60 italic">
+                              VND
+                            </span>
                           </span>
                         </div>
                         <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100 shadow-sm shadow-rose-500/5">
@@ -2605,18 +3665,29 @@ export function BulkPayment({
                         const remaining = item.remaining;
 
                         return (
-                          <div key={idx} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col gap-4 hover:shadow-xs transition-shadow">
+                          <div
+                            key={idx}
+                            className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col gap-4 hover:shadow-xs transition-shadow"
+                          >
                             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                               <div>
-                                <h5 className="font-sans font-bold text-slate-800 text-sm uppercase tracking-wide">{item.month}</h5>
-                                <span className="text-[10px] font-semibold text-slate-400">Trạng thái số dư Hold</span>
+                                <h5 className="font-sans font-bold text-slate-800 text-sm uppercase tracking-wide">
+                                  {item.month}
+                                </h5>
+                                <span className="text-[10px] font-semibold text-slate-400">
+                                  Trạng thái số dư Hold
+                                </span>
                               </div>
-                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border leading-none font-sans ${
-                                remaining > 0 
-                                  ? "bg-rose-50 text-rose-600 border-rose-100" 
-                                  : "bg-emerald-50 text-emerald-600 border-emerald-100"
-                              }`}>
-                                {remaining > 0 ? `CÒN HOLD: ${formatMoneyVND(remaining).replace(" ₫", "")}` : "ĐÃ GIẢI TOẢ"}
+                              <span
+                                className={`px-2.5 py-1 rounded-full text-[10px] font-bold border leading-none font-sans ${
+                                  remaining > 0
+                                    ? "bg-rose-50 text-rose-600 border-rose-100"
+                                    : "bg-emerald-50 text-emerald-600 border-emerald-100"
+                                }`}
+                              >
+                                {remaining > 0
+                                  ? `CÒN HOLD: ${formatMoneyVND(remaining).replace(" ₫", "")}`
+                                  : "ĐÃ GIẢI TOẢ"}
                               </span>
                             </div>
 
@@ -2626,43 +3697,84 @@ export function BulkPayment({
                                 <table className="w-full text-left border-separate border-spacing-0 text-[11px] font-sans">
                                   <thead className="sticky top-0 bg-slate-100 text-slate-700 z-10">
                                     <tr>
-                                      <th className="p-2 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-100">Đơn vị (BU)</th>
-                                      <th className="p-2 text-right font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-100">Hold</th>
-                                      <th className="p-2 text-right font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-100">Chi thêm</th>
-                                      <th className="p-2 text-right font-bold uppercase tracking-wider text-[9px] border-b border-slate-300 bg-slate-100">Chênh lệch</th>
+                                      <th className="p-2 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-100">
+                                        Đơn vị (BU)
+                                      </th>
+                                      <th className="p-2 text-right font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-100">
+                                        Hold
+                                      </th>
+                                      <th className="p-2 text-right font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-100">
+                                        Chi thêm
+                                      </th>
+                                      <th className="p-2 text-right font-bold uppercase tracking-wider text-[9px] border-b border-slate-300 bg-slate-100">
+                                        Chênh lệch
+                                      </th>
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {Object.entries(item.bus || {}).map(([buName, buVal]: any) => {
-                                      const buHold = buVal.holdAmount || 0;
-                                      const buAdd = buVal.addAmount || 0;
-                                      const buRem = buVal.remaining || 0;
-                                      return (
-                                        <tr key={buName} className="bg-white">
-                                          <td className="p-2 font-bold text-slate-700 border-b border-r border-slate-200">{buName}</td>
-                                          <td className="p-2 text-right font-mono text-slate-600 font-medium border-b border-r border-slate-200">
-                                            {buHold > 0 ? formatMoneyVND(buHold).replace(" ₫", "") : "0"}
-                                          </td>
-                                          <td className="p-2 text-right font-mono text-emerald-600 font-semibold border-b border-r border-slate-200">
-                                            {buAdd > 0 ? `-${formatMoneyVND(buAdd).replace(" ₫", "")}` : "0"}
-                                          </td>
-                                          <td className={`p-2 text-right font-mono font-bold border-b border-slate-200 ${buRem > 0 ? "text-rose-600" : buRem < 0 ? "text-emerald-600" : "text-slate-400"}`}>
-                                            {buRem !== 0 ? formatMoneyVND(buRem).replace(" ₫", "") : "0"}
-                                          </td>
-                                        </tr>
-                                      );
-                                    })}
+                                    {Object.entries(item.bus || {}).map(
+                                      ([buName, buVal]: any) => {
+                                        const buHold = buVal.holdAmount || 0;
+                                        const buAdd = buVal.addAmount || 0;
+                                        const buRem = buVal.remaining || 0;
+                                        return (
+                                          <tr key={buName} className="bg-white">
+                                            <td className="p-2 font-bold text-slate-700 border-b border-r border-slate-200">
+                                              {buName}
+                                            </td>
+                                            <td className="p-2 text-right font-mono text-slate-600 font-medium border-b border-r border-slate-200">
+                                              {buHold > 0
+                                                ? formatMoneyVND(
+                                                    buHold,
+                                                  ).replace(" ₫", "")
+                                                : "0"}
+                                            </td>
+                                            <td className="p-2 text-right font-mono text-emerald-600 font-semibold border-b border-r border-slate-200">
+                                              {buAdd > 0
+                                                ? `-${formatMoneyVND(buAdd).replace(" ₫", "")}`
+                                                : "0"}
+                                            </td>
+                                            <td
+                                              className={`p-2 text-right font-mono font-bold border-b border-slate-200 ${buRem > 0 ? "text-rose-600" : buRem < 0 ? "text-emerald-600" : "text-slate-400"}`}
+                                            >
+                                              {buRem !== 0
+                                                ? formatMoneyVND(buRem).replace(
+                                                    " ₫",
+                                                    "",
+                                                  )
+                                                : "0"}
+                                            </td>
+                                          </tr>
+                                        );
+                                      },
+                                    )}
                                     {/* Total row */}
                                     <tr className="bg-slate-50 font-bold">
-                                      <td className="p-2 text-slate-700 font-bold uppercase tracking-wider text-[9px] border-b border-r border-slate-300 bg-slate-100">Tổng cộng</td>
+                                      <td className="p-2 text-slate-700 font-bold uppercase tracking-wider text-[9px] border-b border-r border-slate-300 bg-slate-100">
+                                        Tổng cộng
+                                      </td>
                                       <td className="p-2 text-right font-mono text-slate-800 font-bold border-b border-r border-slate-300 bg-slate-100">
-                                        {totalHold > 0 ? formatMoneyVND(totalHold).replace(" ₫", "") : "0"}
+                                        {totalHold > 0
+                                          ? formatMoneyVND(totalHold).replace(
+                                              " ₫",
+                                              "",
+                                            )
+                                          : "0"}
                                       </td>
                                       <td className="p-2 text-right font-mono text-emerald-700 font-bold border-b border-r border-slate-300 bg-slate-100">
-                                        {totalAdd > 0 ? `-${formatMoneyVND(totalAdd).replace(" ₫", "")}` : "0"}
+                                        {totalAdd > 0
+                                          ? `-${formatMoneyVND(totalAdd).replace(" ₫", "")}`
+                                          : "0"}
                                       </td>
-                                      <td className={`p-2 text-right font-mono font-bold border-b border-slate-300 bg-slate-100 ${remaining > 0 ? "text-rose-700" : remaining < 0 ? "text-emerald-700" : "text-slate-500"}`}>
-                                        {remaining !== 0 ? formatMoneyVND(remaining).replace(" ₫", "") : "0"}
+                                      <td
+                                        className={`p-2 text-right font-mono font-bold border-b border-slate-300 bg-slate-100 ${remaining > 0 ? "text-rose-700" : remaining < 0 ? "text-emerald-700" : "text-slate-500"}`}
+                                      >
+                                        {remaining !== 0
+                                          ? formatMoneyVND(remaining).replace(
+                                              " ₫",
+                                              "",
+                                            )
+                                          : "0"}
                                       </td>
                                     </tr>
                                   </tbody>
@@ -2715,7 +3827,10 @@ export function BulkPayment({
       </Dialog>
 
       {/* Delete Confirmation Modal Dialog with Save */}
-      <Dialog open={!!deleteConfirmTarget} onOpenChange={(open) => !open && setDeleteConfirmTarget(null)}>
+      <Dialog
+        open={!!deleteConfirmTarget}
+        onOpenChange={(open) => !open && setDeleteConfirmTarget(null)}
+      >
         <DialogContent className="sm:max-w-md bg-white border border-slate-200 shadow-2xl rounded-2xl p-6">
           <DialogHeader className="gap-2">
             <DialogTitle className="flex items-center gap-2.5 text-rose-600 font-extrabold text-base">
@@ -2732,17 +3847,37 @@ export function BulkPayment({
           {deleteConfirmTarget?.row && (
             <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200/80 text-xs flex flex-col gap-1.5 text-slate-800">
               <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-semibold">Người thụ hưởng:</span>
-                <strong className="text-slate-900 font-bold">{deleteConfirmTarget.row["Beneficiary Name"] || deleteConfirmTarget.row["Full name"] || "N/A"}</strong>
+                <span className="text-slate-500 font-semibold">
+                  Người thụ hưởng:
+                </span>
+                <strong className="text-slate-900 font-bold">
+                  {deleteConfirmTarget.row["Beneficiary Name"] ||
+                    deleteConfirmTarget.row["Full name"] ||
+                    "N/A"}
+                </strong>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-semibold">STK Ngân hàng:</span>
-                <strong className="font-mono text-slate-900">{deleteConfirmTarget.row["Beneficiary Account No."] || deleteConfirmTarget.row["Bank Account Number"] || "N/A"}</strong>
+                <span className="text-slate-500 font-semibold">
+                  STK Ngân hàng:
+                </span>
+                <strong className="font-mono text-slate-900">
+                  {deleteConfirmTarget.row["Beneficiary Account No."] ||
+                    deleteConfirmTarget.row["Bank Account Number"] ||
+                    "N/A"}
+                </strong>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-semibold">Số tiền chuyển:</span>
+                <span className="text-slate-500 font-semibold">
+                  Số tiền chuyển:
+                </span>
                 <strong className="font-mono text-emerald-700 font-extrabold">
-                  {formatMoneyVND(parseMoneyToNumber(deleteConfirmTarget.row["Payment Amount"] || deleteConfirmTarget.row["Payment amount"] || 0))}
+                  {formatMoneyVND(
+                    parseMoneyToNumber(
+                      deleteConfirmTarget.row["Payment Amount"] ||
+                        deleteConfirmTarget.row["Payment amount"] ||
+                        0,
+                    ),
+                  )}
                 </strong>
               </div>
             </div>
@@ -2750,12 +3885,18 @@ export function BulkPayment({
 
           {deleteConfirmTarget?.rows && deleteConfirmTarget.rows.length > 0 && (
             <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200/80 text-xs text-slate-800">
-              Đang chọn xóa <strong className="text-rose-600 font-extrabold">{deleteConfirmTarget.rows.length}</strong> dòng giao dịch khỏi Bảng kê Bank Export.
+              Đang chọn xóa{" "}
+              <strong className="text-rose-600 font-extrabold">
+                {deleteConfirmTarget.rows.length}
+              </strong>{" "}
+              dòng giao dịch khỏi Bảng kê Bank Export.
             </div>
           )}
 
           <div className="bg-amber-50/90 border border-amber-200 p-3 rounded-xl text-[11px] text-amber-900 leading-relaxed font-medium">
-            💡 Sau khi bạn bấm <strong>Bấm lưu & Cập nhật</strong>, dòng giao dịch sẽ bị xóa và các chỉ số tổng hợp BU, chênh lệch ròng cùng bảng đối soát sẽ tự động tính toán lại theo số liệu mới.
+            💡 Sau khi bạn bấm <strong>Bấm lưu & Cập nhật</strong>, dòng giao
+            dịch sẽ bị xóa và các chỉ số tổng hợp BU, chênh lệch ròng cùng bảng
+            đối soát sẽ tự động tính toán lại theo số liệu mới.
           </div>
 
           <DialogFooter className="gap-2 sm:gap-2 pt-2 border-t border-slate-100">
@@ -2772,11 +3913,16 @@ export function BulkPayment({
               onClick={() => {
                 if (deleteConfirmTarget?.row) {
                   handleDeleteRow(deleteConfirmTarget.row);
-                } else if (deleteConfirmTarget?.rows && deleteConfirmTarget.rows.length > 0) {
+                } else if (
+                  deleteConfirmTarget?.rows &&
+                  deleteConfirmTarget.rows.length > 0
+                ) {
                   handleDeleteRows(deleteConfirmTarget.rows);
                 }
                 setDeleteConfirmTarget(null);
-                toast.success("Đã xóa dòng giao dịch và lưu cập nhật dữ liệu thành công!");
+                toast.success(
+                  "Đã xóa dòng giao dịch và lưu cập nhật dữ liệu thành công!",
+                );
               }}
               className="px-4 py-2 text-xs font-extrabold bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-xs flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
             >
