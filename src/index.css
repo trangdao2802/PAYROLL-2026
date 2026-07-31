@@ -384,6 +384,35 @@ button[aria-label*="secret" i]:focus-visible, button[title*="secret" i]:focus-vi
     position: relative !important;
   }
 
+  /* DEBUG: temporary outlines to inspect layout boxes */
+  .debug-layout-outline .master-ae-table-wrapper,
+  .debug-layout-outline .data-table-wrapper,
+  .debug-layout-outline .hold-dashboard-card {
+    outline: 2px dashed rgba(220, 38, 36, 0.85) !important;
+    outline-offset: -2px !important;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.6) inset !important;
+  }
+
+  .debug-layout-outline .master-ae-table-wrapper::after {
+    content: "MASTER-AE-WRAPPER";
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(37,99,235,0.9);
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    z-index: 999999 !important;
+  }
+
+  /* Make tables in data-table-wrapper use auto layout so columns size to content after sanitizing widths */
+  .data-table-wrapper table {
+    table-layout: auto !important;
+    min-width: 600px !important;
+    width: auto !important;
+  }
+
   .master-ae-table-wrapper .data-table-wrapper {
     display: flex !important;
     flex-direction: column !important;

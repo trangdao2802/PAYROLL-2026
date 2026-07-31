@@ -550,7 +550,7 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
 
     return (
       <div 
-        className="master-ae-table-wrapper hold-dashboard-card flex-1 flex flex-col min-h-0 min-w-0 w-full h-full px-0 py-0 m-0 relative overflow-hidden gap-0 bg-white border border-slate-300 dark:border-slate-700 shadow-xs"
+            className="master-ae-table-wrapper hold-dashboard-card debug-layout-outline flex-1 flex flex-col min-h-0 min-w-0 w-full h-full px-0 py-0 m-0 relative overflow-hidden gap-0 bg-white border border-slate-300 dark:border-slate-700 shadow-xs"
         style={{ borderRadius: "0px", borderWidth: "1px", borderColor: "#cbd5e1" }}
       >
         {/* Top Toolbar Header with Settings Button */}

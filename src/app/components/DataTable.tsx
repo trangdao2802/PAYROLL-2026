@@ -1195,13 +1195,29 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
 
       if (hasUpdates) {
         setHiddenColumns(initStates.hiddenColumns);
-        setColumnWidths(initStates.columnWidths);
-        setColumnTypes(initStates.columnTypes);
-        setColumnFormats(initStates.columnFormats);
-        setSortConfig(initStates.sortConfig);
-        setItemsPerPage(initStates.itemsPerPage);
-        setRowDensity(initStates.rowDensity);
-      }
+              // Sanitize loaded column widths: ensure numeric px values and reasonable minimum to avoid collapse
+              const sanitizedWidths: Record<string, number> = {};
+              try {
+                Object.entries(initStates.columnWidths || {}).forEach(([k, v]) => {
+                  let num = Number(v as any) || 0;
+                  // If v is a string like '120px', parseInt will extract number
+                  if (typeof v === 'string' && /px$/.test((v as string).trim())) {
+                    num = parseInt((v as string).trim().replace(/px$/, ''), 10) || num;
+                  }
+                  // Clamp to minimum 60px and maximum 2000px
+                  num = Math.max(60, Math.min(2000, Math.round(num)));
+                  sanitizedWidths[k] = num;
+                });
+              } catch (e) {
+                console.error('Failed to sanitize column widths', e);
+              }
+              setColumnWidths(sanitizedWidths);
+              setColumnTypes(initStates.columnTypes);
+              setColumnFormats(initStates.columnFormats);
+              setSortConfig(initStates.sortConfig);
+              setItemsPerPage(initStates.itemsPerPage);
+              setRowDensity(initStates.rowDensity);
+            }
     }, [storageKey]);
 
 
@@ -2597,7 +2613,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
               onMouseDown={(e) => handleResizeStart(e, col.key)}
               onDoubleClick={() => handleResizeDoubleClick(col.key)}
               className={`absolute -right-[8px] top-0 bottom-0 w-[16px] cursor-col-resize group/resizer z-[70] flex justify-center`}
-              style={cIdx === 15 ? { width: 0, height: 0, opacity: 0, pointerEvents: "none" } : {}}
+              style={{}}
             >
               <div
                 className={`w-[1px] h-full transition-colors bg-transparent group-hover/resizer:bg-accent/40 ${resizingCol?.key === col.key ? "bg-accent" : ""}`}
