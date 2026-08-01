@@ -159,12 +159,15 @@ export function TimesheetInputTable({
       } as React.CSSProperties}
     >
       <div className="relative flex flex-col flex-1 min-h-0 bg-white p-0">
-        <div className="flex-1 overflow-auto custom-scrollbar bg-white relative min-h-0 shadow-none p-0 border-0 scroll-pt-0">
+        <div 
+          className="flex-1 overflow-auto custom-scrollbar bg-white relative min-h-0 shadow-none p-0 scroll-pt-0"
+          style={{ borderWidth: "0.5px", borderStyle: "solid", borderColor: "#E2E8F0" }}
+        >
           <table className="w-full min-w-max border-separate border-spacing-0 border-l border-t border-[#E2E8F0]" style={{ tableLayout: "fixed" }}>
           <thead>
             <tr>
               <th 
-                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-xs font-bold uppercase tracking-wider text-accent px-3 py-3 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
+                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-[10px] font-bold uppercase tracking-wider text-accent px-2.5 py-1.5 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
                 style={{ width: colWidths.no }}
               >
                 <span>No.</span>
@@ -174,7 +177,7 @@ export function TimesheetInputTable({
                 />
               </th>
               <th 
-                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-xs font-bold uppercase tracking-wider text-accent px-3 py-3 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
+                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-[10px] font-bold uppercase tracking-wider text-accent px-2.5 py-1.5 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
                 style={{ width: colWidths.l07 }}
               >
                 <span>L07</span>
@@ -184,7 +187,7 @@ export function TimesheetInputTable({
                 />
               </th>
               <th 
-                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-xs font-bold uppercase tracking-wider text-accent px-3 py-3 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
+                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-[10px] font-bold uppercase tracking-wider text-accent px-2.5 py-1.5 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
                 style={{ width: colWidths.aeCode }}
               >
                 <span>Mã AE</span>
@@ -194,7 +197,7 @@ export function TimesheetInputTable({
                 />
               </th>
               <th 
-                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-xs font-bold uppercase tracking-wider text-accent px-3 py-3 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
+                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-[10px] font-bold uppercase tracking-wider text-accent px-2.5 py-1.5 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
                 style={{ width: colWidths.bus }}
               >
                 <span>Business</span>
@@ -204,7 +207,7 @@ export function TimesheetInputTable({
                 />
               </th>
               <th 
-                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-xs font-bold uppercase tracking-wider text-accent px-3 py-3 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
+                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-[10px] font-bold uppercase tracking-wider text-accent px-2.5 py-1.5 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
                 style={{ width: colWidths.file }}
               >
                 <span>File / Link</span>
@@ -214,7 +217,7 @@ export function TimesheetInputTable({
                 />
               </th>
               <th 
-                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-xs font-bold uppercase tracking-wider text-accent px-3 py-3 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
+                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-[10px] font-bold uppercase tracking-wider text-accent px-2.5 py-1.5 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
                 style={{ width: colWidths.date }}
               >
                 <span>Ngày Upload</span>
@@ -224,7 +227,7 @@ export function TimesheetInputTable({
                 />
               </th>
               <th 
-                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-xs font-bold uppercase tracking-wider text-accent px-3 py-3 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
+                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-[10px] font-bold uppercase tracking-wider text-accent px-2.5 py-1.5 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
                 style={{ width: colWidths.status }}
               >
                 <span>Trạng Thái</span>
@@ -234,7 +237,7 @@ export function TimesheetInputTable({
                 />
               </th>
               <th 
-                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-xs font-bold uppercase tracking-wider text-accent px-3 py-3 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
+                className="sticky top-0 z-[110] bg-slate-100 border-b border-r border-[#E2E8F0] text-[10px] font-bold uppercase tracking-wider text-accent px-2.5 py-1.5 text-center whitespace-nowrap group select-none shadow-[0_1px_0_#E2E8F0]"
                 style={{ width: colWidths.actions }}
               >
                 <span>Actions</span>
@@ -552,7 +555,7 @@ export function TimesheetInputTable({
       {/* Footer Controls matching DataTable format */}
       <div 
         className="px-4 py-1.5 h-auto bg-white border-t border-accent/20 flex items-center justify-between shrink-0 relative z-40 rounded-b-2xl"
-        style={{ paddingTop: "12px", paddingBottom: "12px" }}
+        style={{ paddingTop: "12px", paddingBottom: "12px", borderWidth: "0.2px", borderStyle: "solid" }}
       >
         <div className="flex items-center gap-3 text-[0.625rem] font-bold uppercase tracking-widest text-accent/30">
 

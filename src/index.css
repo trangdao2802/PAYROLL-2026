@@ -203,26 +203,6 @@
     color: var(--foreground);
 }
 
-/* Make action-area buttons more prominent by default (useful for 'Add' CTAs like Add secret). */
-.actions button[data-slot="button"], .actions .btn-prominent, .actions .btn-primary,
-button[aria-label*="secret" i], button[title*="secret" i], [data-testid*="secret" i], .btn-secret {
-  background: #2563EB !important; /* blue-600 */
-  color: #ffffff !important;
-  box-shadow: 0 10px 24px rgba(37,99,235,0.18) !important;
-  border: none !important;
-  transform: translateY(0) !important;
-}
-.actions button[data-slot="button"]:hover, .actions .btn-prominent:hover, .actions .btn-primary:hover,
-button[aria-label*="secret" i]:hover, button[title*="secret" i]:hover, [data-testid*="secret" i]:hover, .btn-secret:hover {
-  background: #1E40AF !important; /* blue-800 */
-  box-shadow: 0 14px 36px rgba(30,64,175,0.22) !important;
-}
-.actions button[data-slot="button"]:focus-visible, .actions .btn-prominent:focus-visible, .actions .btn-primary:focus-visible,
-button[aria-label*="secret" i]:focus-visible, button[title*="secret" i]:focus-visible, [data-testid*="secret" i]:focus-visible, .btn-secret:focus-visible {
-  outline: 3px solid rgba(37,99,235,0.18) !important;
-  outline-offset: 2px !important;
-}
-
 .dark {
   --background: #5d111a;
   --foreground: #f6f4f0;
@@ -417,7 +397,7 @@ button[aria-label*="secret" i]:focus-visible, button[title*="secret" i]:focus-vi
     position: sticky !important;
     bottom: 0 !important;
     z-index: 45 !important;
-    background-color: #FAF9F6 !important;
+    background-color: var(--table-header-bg, var(--secondary, #FAF9F6)) !important;
     color: var(--accent, #1e293b) !important;
     font-weight: 700 !important;
     font-size: 0.75rem !important;
@@ -582,13 +562,27 @@ button[aria-label*="secret" i]:focus-visible, button[title*="secret" i]:focus-vi
     overflow: hidden;
   }
 
-  .data-table-wrapper th {
-    background-color: #FAF9F6 !important;
+  table th,
+  .data-table-wrapper th,
+  .pivot-table-container th,
+  .master-ae-table-wrapper th,
+  .audit-data-table-wrapper th {
+    background-color: var(--table-header-bg, var(--secondary, #FAF9F6)) !important;
     text-transform: uppercase !important;
     letter-spacing: 0.1em !important;
     font-weight: 700 !important;
     color: var(--accent) !important;
     border-bottom: 1px solid var(--border) !important;
+    text-align: center !important;
+  }
+
+  table th > div,
+  .data-table-wrapper th > div,
+  .pivot-table-container th > div,
+  .master-ae-table-wrapper th > div,
+  .audit-data-table-wrapper th > div {
+    justify-content: center !important;
+    text-align: center !important;
   }
 
   .data-table-wrapper th.academic-group {
@@ -610,11 +604,13 @@ button[aria-label*="secret" i]:focus-visible, button[title*="secret" i]:focus-vi
 
   .data-table-wrapper tfoot td,
   .master-ae-table-wrapper tfoot td,
+  .pivot-table-container tfoot td,
   .data-table-wrapper .total-row,
   .master-ae-table-wrapper .total-row,
+  .pivot-table-container .total-row,
   .master-ae-table-wrapper tfoot tr td,
   .data-table-wrapper tfoot tr td {
-    background-color: #FAF9F6 !important;
+    background-color: var(--table-header-bg, var(--secondary, #FAF9F6)) !important;
     color: var(--accent, #1e293b) !important;
     font-weight: 700 !important;
     font-size: 0.75rem !important;
@@ -992,40 +988,12 @@ div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-
   box-shadow: none !important;
 }
 
-/* Responsive helpers: prevent overflow, allow breaking long words, and provide table wrapper */
-.break-anywhere {
-  overflow-wrap: anywhere !important;
-  word-break: break-word !important;
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div#dashboard-container:nth-of-type(1) > div:nth-of-type(1) {
+  padding-top: 12px !important;
 }
 
-.safe-overflow {
-  max-width: 100% !important;
-  overflow-wrap: anywhere !important;
-  word-break: break-word !important;
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  padding-top: 12px !important;
 }
 
-.table-responsive {
-  width: 100% !important;
-  overflow-x: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-}
 
-/* Small-screen friendly adjustments */
-@media (max-width: 640px) {
-  /* Reduce global table padding to avoid horizontal overflow */
-  table th, table td {
-    padding: 8px 10px !important;
-  }
-
-  /* Force main content to use compact paddings */
-  .content-area {
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
-  }
-
-  /* Ensure root content doesn't force a wider layout */
-  #main-content, .table-container, .data-table-wrapper {
-    min-width: 0 !important;
-    max-width: 100% !important;
-  }
-}

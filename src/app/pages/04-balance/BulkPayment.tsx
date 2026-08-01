@@ -41,8 +41,13 @@ import {
   X,
   Scale,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   ExternalLink,
   Zap,
+  LayoutDashboard,
 } from "lucide-react";
 import {
   parseMoneyToNumber,
@@ -238,14 +243,18 @@ export function BulkPayment({
       );
   }, []);
   const [reconcileFilterStatus, setReconcileFilterStatus] = useState<
-    "ALL" | "MATCHED" | "VARIANCE" | "MISSING_INFO" | "DUPLICATE"
-  >("VARIANCE");
+    "ALL" | "MATCHED" | "VARIANCE" | "MISSING_INFO" | "DUPLICATE" | ""
+  >("");
   const [reconcileSelectedBU, setReconcileSelectedBU] = useState<string>("ALL");
   const [reconcileSearchQuery, setReconcileSearchQuery] = useState<string>("");
   const [showNorthOnly, setShowNorthOnly] = useState(false);
   const [adjustmentFilter, setAdjustmentFilter] = useState<
     "ALL" | "HOLD" | "ADD" | "BONUS"
   >("ALL");
+
+  const [reconcileCurrentPage, setReconcileCurrentPage] = useState<number>(1);
+  const [reconcileRowsPerPage, setReconcileRowsPerPage] = useState<number | "all">(20);
+  const [selectedBUGroup, setSelectedBUGroup] = useState<string>("ALL");
 
   const showLeftCard =
     propShowLeftCard !== undefined ? propShowLeftCard : internalShowLeftCard;
@@ -772,7 +781,7 @@ export function BulkPayment({
       if (bu) bu = String(bu).trim().toUpperCase();
       if (bu === "AHN_HP") bu = "AHP";
 
-      if (!bu || bu === "UNKNOWN") {
+      if (!bu || bu === "Other") {
         const textToMatch = [
           r["Sheet Source"],
           r["CENTER NOTE"],
@@ -923,7 +932,7 @@ export function BulkPayment({
           "",
       ).trim();
       let bu = String(
-        row["_fileBank"] || row["Business"] || row["BU"] || "Unknown",
+        row["_fileBank"] || row["Business"] || row["BU"] || "Other",
       ).trim();
       if (bu === "AHN_HP") bu = "AHP";
 
@@ -1375,7 +1384,7 @@ export function BulkPayment({
           r["Ngân hàng"] ||
           "",
       ).trim();
-      let bu = String(r["BU"] || r["Business"] || "Unknown").trim();
+      let bu = String(r["BU"] || r["Business"] || "Other").trim();
       if (bu === "AHN_HP") bu = "AHP";
 
       const key = (displayDocId || name).toLowerCase();
@@ -1435,7 +1444,7 @@ export function BulkPayment({
           r["Ngân hàng"] ||
           "",
       ).trim();
-      let bu = String(r["BU"] || r["Business"] || "Unknown").trim();
+      let bu = String(r["BU"] || r["Business"] || "Other").trim();
       if (bu === "AHN_HP") bu = "AHP";
 
       const key = (displayDocId || name).toLowerCase();
@@ -1520,16 +1529,30 @@ export function BulkPayment({
     isMonthInStrComp,
   ]);
 
+  const activeIssueCategoriesCount = 
+    (reconciliationAudit.varianceCount > 0 ? 1 : 0) + 
+    (reconciliationAudit.missingInfoCount > 0 ? 1 : 0) + 
+    (reconciliationAudit.duplicateCount > 0 ? 1 : 0);
+
+  const shouldShowFilterDiv = activeIssueCategoriesCount > 1;
+
+  const effectiveReconcileFilterStatus = reconcileFilterStatus !== "" 
+    ? reconcileFilterStatus 
+    : (reconciliationAudit.varianceCount > 0 ? "VARIANCE" 
+       : reconciliationAudit.duplicateCount > 0 ? "DUPLICATE" 
+       : reconciliationAudit.missingInfoCount > 0 ? "MISSING_INFO" 
+       : "MATCHED");
+
   const filteredTransactionAudits = useMemo(() => {
     return reconciliationAudit.transactionAuditList.filter((item) => {
       if (reconcileSelectedBU !== "ALL" && item.bu !== reconcileSelectedBU) {
         return false;
       }
-      if (reconcileFilterStatus === "ALL") {
+      if (effectiveReconcileFilterStatus === "ALL") {
         if (item.status === "MATCHED") {
           return false;
         }
-      } else if (item.status !== reconcileFilterStatus) {
+      } else if (item.status !== effectiveReconcileFilterStatus) {
         return false;
       }
       if (reconcileSearchQuery.trim()) {
@@ -1556,9 +1579,20 @@ export function BulkPayment({
   }, [
     reconciliationAudit.transactionAuditList,
     reconcileSelectedBU,
-    reconcileFilterStatus,
+    effectiveReconcileFilterStatus,
     reconcileSearchQuery,
   ]);
+
+  const totalItems = filteredTransactionAudits.length;
+  const itemsPerPage = reconcileRowsPerPage === "all" ? totalItems : reconcileRowsPerPage;
+  const totalPages = itemsPerPage > 0 ? Math.ceil(totalItems / itemsPerPage) : 1;
+  const safePage = Math.min(reconcileCurrentPage, totalPages) || 1;
+
+  const paginatedTransactionAudits = useMemo(() => {
+    if (reconcileRowsPerPage === "all") return filteredTransactionAudits;
+    const start = (safePage - 1) * itemsPerPage;
+    return filteredTransactionAudits.slice(start, start + itemsPerPage);
+  }, [filteredTransactionAudits, safePage, itemsPerPage, reconcileRowsPerPage]);
 
   const handleAutoFillMissingAccountBulk = useCallback(() => {
     const itemsToSync = filteredTransactionAudits.filter(
@@ -1824,97 +1858,53 @@ export function BulkPayment({
       className="flex-1 w-full min-h-0 flex flex-row gap-2 bg-transparent overflow-hidden p-0 relative"
       style={{
         borderWidth: "0px",
-        paddingBottom: "0px",
-        paddingTop: "0px",
-        paddingLeft: "0px",
-        paddingRight: "0px",
+        paddingBottom: "12px",
+        paddingTop: "12px",
+        paddingLeft: "24px",
+        paddingRight: "20px",
       }}
     >
       {/* Left Panel - Actions & Info (Unified Scrollable Card) */}
       {showLeftCard && (
         <div
-          className="w-[320px] bg-white border-r border-slate-200 flex flex-col gap-0 shrink-0 overflow-hidden min-h-0 relative select-text shadow-sm h-full rounded-l-2xl"
+          className="w-[340px] bg-white border-r border-slate-200/80 flex flex-col gap-0 shrink-0 overflow-hidden min-h-0 relative select-text shadow-sm h-full rounded-2xl mr-4"
           style={{
-            borderRadius: "0px",
-            backgroundColor: "#faf6fa",
-            paddingLeft: "0px",
-            paddingRight: "0px",
-            marginRight: "20px",
+            backgroundColor: "#faf8fa",
           }}
         >
           {/* Header */}
           <div
-            className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-white sticky top-0 z-20 shrink-0"
+            className="flex items-center justify-between px-5 border-b border-slate-200/80 sticky top-0 z-25 shrink-0 box-border"
             style={{
-              paddingLeft: "0px",
-              paddingTop: "12px",
-              paddingBottom: "12px",
-              paddingRight: "0px",
-              backgroundColor: "#f5f4f7",
-              borderColor: "#ede5f0",
-              borderWidth: "0.3px",
+              height: "73px",
+              minHeight: "73px",
+              maxHeight: "73px",
+              backgroundColor: "#F5F4F5",
             }}
           >
-            <div
-              className="flex flex-col gap-0.5"
-              style={{
-                borderRadius: "0px",
-                paddingLeft: "12px",
-                paddingRight: "12px",
-                paddingBottom: "12px",
-                paddingTop: "12px",
-              }}
-            >
-              <div
-                style={{
-                  paddingLeft: "6px",
-                  paddingRight: "6px",
-                  paddingBottom: "6px",
-                  paddingTop: "6px",
-                  backgroundColor: "#fbf2f8",
-                  borderWidth: "0.5px",
-                  borderStyle: "solid",
-                  borderColor: "#fbf2f8",
-                }}
-              >
-                <span
-                  className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary block"
-                  style={{ fontSize: "10px" }}
-                >
-                  Statement
-                </span>
-                <h2
-                  className="text-sm font-black text-slate-900 uppercase tracking-tight font-display"
-                  style={{ fontSize: "14px" }}
-                >
-                  Reconciliation
-                </h2>
-              </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-primary block">
+                Statement
+              </span>
+              <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight font-display">
+                Bulk Payment Hub
+              </h2>
             </div>
 
-            <div
-              className="flex items-center gap-1.5"
-              style={{ paddingTop: "2px", paddingBottom: "3px" }}
-            >
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={handleCopyReport}
-                className="p-1.5 text-slate-500 hover:text-slate-950 transition-all active:scale-95 bg-slate-50 hover:bg-slate-100 rounded-lg shrink-0 border border-slate-200/60 flex items-center justify-center cursor-pointer"
+                className="p-2 text-slate-500 hover:text-slate-950 transition-all active:scale-95 bg-slate-50 hover:bg-slate-100 rounded-xl shrink-0 border border-slate-200/80 flex items-center justify-center cursor-pointer shadow-2xs"
                 title="Sao chép toàn bộ thông tin"
-                style={{ fontSize: "11px" }}
               >
-                <Copy className="w-3.5 h-3.5" />
+                <Copy className="w-4 h-4" />
               </button>
             </div>
           </div>
 
           <div
-            className="flex items-center gap-1 p-1.5 bg-slate-50/50 border-b border-slate-100 shrink-0"
-            style={{
-              borderRadius: "0px",
-              borderWidth: "0px",
-              paddingTop: "20px",
-              paddingBottom: "20px",
-            }}
+            className="flex items-center gap-1.5 p-2 bg-slate-100/60 border-b shrink-0"
+            style={{ borderColor: "#f0e3ef" }}
           >
             {[
               { id: "summary", label: "Overview", icon: Layers },
@@ -1928,10 +1918,10 @@ export function BulkPayment({
               <button
                 key={t.id}
                 onClick={() => setActiveLeftTab(t.id as any)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[9.5px] font-extrabold uppercase tracking-wider transition-all cursor-pointer active:scale-[0.98] active:translate-y-[1px] ${
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-[10px] font-extrabold uppercase tracking-wider transition-all cursor-pointer active:scale-[0.98] active:translate-y-[1px] ${
                   activeLeftTab === t.id
-                    ? "bg-slate-800 text-white shadow-md border border-slate-700"
-                    : "bg-white text-slate-500 border border-slate-200/80 hover:text-slate-800 hover:bg-slate-50 shadow-xs"
+                    ? "bg-slate-900 text-white shadow-md border border-slate-800"
+                    : "bg-white text-slate-600 border border-slate-200/80 hover:text-slate-900 hover:bg-slate-50 shadow-2xs"
                 }`}
               >
                 <t.icon className="w-3.5 h-3.5" />
@@ -1948,6 +1938,7 @@ export function BulkPayment({
               paddingLeft: "15px",
               paddingBottom: "15px",
               paddingRight: "15px",
+              borderColor: "#ecdcef",
             }}
           >
             <AnimatePresence mode="wait">
@@ -1968,7 +1959,7 @@ export function BulkPayment({
                   {/* Total Overview - Premium Minimal Dark Style */}
                   <div
                     className="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 px-4 shadow-md flex flex-col justify-center relative overflow-hidden group"
-                    style={{ height: "47.7476px" }}
+                    style={{ height: "63.8638px" }}
                   >
                     <div className="absolute top-0 right-0 w-28 h-28 bg-primary/10 rounded-full blur-2xl -mr-12 -mt-12 group-hover:bg-primary/20 transition-all" />
                     <span className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-slate-400/80 relative z-10 leading-none mb-0.5">
@@ -1989,15 +1980,8 @@ export function BulkPayment({
                     </div>
                   </div>
 
-                  {/* BU breakdown metrics - REDESIGNED FOR SWISS HIGH DENSITY */}
-                  <div
-                    className="flex flex-col gap-4"
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "16px",
-                    }}
-                  >
+                  {/* BU breakdown metrics - REDESIGNED FOR SWISS HIGH DENSITY DROPDOWN CARD */}
+                  <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between px-1">
                       <span className="text-[9.5px] font-extrabold text-slate-500 uppercase tracking-[0.2em] font-sans flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-primary" />
@@ -2005,181 +1989,221 @@ export function BulkPayment({
                       </span>
                     </div>
 
-                    <div
-                      className="space-y-4"
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "16px",
-                      }}
-                    >
-                      {["AHN", "AHP", "ATH", "ATN", "APT", "Unknown"].map(
-                        (biz) => {
-                          const sheet1Val =
-                            dynamicReportStats.sheet1Totals[biz] || 0;
-                          const holdAddItems =
-                            dynamicReportStats.holdAddItems.filter(
-                              (i) => i.biz === biz,
+                    <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs flex flex-col gap-3">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <span className="font-extrabold text-slate-900 font-sans text-[10px] uppercase tracking-wider">
+                          {selectedBUGroup === "ALL" ? "All BU" : `${selectedBUGroup} GROUP`}
+                        </span>
+                        <button
+                          onClick={() => {
+                            const biz = selectedBUGroup;
+                            const isAll = biz === "ALL";
+                            const targetBUs = ["AHN", "AHP", "ATH", "ATN", "APT", "Other"];
+                            const sheet1Val = isAll
+                              ? targetBUs.reduce((sum, b) => sum + (dynamicReportStats.sheet1Totals[b] || 0), 0)
+                              : (dynamicReportStats.sheet1Totals[biz] || 0);
+                            const holdAddItems = isAll
+                              ? (dynamicReportStats.holdAddItems || [])
+                              : (dynamicReportStats.holdAddItems || []).filter((i) => i.biz === biz);
+                            const holdOnly = holdAddItems.filter((i) => i.type === "HOLD").reduce((sum, i) => sum + i.amount, 0);
+                            const addOnly = holdAddItems.filter((i) => i.type === "ADD").reduce((sum, i) => sum + i.amount, 0);
+                            const bonusOnly = holdAddItems.filter((i) => i.type === "BONUS").reduce((sum, i) => sum + i.amount, 0);
+                            const cancelOnly = holdAddItems.filter((i) => i.type === "CANCEL").reduce((sum, i) => sum + i.amount, 0);
+                            const deductionsSum = holdOnly + addOnly + bonusOnly + cancelOnly;
+                            const finalTotal = isAll
+                              ? targetBUs.reduce((sum, b) => {
+                                  const s1 = dynamicReportStats.sheet1Totals[b] || 0;
+                                  const items = (dynamicReportStats.holdAddItems || []).filter((i) => i.biz === b);
+                                  const h = items.filter((i) => i.type === "HOLD").reduce((acc, i) => acc + i.amount, 0);
+                                  const a = items.filter((i) => i.type === "ADD").reduce((acc, i) => acc + i.amount, 0);
+                                  const bo = items.filter((i) => i.type === "BONUS").reduce((acc, i) => acc + i.amount, 0);
+                                  const c = items.filter((i) => i.type === "CANCEL").reduce((acc, i) => acc + i.amount, 0);
+                                  return sum + (dynamicReportStats.finalTotals[b] || (s1 + h + a + bo + c));
+                                }, 0)
+                              : (dynamicReportStats.finalTotals[biz] || (sheet1Val + deductionsSum));
+                            
+                            const text =
+                              `BU:\t${isAll ? "All BU" : biz}\n` +
+                              `🎀 GROSS PAY:\t${formatMoneyVND(sheet1Val).replace(" ₫", "")} VND\n` +
+                              `🎀 DEDUCTIONS:\t${deductionsSum >= 0 ? "+" : ""}${formatMoneyVND(deductionsSum).replace(" ₫", "")} VND\n` +
+                              `  🐣 HOLD:\t${holdOnly !== 0 ? `-${formatMoneyVND(Math.abs(holdOnly)).replace(" ₫", "")}` : "0"} VND\n` +
+                              `  🐣 ADD:\t${addOnly !== 0 ? `+${formatMoneyVND(Math.abs(addOnly)).replace(" ₫", "")}` : "0"} VND\n` +
+                              `  🐣 BONUS:\t${bonusOnly !== 0 ? `+${formatMoneyVND(Math.abs(bonusOnly)).replace(" ₫", "")}` : "0"} VND\n` +
+                              (cancelOnly !== 0
+                                ? `  🐣 CANCEL:\t-${formatMoneyVND(Math.abs(cancelOnly)).replace(" ₫", "")} VND\n`
+                                : "") +
+                              `🎀 NET PAY:\t${formatMoneyVND(finalTotal).replace(" ₫", "")} VND`;
+                            
+                            navigator.clipboard.writeText(text);
+                            toast.success(isAll ? "Đã sao chép tổng hợp tất cả BU" : `Đã sao chép tổng hợp BU ${biz}`);
+                          }}
+                          className="p-1 text-slate-400 hover:text-primary transition-colors cursor-pointer active:scale-90"
+                          title="Sao chép thông tin"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Dropdown Select BU */}
+                      <div className="relative">
+                        <select
+                          value={selectedBUGroup}
+                          onChange={(e) => setSelectedBUGroup(e.target.value)}
+                          className="w-full h-8 pl-3 pr-8 text-[10px] font-extrabold uppercase tracking-widest text-slate-700 bg-white border border-slate-300 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-slate-400/30 transition-all shadow-3xs"
+                        >
+                          {["ALL", "AHN", "AHP", "ATH", "ATN", "APT", "Other"].map((biz) => {
+                            const isAll = biz === "ALL";
+                            const targetBUs = ["AHN", "AHP", "ATH", "ATN", "APT", "Other"];
+                            const sheet1Val = isAll
+                              ? targetBUs.reduce((sum, b) => sum + (dynamicReportStats.sheet1Totals[b] || 0), 0)
+                              : (dynamicReportStats.sheet1Totals[biz] || 0);
+                            const holdAddItems = isAll
+                              ? (dynamicReportStats.holdAddItems || [])
+                              : (dynamicReportStats.holdAddItems || []).filter((i) => i.biz === biz);
+                            const hasData = sheet1Val !== 0 || holdAddItems.length > 0;
+                            return (
+                              <option key={biz} value={biz} className="font-semibold text-[10.5px] text-slate-800 bg-white">
+                                {isAll ? "All BU •" : `${biz.toUpperCase()} GROUP`}{hasData ? " •" : " (TRỐNG)"}
+                              </option>
                             );
+                          })}
+                        </select>
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-600 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
 
-                          const holdOnly = holdAddItems
-                            .filter((i) => i.type === "HOLD")
-                            .reduce((sum, i) => sum + i.amount, 0);
+                      {/* Display the active group content */}
+                      {(() => {
+                        const biz = selectedBUGroup;
+                        const isAll = biz === "ALL";
+                        const targetBUs = ["AHN", "AHP", "ATH", "ATN", "APT", "Other"];
 
-                          const addOnly = holdAddItems
-                            .filter((i) => i.type === "ADD")
-                            .reduce((sum, i) => sum + i.amount, 0);
+                        const sheet1Val = isAll
+                          ? targetBUs.reduce((sum, b) => sum + (dynamicReportStats.sheet1Totals[b] || 0), 0)
+                          : (dynamicReportStats.sheet1Totals[biz] || 0);
 
-                          const bonusOnly = holdAddItems
-                            .filter((i) => i.type === "BONUS")
-                            .reduce((sum, i) => sum + i.amount, 0);
+                        const holdAddItems = isAll
+                          ? (dynamicReportStats.holdAddItems || [])
+                          : (dynamicReportStats.holdAddItems || []).filter((i) => i.biz === biz);
 
-                          const cancelOnly = holdAddItems
-                            .filter((i) => i.type === "CANCEL")
-                            .reduce((sum, i) => sum + i.amount, 0);
+                        const holdOnly = holdAddItems
+                          .filter((i) => i.type === "HOLD")
+                          .reduce((sum, i) => sum + i.amount, 0);
 
-                          const finalTotal =
-                            dynamicReportStats.finalTotals[biz] ||
-                            sheet1Val +
-                              holdOnly +
-                              addOnly +
-                              bonusOnly +
-                              cancelOnly;
+                        const addOnly = holdAddItems
+                          .filter((i) => i.type === "ADD")
+                          .reduce((sum, i) => sum + i.amount, 0);
 
-                          if (
-                            sheet1Val === 0 &&
-                            holdOnly === 0 &&
-                            addOnly === 0 &&
-                            bonusOnly === 0 &&
-                            cancelOnly === 0
-                          )
-                            return null;
+                        const bonusOnly = holdAddItems
+                          .filter((i) => i.type === "BONUS")
+                          .reduce((sum, i) => sum + i.amount, 0);
 
-                          return (
-                            <div key={biz} className="flex flex-col gap-2">
-                              <div className="flex items-center justify-between px-1 border-b border-slate-100 pb-1">
-                                <span className="font-extrabold text-slate-900 font-sans text-[10px] uppercase tracking-wider">
-                                  {biz} GROUP
+                        const cancelOnly = holdAddItems
+                          .filter((i) => i.type === "CANCEL")
+                          .reduce((sum, i) => sum + i.amount, 0);
+
+                        const deductionsSum = holdOnly + addOnly + bonusOnly + cancelOnly;
+
+                        const finalTotal = isAll
+                          ? targetBUs.reduce((sum, b) => {
+                              const s1 = dynamicReportStats.sheet1Totals[b] || 0;
+                              const items = (dynamicReportStats.holdAddItems || []).filter((i) => i.biz === b);
+                              const h = items.filter((i) => i.type === "HOLD").reduce((acc, i) => acc + i.amount, 0);
+                              const a = items.filter((i) => i.type === "ADD").reduce((acc, i) => acc + i.amount, 0);
+                              const bo = items.filter((i) => i.type === "BONUS").reduce((acc, i) => acc + i.amount, 0);
+                              const c = items.filter((i) => i.type === "CANCEL").reduce((acc, i) => acc + i.amount, 0);
+                              return sum + (dynamicReportStats.finalTotals[b] || (s1 + h + a + bo + c));
+                            }, 0)
+                          : (dynamicReportStats.finalTotals[biz] || (sheet1Val + deductionsSum));
+
+                        return (
+                          <div className="bg-slate-50/40 rounded-xl p-3 border border-slate-200/60 flex flex-col gap-2 shadow-xs transition-all hover:border-slate-300">
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-600 font-extrabold font-sans text-[10px] uppercase tracking-wider leading-none">
+                                🎀 GROSS PAY:
+                              </span>
+                              <span className="font-bold text-slate-800 font-mono text-[11px] tracking-tight">
+                                {formatMoneyVND(sheet1Val).replace(" ₫", "")} VND
+                              </span>
+                            </div>
+
+                            {/* DEDUCTIONS & BENEFITS */}
+                            <div className="flex flex-col gap-1 mt-0.5">
+                              <div className="flex justify-between items-center">
+                                <span className="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider leading-none">
+                                  🎀 DEDUCTIONS:
                                 </span>
-                                <button
-                                  onClick={() => {
-                                    const text =
-                                      `BU:\t${biz}\n` +
-                                      `🎀 GROSS PAY:\t${formatMoneyVND(sheet1Val).replace(" ₫", "")} VND\n` +
-                                      `🎀 DEDUCTIONS & BENEFITS:\t\n` +
-                                      `  🐣 HOLD:\t${holdOnly !== 0 ? `-${formatMoneyVND(Math.abs(holdOnly)).replace(" ₫", "")}` : "0"} VND\n` +
-                                      `  🐣 ADD:\t${addOnly !== 0 ? `+${formatMoneyVND(Math.abs(addOnly)).replace(" ₫", "")}` : "0"} VND\n` +
-                                      `  🐣 BONUS:\t${bonusOnly !== 0 ? `+${formatMoneyVND(Math.abs(bonusOnly)).replace(" ₫", "")}` : "0"} VND\n` +
-                                      (cancelOnly !== 0
-                                        ? `  🐣 CANCEL:\t-${formatMoneyVND(Math.abs(cancelOnly)).replace(" ₫", "")} VND\n`
-                                        : "") +
-                                      `🎀 NET PAY:\t${formatMoneyVND(finalTotal).replace(" ₫", "")} VND`;
-                                    navigator.clipboard.writeText(text);
-                                    toast.success("Đã sao chép tổng hợp BU");
-                                  }}
-                                  className="p-1 text-slate-400 hover:text-primary transition-colors cursor-pointer active:scale-90"
-                                >
-                                  <Copy className="w-3.5 h-3.5" />
-                                </button>
+                                <span className={`font-bold font-mono text-[11px] tracking-tight ${deductionsSum >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
+                                  {deductionsSum >= 0 ? "+" : ""}
+                                  {formatMoneyVND(deductionsSum).replace(" ₫", "")} VND
+                                </span>
                               </div>
 
-                              <div className="bg-slate-50/40 rounded-xl p-3 border border-slate-200/60 flex flex-col gap-2 shadow-xs transition-all hover:border-slate-300">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-slate-600 font-extrabold font-sans text-[10px] uppercase tracking-wider leading-none">
-                                    🎀 GROSS PAY:
+                              <div className="flex flex-col gap-1 pl-3 border-l-2 border-slate-200/80 my-0.5">
+                                <div className="flex justify-between items-center text-[10px]">
+                                  <span className="text-slate-600 font-medium font-sans">
+                                    🐣 HOLD:
                                   </span>
-                                  <span className="font-bold text-slate-800 font-mono text-[11px] tracking-tight">
-                                    {formatMoneyVND(sheet1Val).replace(
-                                      " ₫",
-                                      "",
-                                    )}{" "}
+                                  <span className={`font-mono font-bold ${holdOnly !== 0 ? "text-amber-600" : "text-slate-400"}`}>
+                                    {holdOnly !== 0
+                                      ? `-${formatMoneyVND(Math.abs(holdOnly)).replace(" ₫", "")}`
+                                      : "0"}{" "}
                                     VND
                                   </span>
                                 </div>
 
-                                {/* DEDUCTIONS & BENEFITS */}
-                                <div className="flex flex-col gap-1 mt-0.5">
-                                  <span className="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider leading-none">
-                                    🎀 DEDUCTIONS & BENEFITS:
+                                <div className="flex justify-between items-center text-[10px]">
+                                  <span className="text-slate-600 font-medium font-sans">
+                                    🐣 ADD:
                                   </span>
+                                  <span className={`font-mono font-bold ${addOnly !== 0 ? "text-emerald-600" : "text-slate-400"}`}>
+                                    {addOnly !== 0
+                                      ? `+${formatMoneyVND(Math.abs(addOnly)).replace(" ₫", "")}`
+                                      : "0"}{" "}
+                                    VND
+                                  </span>
+                                </div>
 
-                                  <div className="flex flex-col gap-1 pl-3 border-l-2 border-slate-200/80 my-0.5">
-                                    <div className="flex justify-between items-center text-[10px]">
-                                      <span className="text-slate-600 font-medium font-sans">
-                                        🐣 HOLD:
-                                      </span>
-                                      <span
-                                        className={`font-mono font-bold ${holdOnly !== 0 ? "text-amber-600" : "text-slate-400"}`}
-                                      >
-                                        {holdOnly !== 0
-                                          ? `-${formatMoneyVND(Math.abs(holdOnly)).replace(" ₫", "")}`
-                                          : "0"}{" "}
-                                        VND
-                                      </span>
-                                    </div>
+                                <div className="flex justify-between items-center text-[10px]">
+                                  <span className="text-slate-600 font-medium font-sans">
+                                    🐣 BONUS:
+                                  </span>
+                                  <span className={`font-mono font-bold ${bonusOnly !== 0 ? "text-emerald-600" : "text-slate-400"}`}>
+                                    {bonusOnly !== 0
+                                      ? `+${formatMoneyVND(Math.abs(bonusOnly)).replace(" ₫", "")}`
+                                      : "0"}{" "}
+                                    VND
+                                  </span>
+                                </div>
 
-                                    <div className="flex justify-between items-center text-[10px]">
-                                      <span className="text-slate-600 font-medium font-sans">
-                                        🐣 ADD:
-                                      </span>
-                                      <span
-                                        className={`font-mono font-bold ${addOnly !== 0 ? "text-emerald-600" : "text-slate-400"}`}
-                                      >
-                                        {addOnly !== 0
-                                          ? `+${formatMoneyVND(Math.abs(addOnly)).replace(" ₫", "")}`
-                                          : "0"}{" "}
-                                        VND
-                                      </span>
-                                    </div>
-
-                                    <div className="flex justify-between items-center text-[10px]">
-                                      <span className="text-slate-600 font-medium font-sans">
-                                        🐣 BONUS:
-                                      </span>
-                                      <span
-                                        className={`font-mono font-bold ${bonusOnly !== 0 ? "text-emerald-600" : "text-slate-400"}`}
-                                      >
-                                        {bonusOnly !== 0
-                                          ? `+${formatMoneyVND(Math.abs(bonusOnly)).replace(" ₫", "")}`
-                                          : "0"}{" "}
-                                        VND
-                                      </span>
-                                    </div>
-
-                                    {cancelOnly !== 0 && (
-                                      <div className="flex justify-between items-center text-[10px]">
-                                        <span className="text-slate-600 font-medium font-sans">
-                                          🐣 CANCEL:
-                                        </span>
-                                        <span className="font-mono font-bold text-amber-600">
-                                          -
-                                          {formatMoneyVND(
-                                            Math.abs(cancelOnly),
-                                          ).replace(" ₫", "")}{" "}
-                                          VND
-                                        </span>
-                                      </div>
-                                    )}
+                                {cancelOnly !== 0 && (
+                                  <div className="flex justify-between items-center text-[10px]">
+                                    <span className="text-slate-600 font-medium font-sans">
+                                      🐣 CANCEL:
+                                    </span>
+                                    <span className="font-mono font-bold text-amber-600">
+                                      -
+                                      {formatMoneyVND(
+                                        Math.abs(cancelOnly),
+                                      ).replace(" ₫", "")}{" "}
+                                      VND
+                                    </span>
                                   </div>
-                                </div>
-
-                                <div className="pt-2 border-t border-slate-200/60 mt-0.5 flex justify-between items-center">
-                                  <span className="text-[10.5px] font-extrabold text-slate-900 uppercase tracking-tight">
-                                    🎀 NET PAY:
-                                  </span>
-                                  <span className="text-xs font-black text-slate-950 font-mono tracking-tight">
-                                    {formatMoneyVND(finalTotal).replace(
-                                      " ₫",
-                                      "",
-                                    )}{" "}
-                                    VND
-                                  </span>
-                                </div>
+                                )}
                               </div>
                             </div>
-                          );
-                        },
-                      )}
+
+                            <div className="pt-2 border-t border-slate-200/60 mt-0.5 flex justify-between items-center">
+                              <span className="text-[10.5px] font-extrabold text-slate-900 uppercase tracking-tight">
+                                🎀 NET PAY:
+                              </span>
+                              <span className="text-xs font-black text-slate-950 font-mono tracking-tight">
+                                {formatMoneyVND(finalTotal).replace(" ₫", "")}{" "}
+                                VND
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
 
@@ -2264,7 +2288,7 @@ export function BulkPayment({
                               const items =
                                 dynamicReportStats.holdAddItems || [];
                               items.forEach((item) => {
-                                const bu = item.biz || "Unknown";
+                                const bu = item.biz || "Other";
                                 if (!buMap[bu]) {
                                   buMap[bu] = {
                                     HOLD: 0,
@@ -2589,7 +2613,7 @@ export function BulkPayment({
                               onChange={(e) =>
                                 setActiveBalanceSection(e.target.value)
                               }
-                              className={`appearance-none outline-none border-0 bg-transparent font-extrabold font-sans text-[10px] uppercase cursor-pointer w-full tracking-wider ${
+                              className={`appearance-none outline-none border-0 bg-transparent font-extrabold font-sans text-[9.5px] uppercase cursor-pointer w-full tracking-widest ${
                                 activeBalanceSection === "I"
                                   ? "text-indigo-900"
                                   : activeBalanceSection === "II"
@@ -2599,12 +2623,10 @@ export function BulkPayment({
                                       : "text-sky-900"
                               }`}
                             >
-                              <option value="I">I. GROSS PAY</option>
-                              <option value="II">
-                                II. DEDUCTIONS & BENEFITS
-                              </option>
-                              <option value="III">III. NET PAY</option>
-                              <option value="IV">IV. ĐỐI SOÁT</option>
+                              <option value="I" className="text-indigo-900 font-bold text-[10px] bg-white">I. GROSS PAY</option>
+                              <option value="II" className="text-rose-900 font-bold text-[10px] bg-white">II. DEDUCTIONS</option>
+                              <option value="III" className="text-emerald-900 font-bold text-[10px] bg-white">III. NET PAY</option>
+                              <option value="IV" className="text-sky-900 font-bold text-[10px] bg-white">IV. ĐỐI SOÁT</option>
                             </select>
                             <ChevronDown
                               className={`w-3.5 h-3.5 absolute right-1 pointer-events-none ${
@@ -2909,37 +2931,32 @@ export function BulkPayment({
       >
         {/* Interactive Top bar with title, 📋 toggle button, tabs, and general actions */}
         <div
-          className="px-4 py-2 border-b border-slate-200/80 bg-[#FAF9F6] dark:bg-slate-900 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 shrink-0 select-none"
+          className="px-3 border-b border-slate-200/80 flex flex-row items-center justify-between gap-3 shrink-0 select-none box-border"
           style={{
-            paddingTop: "0px",
-            paddingBottom: "0px",
-            paddingLeft: "12px",
-            paddingRight: "12px",
             height: "73px",
             minHeight: "73px",
+            maxHeight: "73px",
+            backgroundColor: "#F5F4F5",
           }}
         >
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => setShowLeftCard(!showLeftCard)}
-              className={`p-2 rounded-xl border transition-all cursor-pointer flex items-center justify-center active:scale-95 shadow-xs ${
+              className={`w-7 h-7 rounded-lg transition-all cursor-pointer flex items-center justify-center active:scale-95 shadow-2xs ${
                 showLeftCard
-                  ? "bg-white text-slate-700 border-slate-200/80 hover:bg-slate-100"
-                  : "bg-slate-900 text-white border-slate-900 shadow-md hover:bg-black"
+                  ? "bg-white text-[#781D1D] border border-[#e7dbdc] hover:bg-rose-50/70"
+                  : "bg-[#781D1D] text-white border border-[#781D1D] shadow-xs hover:bg-[#600032]"
               }`}
               title={
                 showLeftCard ? "Ẩn bảng điều khiển" : "Hiện bảng điều khiển"
               }
             >
-              <span className="text-sm leading-none select-none">📋</span>
+              <LayoutDashboard className="w-4 h-4 shrink-0" />
             </button>
 
             {displayBankExportData.length > 0 && (
-              <div
-                className="flex items-center gap-3 border-0 bg-transparent"
-                style={{ paddingBottom: "0px" }}
-              >
-                <div className="flex items-center relative border-0">
+              <div className="flex items-center ml-1">
+                <div className="flex items-center relative">
                   <select
                     value={rightPanelTab}
                     onChange={(e) => {
@@ -2949,10 +2966,18 @@ export function BulkPayment({
                         e.target.value,
                       );
                     }}
-                    className="appearance-none bg-transparent border-0 outline-none font-black text-slate-800 uppercase tracking-widest text-[11px] cursor-pointer pr-6 py-1"
+                    className="appearance-none bg-transparent hover:bg-transparent border-0 rounded-none pl-1 pr-6 py-1 text-[11px] font-extrabold uppercase tracking-widest text-slate-700 focus:outline-none transition-all cursor-pointer h-7 shadow-none"
                   >
-                    <option value="table">TRANSACTIONS</option>
-                    <option value="reconcile">
+                    <option 
+                      value="table"
+                      className="font-semibold text-[10px] text-slate-800 bg-white"
+                    >
+                      TRANSACTIONS
+                    </option>
+                    <option 
+                      value="reconcile"
+                      className="font-semibold text-[10px] text-slate-800 bg-white"
+                    >
                       ĐỐI SOÁT{" "}
                       {reconciliationAudit.varianceCount +
                         reconciliationAudit.missingInfoCount >
@@ -2960,21 +2985,15 @@ export function BulkPayment({
                         ? `(${reconciliationAudit.varianceCount + reconciliationAudit.missingInfoCount})`
                         : ""}
                     </option>
-                    <option value="visuals">ANALYTICS</option>
+                    <option 
+                      value="visuals"
+                      className="font-semibold text-[10px] text-slate-800 bg-white"
+                    >
+                      ANALYTICS
+                    </option>
                   </select>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-1 pointer-events-none" />
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-600 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
-
-                {rightPanelTab !== "table" && (
-                  <button
-                    onClick={handleAutoFillMissingAccountBulk}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] uppercase tracking-wider transition-all shadow-sm active:scale-95 cursor-pointer whitespace-nowrap"
-                    title="Tự động đồng bộ STK/ID hàng loạt cho tất cả các dòng chênh lệch / thiếu STK"
-                  >
-                    <Zap className="w-3.5 h-3.5 fill-current shrink-0" />
-                    <span>Đồng bộ hàng loạt</span>
-                  </button>
-                )}
               </div>
             )}
 
@@ -3037,6 +3056,17 @@ export function BulkPayment({
                 >
                   <Settings className="w-4 h-4 text-slate-500" />
                   <span>Cài đặt Giao diện</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="my-1 border-slate-100" />
+                <DropdownMenuLabel className="text-[10px] font-black uppercase text-slate-400 px-2 py-1">
+                  Thao tác dữ liệu
+                </DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={handleAutoFillMissingAccountBulk}
+                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer hover:bg-amber-50 text-slate-700 hover:text-amber-800 font-bold text-xs"
+                >
+                  <Zap className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span>Đồng bộ hàng loạt</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="my-1 border-slate-100" />
                 <DropdownMenuLabel className="text-[10px] font-black uppercase text-slate-400 px-2 py-1">
@@ -3135,15 +3165,7 @@ export function BulkPayment({
                     showFooter={true}
                     hideSearch={true}
                     headerClassName="bg-[var(--table-header-bg,#FAF9F6)] text-slate-800 border-slate-300 font-bold text-[10px] uppercase tracking-wider text-center"
-                    footerClassName="bg-[var(--table-header-bg,#FAF9F6)] text-slate-800 border-t border-slate-300 font-bold"
-                    borderless={false}
-                    stickyFirstColumn={false}
-                    style={
-                      {
-                        "--table-padding": "0.2rem 0.5rem",
-                        "--font-mono": "'JetBrains Mono', monospace",
-                      } as React.CSSProperties
-                    }
+                    footerClassName="bg-[var(--table-header-bg,#FAF9F6)] text-slate-800 border-t border-slate-300 font-bold text-xs"
                   />
                 </motion.div>
               )}
@@ -3155,20 +3177,15 @@ export function BulkPayment({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.1 }}
-                  className="flex-1 min-h-0 flex flex-col gap-3 p-4 bg-[#FAF9F6] overflow-hidden"
-                  style={{
-                    borderWidth: "0px",
-                    paddingLeft: "0px",
-                    paddingRight: "0px",
-                    paddingBottom: "0px",
-                    paddingTop: "0px",
-                  }}
+                  className="w-full h-full flex-1 min-h-0 flex flex-col p-0 relative overflow-hidden"
                 >
                   {/* Filter Tabs by Reconciliation Status */}
+                  {shouldShowFilterDiv && (
                   <div
                     className="shrink-0 flex flex-wrap items-center justify-between gap-3 p-3 bg-white rounded-none border border-slate-200/80 shadow-xs"
                     style={{
-                      paddingBottom: "12px",
+                      paddingBottom: "6px",
+                      height: "47.0928px",
                       borderWidth: "0px",
                       marginTop: "12px",
                       borderRadius: "0px",
@@ -3203,7 +3220,7 @@ export function BulkPayment({
                             setReconcileFilterStatus(tab.id as any)
                           }
                           className={`px-3 py-1.5 rounded-[20px] text-[10px] font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
-                            reconcileFilterStatus === tab.id
+                            effectiveReconcileFilterStatus === tab.id
                               ? "bg-slate-900 text-white shadow-xs"
                               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                           }`}
@@ -3219,27 +3236,18 @@ export function BulkPayment({
                         <PopoverTrigger asChild>
                           <button
                             className="w-7 h-7 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer shadow-2xs"
-                            title="Xem nguyên tắc đối soát chi tiết"
+                            title="Xem nguyên tắc đối chiếu"
                           >
-                            i
+                            ?
                           </button>
                         </PopoverTrigger>
-                        <PopoverContent
-                          align="end"
-                          className="w-80 p-4 rounded-none shadow-xl bg-white border-amber-200 text-slate-700 text-xs space-y-2"
-                          style={{ borderRadius: "0px" }}
-                        >
-                          <div className="font-bold text-amber-950 uppercase tracking-wider text-[10px]">
-                            Nguyên tắc đối soát chi tiết:
-                          </div>
-                          <p>
-                            1. <strong>Tập trung chênh lệch:</strong> Mặc định
-                            lọc hiển thị các khoản lệch số tiền, trùng ID, thiếu
-                            STK.
+                        <PopoverContent className="w-80 p-3 text-xs text-slate-600 bg-white border border-slate-200 shadow-lg rounded-lg z-[100]">
+                          <p className="font-bold text-slate-800 mb-1.5">Hướng dẫn đối chiếu:</p>
+                          <p className="mb-1">
+                            1. <strong>Lệch số tiền:</strong> Cùng ID/STK nhưng tổng số tiền thanh toán lệch nhau.
                           </p>
-                          <p>
-                            2. <strong>Công thức Target:</strong> Tổng Bank Acc
-                            = SHEET 1 + HOLD AE.
+                          <p className="mb-1">
+                            2. <strong>Thiếu thông tin:</strong> Bản ghi thiếu STK hoặc ID Number.
                           </p>
                           <p>
                             3. <strong>Đồng bộ hai chiều:</strong> Bấm nút ⚡
@@ -3250,6 +3258,7 @@ export function BulkPayment({
                       </Popover>
                     </div>
                   </div>
+                  )}
 
                   {/* Transaction Audit Table */}
                   <div
@@ -3257,86 +3266,106 @@ export function BulkPayment({
                     style={{ borderWidth: "0.5px", borderRadius: "0px" }}
                   >
                     <table className="w-full min-w-max text-left border-separate border-spacing-0 text-[11px] font-sans">
-                      <thead className="sticky top-0 bg-slate-200 text-slate-800 z-30 shadow-sm">
+                      <thead 
+                        className="sticky top-0 text-slate-800 z-30 shadow-sm"
+                        style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                      >
                         <tr>
                           <th
                             rowSpan={2}
-                            className="p-2.5 font-bold uppercase tracking-wider text-[9px] w-12 text-center border-r border-b border-slate-300 bg-slate-200 align-middle whitespace-normal"
+                            className="px-1.5 py-1 font-bold uppercase tracking-wider text-[9px] w-12 text-center border-r border-b border-slate-300 align-middle whitespace-normal"
+                            style={{ textAlign: "center", backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
                           >
                             STT
                           </th>
                           <th
                             rowSpan={2}
-                            className="p-2.5 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle text-center whitespace-normal"
+                            className="px-1.5 py-1 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 align-middle text-center whitespace-normal"
+                            style={{ textAlign: "center", backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
                           >
                             ID NUMBER
                           </th>
                           <th
                             rowSpan={2}
-                            className="p-2.5 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle text-center whitespace-normal"
+                            className="px-1.5 py-1 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 align-middle text-center whitespace-normal"
+                            style={{ textAlign: "center", backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
                           >
                             HỌ VÀ TÊN
                           </th>
                           <th
                             rowSpan={2}
-                            className="p-2.5 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle text-center whitespace-normal"
+                            className="px-1.5 py-1 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 align-middle text-center whitespace-normal"
+                            style={{ textAlign: "center", backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
                           >
                             BANK ACC NO_AE
                           </th>
                           <th
                             rowSpan={2}
-                            className="p-2.5 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle text-center whitespace-normal"
+                            className="px-1.5 py-1 font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 align-middle text-center whitespace-normal"
+                            style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
                           >
                             BANK ACC NO_ACC
                           </th>
                           <th
                             rowSpan={2}
-                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle whitespace-normal"
+                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 align-middle whitespace-normal"
+                            style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
                           >
                             Thực Tế (Bank)
                           </th>
                           <th
                             colSpan={2}
-                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-b border-r border-slate-300 bg-slate-300 text-slate-900 whitespace-normal"
+                            className="px-1.5 py-1 text-center font-bold uppercase tracking-wider text-[9px] border-b border-r border-slate-300 text-slate-900 whitespace-normal"
+                            style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
                           >
                             Target (Sheet1 + Hold)
                           </th>
                           <th
                             rowSpan={2}
-                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-300 text-slate-900 align-middle whitespace-normal"
+                            className="px-1.5 py-1 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 text-slate-900 align-middle whitespace-normal"
+                            style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
                           >
                             TỔNG BANK ACC
                           </th>
                           <th
                             rowSpan={2}
-                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle whitespace-normal"
+                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 align-middle whitespace-normal"
+                            style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
                           >
                             Đồng Bộ STK
                           </th>
                           <th
                             rowSpan={2}
-                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-200 align-middle whitespace-normal"
+                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 align-middle whitespace-normal"
+                            style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
                           >
                             Chênh Lệch
                           </th>
                           <th
                             rowSpan={2}
-                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-b border-slate-300 bg-slate-200 align-middle whitespace-normal"
+                            className="px-1.5 py-1 text-center font-bold uppercase tracking-wider text-[9px] border-b border-slate-300 align-middle whitespace-normal"
+                            style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
                           >
                             Trạng Thái / Vấn Đề
                           </th>
                         </tr>
                         <tr>
-                          <th className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-250 bg-slate-300 text-slate-800 whitespace-normal">
+                          <th 
+                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 text-slate-800 whitespace-normal"
+                            style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                          >
                             SHEET 1
                           </th>
-                          <th className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 bg-slate-250 bg-slate-300 text-slate-800 whitespace-normal">
+                          <th 
+                            className="p-2.5 text-center font-bold uppercase tracking-wider text-[9px] border-r border-b border-slate-300 text-slate-800 whitespace-normal"
+                            style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                          >
                             HOLD AE
                           </th>
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredTransactionAudits.length === 0 ? (
+                        {paginatedTransactionAudits.length === 0 ? (
                           <tr>
                             <td
                               colSpan={12}
@@ -3347,7 +3376,7 @@ export function BulkPayment({
                             </td>
                           </tr>
                         ) : (
-                          filteredTransactionAudits.map((item) => {
+                          paginatedTransactionAudits.map((item) => {
                             const isUnmatched =
                               item.id.startsWith("unmatched-");
                             const isMatched = item.status === "MATCHED";
@@ -3607,7 +3636,115 @@ export function BulkPayment({
                           })
                         )}
                       </tbody>
+                      <tfoot>
+                        <tr>
+                          <td 
+                            colSpan={10} 
+                            className="p-2.5 text-right font-bold uppercase tracking-wider text-[10px] border-b border-slate-300 text-slate-800"
+                            style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                          >
+                            TỔNG LỆCH:
+                          </td>
+                          <td className="p-2.5 text-right font-mono font-black border-b border-r border-slate-300 bg-amber-50 text-rose-600">
+                            {formatMoneyVND(
+                              filteredTransactionAudits.reduce((acc, item) => acc + item.variance, 0)
+                            ).replace(" ₫", "")}
+                          </td>
+                          <td 
+                            className="p-2.5 border-b border-slate-300"
+                            style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                          ></td>
+                        </tr>
+                      </tfoot>
                     </table>
+                  </div>
+
+                  {/* Pagination Footer */}
+                  <div
+                    className="flex items-center justify-between shrink-0 z-10 relative table-footer-pagination border-x border-b border-slate-200"
+                    style={{
+                      height: "44.9802px",
+                      backgroundColor: "var(--table-header-bg, #FAF9F6)",
+                      paddingRight: "12px",
+                      paddingLeft: "12px",
+                      paddingTop: "3px",
+                      paddingBottom: "3px"
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-medium text-slate-500 whitespace-nowrap">
+                          Hiển thị:
+                        </span>
+                        <div className="relative">
+                          <select
+                            value={reconcileRowsPerPage === "all" ? "all" : String(reconcileRowsPerPage)}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setReconcileRowsPerPage(val === "all" ? "all" : Number(val));
+                              setReconcileCurrentPage(1);
+                            }}
+                            className="appearance-none rounded-lg pl-2.5 pr-6 text-[9.5px] font-extrabold uppercase tracking-widest text-slate-700 border border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-2xs h-6.5 focus:outline-none cursor-pointer"
+                          >
+                            <option value="10" className="text-[10px] text-slate-800">10 dòng</option>
+                            <option value="20" className="text-[10px] text-slate-800">20 dòng</option>
+                            <option value="50" className="text-[10px] text-slate-800">50 dòng</option>
+                            <option value="100" className="text-[10px] text-slate-800">100 dòng</option>
+                            <option value="all" className="text-[10px] text-slate-800">Tất cả</option>
+                          </select>
+                          <ChevronDown className="w-3 h-3 text-slate-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      <span className="text-[11px] text-slate-500 hidden sm:inline-block">
+                        • Tổng số <strong>{totalItems}</strong> dòng
+                      </span>
+                    </div>
+
+                    {/* Pagination Controls */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        disabled={safePage === 1}
+                        onClick={() => setReconcileCurrentPage(1)}
+                        className="flex items-center justify-center w-6 h-6 rounded-md border border-[#e7dbdc] bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-2xs active:scale-95 cursor-pointer select-none"
+                        title="Trang đầu"
+                      >
+                        <ChevronsLeft className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={safePage === 1}
+                        onClick={() => setReconcileCurrentPage((p) => Math.max(1, p - 1))}
+                        className="flex items-center justify-center w-6 h-6 rounded-md border border-[#e7dbdc] bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-2xs active:scale-95 cursor-pointer select-none"
+                        title="Trang trước"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                      </button>
+                      
+                      <span className="text-[10px] font-bold text-slate-700 px-1.5 font-mono whitespace-nowrap text-center min-w-[70px]">
+                        TRANG {safePage} / {totalPages || 1}
+                      </span>
+
+                      <button
+                        type="button"
+                        disabled={safePage >= totalPages || totalPages === 0}
+                        onClick={() => setReconcileCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        className="flex items-center justify-center w-6 h-6 rounded-md border border-[#e7dbdc] bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-2xs active:scale-95 cursor-pointer select-none"
+                        title="Trang sau"
+                      >
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={safePage >= totalPages || totalPages === 0}
+                        onClick={() => setReconcileCurrentPage(totalPages)}
+                        className="flex items-center justify-center w-6 h-6 rounded-md border border-[#e7dbdc] bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-2xs active:scale-95 cursor-pointer select-none"
+                        title="Trang cuối"
+                      >
+                        <ChevronsRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               )}

@@ -1293,6 +1293,26 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
           if (!container) return;
           const td = container.querySelector(`td[data-r="${activeCell.r}"][data-c="${activeCell.c}"]`) as HTMLElement;
           if (td) {
+            // Precise vertical alignment check
+            const headerHeight = container.querySelector("thead")?.offsetHeight || 40;
+            const footerHeight = showFooter ? (container.querySelector("tfoot")?.offsetHeight || 40) : 0;
+            
+            const tdTop = td.offsetTop;
+            const tdBottom = tdTop + td.offsetHeight;
+            
+            const viewTop = container.scrollTop;
+            const viewBottom = viewTop + container.clientHeight;
+            
+            const topSafety = headerHeight + 8;
+            const bottomSafety = footerHeight + 20; // 20px extra padding for scrollbars
+            
+            if (tdTop < viewTop + topSafety) {
+              container.scrollTop = tdTop - topSafety;
+            } else if (tdBottom > viewBottom - bottomSafety) {
+              container.scrollTop = tdBottom - container.clientHeight + bottomSafety;
+            }
+
+            // Horizontal alignment check
             const leftOffset = td.offsetLeft;
             const cellWidth = td.offsetWidth;
             
@@ -2250,19 +2270,19 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
 
     const densityStyles = {
       compact: {
-        padding: "4px 8px",
-        fontSize: "0.75rem",
-        headerFontSize: "0.7rem",
+        padding: "2px 4px",
+        fontSize: "0.7rem",
+        headerFontSize: "0.625rem",
       },
       normal: {
-        padding: "12px 16px",
-        fontSize: "0.8125rem",
-        headerFontSize: "0.85em",
+        padding: "3.5px 7px",
+        fontSize: "0.75rem",
+        headerFontSize: "0.6875rem",
       },
       relaxed: {
-        padding: "16px 24px",
-        fontSize: "0.9rem",
-        headerFontSize: "0.9rem",
+        padding: "6px 12px",
+        fontSize: "0.8rem",
+        headerFontSize: "0.75rem",
       },
     };
 
@@ -2291,9 +2311,9 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
           onMouseDown={(e) => handleHeaderMouseDown(e, cIdx)}
           onMouseEnter={(e) => handleHeaderMouseEnter(e, cIdx)}
           onContextMenu={(e) => handleContextMenu(e, -1, cIdx)}
-          className={`relative sticky ${top} z-[60] whitespace-normal cursor-pointer select-none group border-b border-r border-[var(--grid-line-color,#E2E8F0)] text-center ${filteredHeaderClass} ${col.headerClassName || ""} text-[0.75rem] font-bold uppercase text-slate-800`}
+          className={`relative sticky ${top} z-[60] whitespace-normal cursor-pointer select-none group border-b border-r border-[var(--grid-line-color,#E2E8F0)] text-center ${filteredHeaderClass} ${col.headerClassName || ""} text-[var(--header-font-size,0.6875rem)] font-bold uppercase text-slate-800`}
           style={{
-            padding: "var(--table-padding, 0.75rem 1rem)",
+            padding: "var(--table-padding, 0.25rem 0.4rem)",
             width: widthStyle,
             minWidth: widthStyle,
             maxWidth: widthStyle,
@@ -2426,7 +2446,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                 {columns.some(c => c.group) && (
                   <tr>
                     {/* {selectable && <th rowSpan={2} className="bg-slate-50 border-b border-r border-border" />} */}
-                    {showRowNumber && <th rowSpan={2} className={`sticky top-0 z-[70] w-[50px] text-center ${headerClassName || "bg-[#F3EFE0]"} border-b border-r border-[var(--grid-line-color,#E2E8F0)] text-[0.75rem] font-bold uppercase text-slate-800`}>No.</th>}
+                    {showRowNumber && <th rowSpan={2} className={`sticky top-0 z-[70] w-[50px] text-center ${headerClassName || "bg-[#F3EFE0]"} border-b border-r border-[var(--grid-line-color,#E2E8F0)] py-1 text-[var(--header-font-size,0.6875rem)] font-bold uppercase text-slate-800`}>No.</th>}
                     {(() => {
                       const groupings: { group: string | undefined, count: number, startIdx: number }[] = [];
                       visibleColumns.forEach((col, idx) => {
@@ -2448,7 +2468,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                                 g.group === 'THÔNG TIN CHUNG' ? 'bg-[#FFF9E6] text-amber-900' :
                                 g.group === 'CHI TIẾT GIỜ LÀM TA' ? 'bg-[#E6FFFA] text-emerald-900' :
                                 headerClassName || "bg-[#F3EFE0]"
-                              } border-b border-r border-[var(--grid-line-color,#E2E8F0)] py-2 text-[0.75rem] font-bold uppercase text-center`}
+                              } border-b border-r border-[var(--grid-line-color,#E2E8F0)] py-1 text-[var(--header-font-size,0.6875rem)] font-bold uppercase text-center`}
                             >
                               {g.group}
                             </th>
@@ -2464,8 +2484,8 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                 <tr className={headerClassName ? "" : "bg-[#F3EFE0]"}>
                   {selectable && !columns.some(c => c.group) && (
                     <th
-                      className={`sticky top-0 z-[60] w-10 border-b border-r border-[var(--grid-line-color,#E2E8F0)] text-center ${headerClassName ? headerClassName : "bg-[#F3EFE0]"} text-[0.75rem] font-bold uppercase text-slate-800`}
-                      style={{ padding: "var(--table-padding, 0.75rem 1rem)" }}
+                      className={`sticky top-0 z-[60] w-10 border-b border-r border-[var(--grid-line-color,#E2E8F0)] text-center ${headerClassName ? headerClassName : "bg-[#F3EFE0]"} text-[var(--header-font-size,0.6875rem)] font-bold uppercase text-slate-800`}
+                      style={{ padding: "var(--table-padding, 0.25rem 0.4rem)" }}
                     >
                       <button
                         onClick={toggleAll}
@@ -2488,8 +2508,8 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   )}
                   {showRowNumber && !columns.some(c => c.group) && (
                     <th
-                      className={`sticky top-0 z-[60] w-[50px] border-b border-r border-[var(--grid-line-color,#E2E8F0)] text-center ${headerClassName ? headerClassName : "bg-[#F3EFE0]"} text-[0.75rem] font-bold uppercase text-slate-800`}
-                      style={{ padding: "var(--table-padding, 0.75rem 1rem)" }}
+                      className={`sticky top-0 z-[60] w-[50px] border-b border-r border-[var(--grid-line-color,#E2E8F0)] text-center ${headerClassName ? headerClassName : "bg-[#F3EFE0]"} text-[var(--header-font-size,0.6875rem)] font-bold uppercase text-slate-800`}
+                      style={{ padding: "var(--table-padding, 0.25rem 0.4rem)" }}
                     >
                       No.
                     </th>
@@ -2736,8 +2756,8 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
 
           {/* Footer — Floating Card Style mimicking payment page */}
           <div
-            className="flex items-center justify-between shrink-0 z-40 relative bg-white mt-0 border-0 shadow-none rounded-none"
-            style={{ paddingTop: "0px", paddingBottom: "0px", height: "35.9896px", minHeight: "35.9896px" }}
+            className="flex items-center justify-between shrink-0 z-40 relative mt-0 border-0 shadow-none rounded-none table-footer-pagination"
+            style={{ paddingTop: "0px", paddingBottom: "0px", height: "35.9896px", minHeight: "35.9896px", backgroundColor: "var(--table-header-bg, var(--secondary, #FAF9F6))" }}
           >
             <div className="flex items-center gap-3 px-3" style={{ height: "30px", paddingLeft: "0px", paddingRight: "0px" }}>
               <div className="flex items-center gap-1.5 hidden md:flex">
@@ -3102,7 +3122,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   className="w-full px-3 py-2 text-left text-[0.625rem] font-black uppercase tracking-wider hover:bg-accent/10 flex items-center gap-2.5 transition-colors group text-accent hover:text-accent/80"
                 >
                   <FileText className="w-3.5 h-3.5 text-accent/60 group-hover:text-accent transition-colors" />
-                  <span className="btn-secret">Thêm dòng mới</span>
+                  <span>Thêm dòng mới</span>
                 </button>
 
                 <DropdownMenuSeparator className="bg-primary/10 mx-1" />

@@ -2336,46 +2336,28 @@ export function HoldAddDashboard() {
     <div className="h-full flex-1 flex flex-col min-h-0 overflow-hidden bg-transparent w-full" style={{ borderRadius: "0px" }}>
       {/* Toolbar */}
       <div 
-        className="flex-shrink-0 bg-transparent px-5 border-b border-border"
-        style={{ paddingTop: "10px", paddingBottom: "10px", borderRadius: "0px" }}
+        className="flex-shrink-0 bg-transparent px-0 py-0 border-b border-[#e7dbdc]"
+        style={{ paddingTop: "0px", paddingBottom: "0px", paddingLeft: "0px", paddingRight: "0px", borderRadius: "0px" }}
       >
-        <div className="w-full flex items-center justify-between flex-wrap gap-3" style={{ borderRadius: "0px" }}>
+        <div className="w-full flex items-center justify-between flex-wrap gap-3 py-2 px-4" style={{ borderRadius: "0px" }}>
           {/* Brand */}
-          <div className="flex items-center gap-3" style={{ borderRadius: "0px", height: "48.7992px" }}>
+          <div className="flex items-center gap-3" style={{ borderRadius: "0px", minHeight: "44px" }}>
             <div
-              className="overflow-hidden border border-border flex-shrink-0 flex items-center justify-center bg-primary/10 text-primary"
-              style={{ width: "40px", height: "40px", marginLeft: "0px", marginTop: "0px", backgroundColor: "#d7b1bd", borderWidth: "0.5px", borderRadius: "0px" }}
+              className="overflow-hidden border border-[#e7dbdc] flex-shrink-0 flex items-center justify-center bg-[#d7b1bd] text-[#600032] shadow-xs"
+              style={{ width: "38px", height: "38px", marginLeft: "0px", marginTop: "0px", backgroundColor: "#d7b1bd", borderWidth: "0.5px", borderRadius: "12px" }}
             >
-              <Wallet style={{ width: "25px", height: "25px", color: "#600032" }} />
+              <Wallet style={{ width: "22px", height: "22px", color: "#600032" }} />
             </div>
-            <div className="flex items-center gap-3" style={{ paddingTop: "0px", paddingBottom: "0px" }}>
-              <div style={{ paddingLeft: "0px" }}>
-                <p
-                  className="tracking-wider leading-none font-bold font-chunky"
-                  style={{
-                    fontFamily: "Great Vibes",
-                    fontSize: "23px",
-                    lineHeight: "21px",
-                    color: "#bd88a0",
-                    paddingTop: "0px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Payroll Hub
-                </p>
-                <h1
-                  className="font-bold border-none"
-                  style={{
-                    fontFamily: "Outfit",
-                    fontSize: "12px",
-                    marginTop: "0px",
-                    marginBottom: "0px",
-                    lineHeight: "1.1",
-                    color: "#c4969c",
-                  }}
-                >
-                  Trial Balance
-                </h1>
+            <div className="flex items-center gap-2.5">
+              <div className="flex flex-col justify-center">
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-[16px] text-slate-800 dark:text-slate-100 tracking-tight font-sans leading-none">
+                    Payroll Hub
+                  </span>
+                  <span className="text-[10px] font-extrabold tracking-wider uppercase px-2 py-0.5 rounded-full bg-[#f3e8eb] dark:bg-slate-800 text-[#600032] dark:text-rose-300 border border-[#e5ced6]/60">
+                    Trial Balance
+                  </span>
+                </div>
               </div>
               {!isOkToDisplayValues && (
                 <div className="group relative mt-0">
@@ -2384,7 +2366,7 @@ export function HoldAddDashboard() {
                       localStorage.setItem("master_ae_active_tab", "Hold_AE");
                       navigate("/master-ae");
                     }}
-                    className="flex items-center justify-center w-7 h-7 rounded-full bg-rose-50 border border-rose-200 hover:bg-rose-100 transition-colors shadow-sm cursor-pointer"
+                    className="flex items-center justify-center w-6 h-6 rounded-full bg-rose-50 border border-rose-200 hover:bg-rose-100 transition-colors shadow-xs cursor-pointer text-[12px]"
                   >
                     ⚠️
                   </button>
@@ -2452,16 +2434,16 @@ export function HoldAddDashboard() {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-[240px] bg-white dark:bg-card border-border shadow-xl p-2 flex flex-col gap-2"
+                className="w-[240px] bg-white dark:bg-card border-[#e7dbdc] shadow-xl p-2 flex flex-col gap-2"
               >
                 <div className="h-8 flex items-center justify-center px-4 bg-primary/10 text-primary rounded-md font-nunito font-bold tracking-wider text-[11px]">
                   Kỳ: {currentPeriod}
                 </div>
                 <Select value={yearFilter} onValueChange={setYearFilter}>
-                  <SelectTrigger className="h-8 text-[12px] w-full bg-background border-border text-foreground rounded-md">
+                  <SelectTrigger className="h-8 text-[12px] w-full bg-background border-[#e7dbdc] text-foreground rounded-md">
                     <SelectValue placeholder="Năm" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-card border border-border">
+                  <SelectContent className="bg-white dark:bg-card border border-[#e7dbdc]">
                     <SelectItem value="all">Tất cả</SelectItem>
                     <SelectItem value="2026">2026</SelectItem>
                   </SelectContent>
@@ -2470,7 +2452,7 @@ export function HoldAddDashboard() {
                   onClick={() => window.dispatchEvent(new Event("open-ui-settings"))}
                   variant="outline"
                   size="sm"
-                  className="h-8 text-[12px] w-full justify-start gap-2 bg-background border-border text-foreground hover:bg-muted cursor-pointer"
+                  className="h-8 text-[12px] w-full justify-start gap-2 bg-background border-[#e7dbdc] text-foreground hover:bg-muted cursor-pointer"
                 >
                   <Settings className="w-3.5 h-3.5 text-slate-500" />
                   Cài đặt Giao diện
@@ -2479,7 +2461,7 @@ export function HoldAddDashboard() {
                   variant="outline"
                   size="sm"
                   onClick={handleExportExcel}
-                  className="h-8 text-[12px] w-full justify-start gap-2 bg-background border-border text-foreground hover:bg-muted"
+                  className="h-8 text-[12px] w-full justify-start gap-2 bg-background border-[#e7dbdc] text-foreground hover:bg-muted"
                 >
                   <Download className="w-3.5 h-3.5" />
                   Xuất Excel
@@ -2495,68 +2477,20 @@ export function HoldAddDashboard() {
           style={{ borderRadius: "0px" }}
         >
           <table
-            className="w-full border-separate border-spacing-0 table-auto border-l border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-card"
+            className="w-full border-separate border-spacing-0 table-auto border-l border-t border-[#e7dbdc] dark:border-slate-800 bg-white dark:bg-card"
             style={{
               fontFamily: uiSettings.tableFont || "var(--font-main)",
               fontSize: uiSettings.fontSize || "13px",
             }}
           >
-            <thead className="sticky top-0 z-20 shadow-sm border-b-2 border-slate-300 dark:border-slate-700 bg-[#FAF9F6] dark:bg-slate-900">
+            <thead className="sticky top-0 z-20 shadow-sm border-b-2 border-[#e7dbdc] dark:border-slate-700 bg-[#F4F2EE] dark:bg-slate-900">
               <tr>
                 <th
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#FAF9F6] dark:bg-slate-900 whitespace-nowrap"
-                  rowSpan={2}
-                >
-                  #
-                </th>
-                <th
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#FAF9F6] dark:bg-slate-900 whitespace-nowrap"
-                  rowSpan={2}
-                >
-                  Ngày / Tháng
-                </th>
-                <th
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-4 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#FAF9F6] dark:bg-slate-900 min-w-[200px]"
-                  rowSpan={2}
-                >
-                  Business
-                </th>
-                <th
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#FAF9F6] dark:bg-slate-900 whitespace-nowrap min-w-[100px]"
-                  rowSpan={2}
-                >
-                  Số dư ĐK
-                </th>
-                <th
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#FAF9F6] dark:bg-slate-900 whitespace-nowrap"
-                  colSpan={2}
-                >
-                  Phát sinh trong kỳ
-                </th>
-                <th
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#FAF9F6] dark:bg-slate-900 whitespace-nowrap min-w-[100px]"
-                  rowSpan={2}
-                >
-                  Số dư CK
-                </th>
-                <th
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#FAF9F6] dark:bg-slate-900 whitespace-nowrap"
-                  colSpan={3}
-                >
-                  Tạm tính
-                </th>
-                <th
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#FAF9F6] dark:bg-slate-900 whitespace-nowrap min-w-[80px]"
-                  rowSpan={2}
-                >
-                  Lệnh
-                </th>
-                <th
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#FAF9F6] dark:bg-slate-900 whitespace-nowrap"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#F4F2EE] dark:bg-slate-900 whitespace-nowrap"
                   rowSpan={2}
                 >
                   <div className="flex items-center justify-center gap-2 w-full">
-                    <span>Ghi chú</span>
+                    <span>#</span>
                     <button
                       onClick={toggleAll}
                       title={allOpen ? "Thu gọn tất cả" : "Mở tất cả"}
@@ -2570,30 +2504,72 @@ export function HoldAddDashboard() {
                     </button>
                   </div>
                 </th>
+                <th
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#F4F2EE] dark:bg-slate-900 whitespace-nowrap"
+                  rowSpan={2}
+                >
+                  Ngày / Tháng
+                </th>
+                <th
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-4 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#F4F2EE] dark:bg-slate-900 min-w-[200px]"
+                  rowSpan={2}
+                >
+                  Business
+                </th>
+                <th
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#F4F2EE] dark:bg-slate-900 whitespace-nowrap min-w-[100px]"
+                  rowSpan={2}
+                >
+                  Số dư ĐK
+                </th>
+                <th
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#F4F2EE] dark:bg-slate-900 whitespace-nowrap"
+                  colSpan={2}
+                >
+                  Phát sinh trong kỳ
+                </th>
+                <th
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#F4F2EE] dark:bg-slate-900 whitespace-nowrap min-w-[100px]"
+                  rowSpan={2}
+                >
+                  Số dư CK
+                </th>
+                <th
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-amber-900 dark:text-amber-200 bg-amber-50/80 dark:bg-amber-950/50 whitespace-nowrap"
+                  colSpan={3}
+                >
+                  Tạm tính
+                </th>
+                <th
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-2.5 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#F4F2EE] dark:bg-slate-900 whitespace-nowrap"
+                  rowSpan={2}
+                >
+                  Ghi chú
+                </th>
               </tr>
               <tr>
                 <th 
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-1.5 text-center font-sans font-bold text-[11px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#FAF9F6] dark:bg-slate-900 whitespace-nowrap min-w-[100px]"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-1.5 text-center font-sans font-bold text-[11px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#F4F2EE] dark:bg-slate-900 whitespace-nowrap min-w-[100px]"
                 >
                   Lương TA của tháng
                 </th>
                 <th 
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-1.5 text-center font-sans font-bold text-[11px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#FAF9F6] dark:bg-slate-900 whitespace-nowrap min-w-[100px]"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-1.5 text-center font-sans font-bold text-[11px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#F4F2EE] dark:bg-slate-900 whitespace-nowrap min-w-[100px]"
                 >
                   Lương Hold của tháng
                 </th>
                 <th 
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-1.5 text-center font-sans font-bold text-[11px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#FAF9F6] dark:bg-slate-900 whitespace-nowrap min-w-[100px]"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-1.5 text-center font-sans font-bold text-[11px] uppercase tracking-wider text-amber-900 dark:text-amber-200 bg-amber-50/70 dark:bg-amber-950/40 whitespace-nowrap min-w-[100px]"
                 >
                   Add
                 </th>
                 <th 
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-1.5 text-center font-sans font-bold text-[11px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#FAF9F6] dark:bg-slate-900 whitespace-nowrap min-w-[100px]"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-1.5 text-center font-sans font-bold text-[11px] uppercase tracking-wider text-amber-900 dark:text-amber-200 bg-amber-50/70 dark:bg-amber-950/40 whitespace-nowrap min-w-[100px]"
                 >
                   Hold
                 </th>
                 <th 
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-1.5 text-center font-sans font-bold text-[11px] uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-[#FAF9F6] dark:bg-slate-900 whitespace-nowrap min-w-[100px]"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-1.5 text-center font-sans font-bold text-[11px] uppercase tracking-wider text-amber-900 dark:text-amber-200 bg-amber-50/70 dark:bg-amber-950/40 whitespace-nowrap min-w-[100px]"
                 >
                   Cancel
                 </th>
@@ -2604,8 +2580,8 @@ export function HoldAddDashboard() {
               {monthKeys.length === 0 && (
                 <tr>
                   <td
-                    colSpan={12}
-                    className="p-10 text-center text-muted-foreground italic font-medium bg-white dark:bg-card border-r border-b border-slate-200 dark:border-slate-800"
+                    colSpan={11}
+                    className="p-10 text-center text-muted-foreground italic font-medium bg-white dark:bg-card border-r border-b border-[#e7dbdc] dark:border-slate-800"
                   >
                     Không có dữ liệu phù hợp thỏa mãn điều kiện tìm kiếm.
                   </td>
@@ -2642,10 +2618,10 @@ export function HoldAddDashboard() {
                       className="cursor-pointer group transition-colors"
                       onClick={() => toggle(mk)}
                     >
-                      <td className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-center text-slate-800 dark:text-slate-200 font-bold !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap text-[13px]">
+                      <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-center text-slate-800 dark:text-slate-200 font-bold !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap text-[13px]">
                         {toRoman(mi + 1)}
                       </td>
-                      <td className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-left text-slate-800 dark:text-slate-200 font-bold !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap text-[13px] pl-3">
+                      <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-left text-slate-800 dark:text-slate-200 font-bold !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap text-[13px] pl-3">
                         <span className="flex items-center gap-2">
                           {isOpen ? (
                             <ChevronDown className="w-4 h-4 text-slate-800 dark:text-slate-200 stroke-[2.5px] shrink-0" />
@@ -2655,33 +2631,33 @@ export function HoldAddDashboard() {
                           {mk === currentPeriod ? `Tháng ${currentPeriodVal}` : mk}
                         </span>
                       </td>
-                      <td className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-center text-slate-800 dark:text-slate-200 font-bold !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap text-[13px]">
+                      <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-center text-slate-800 dark:text-slate-200 font-bold !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap text-[13px]">
                         {countBusinesses(rows)} BU
                       </td>
-                      <td className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-right text-slate-800 dark:text-slate-200 font-bold font-mono text-xs !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap">
+                      <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-right text-slate-800 dark:text-slate-200 font-bold font-mono text-xs !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap">
                         {openBal !== 0 ? fmt(openBal) : "0"}
                       </td>
-                      <td className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-right text-slate-800 dark:text-slate-200 font-bold font-mono text-xs !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap">
+                      <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-right text-slate-800 dark:text-slate-200 font-bold font-mono text-xs !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap">
                         {psThu !== 0 ? fmt(psThu) : "0"}
                       </td>
-                      <td className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-right text-slate-800 dark:text-slate-200 font-bold font-mono text-xs !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap">
+                      <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-right text-slate-800 dark:text-slate-200 font-bold font-mono text-xs !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap">
                         {psChi !== 0 ? fmt(psChi) : "0"}
                       </td>
-                      <td className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-right text-slate-800 dark:text-slate-200 font-bold font-mono text-xs !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap">
+                      <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-right text-slate-800 dark:text-slate-200 font-bold font-mono text-xs !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap">
                         {fmt(closeBal)}
                       </td>
-                      <td className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-right text-slate-800 dark:text-slate-200 font-bold font-mono text-xs !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap">
+                      <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-right text-slate-800 dark:text-slate-200 font-bold font-mono text-xs !bg-amber-100/60 dark:!bg-amber-900/40 whitespace-nowrap">
                         {addAmt !== 0 ? fmt(addAmt) : "0"}
                       </td>
-                      <td className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-right text-slate-800 dark:text-slate-200 font-bold font-mono text-xs !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap">
+                      <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-right text-slate-800 dark:text-slate-200 font-bold font-mono text-xs !bg-amber-100/60 dark:!bg-amber-900/40 whitespace-nowrap">
                         {holdAmt !== 0 ? fmt(holdAmt) : "0"}
                       </td>
-                      <td className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-right text-slate-800 dark:text-slate-200 font-bold font-mono text-xs !bg-[#FAF9F6]/80 dark:!bg-slate-800/60 whitespace-nowrap">
+                      <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-right text-slate-800 dark:text-slate-200 font-bold font-mono text-xs !bg-amber-100/60 dark:!bg-amber-900/40 whitespace-nowrap">
                         {cancelAmt !== 0 ? fmt(cancelAmt) : "0"}
                       </td>
 
-                      <td className="border-r border-b border-slate-200 dark:border-slate-800 whitespace-nowrap !bg-[#FAF9F6]/80 dark:!bg-slate-800/60"></td>
-                      <td className="border-r border-b border-slate-200 dark:border-slate-800 min-w-[200px] !bg-[#FAF9F6]/80 dark:!bg-slate-800/60"></td>
+                      <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 whitespace-nowrap !bg-[#FAF9F6]/80 dark:!bg-slate-800/60"></td>
+                      <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 min-w-[200px] !bg-[#FAF9F6]/80 dark:!bg-slate-800/60"></td>
                     </tr>,
 
                     // Detail rows
@@ -2750,11 +2726,11 @@ export function HoldAddDashboard() {
                                   key={e.id}
                                   className={`group ${isRowDimmed ? "opacity-35 select-none bg-slate-100/50 dark:bg-slate-800/10 italic text-muted-foreground/60 line-through" : "bg-white dark:bg-card"} transition-colors`}
                                 >
-                                  <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-center text-slate-500 dark:text-muted-foreground/60 font-medium whitespace-nowrap text-[13px]">
+                                  <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-center text-slate-500 dark:text-muted-foreground/60 font-medium whitespace-nowrap text-[13px]">
                                     {ri + 1}
                                   </td>
                                   <td
-                                    className={`border-r border-b border-slate-200 dark:border-slate-800 px-3 py-2 text-left whitespace-nowrap min-w-[120px] text-[13px] ${e.customMonthDisplay ? "text-slate-800 dark:text-slate-200 font-medium" : "text-slate-700 dark:text-slate-300 font-medium"}`}
+                                    className={`border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-2 text-left whitespace-nowrap min-w-[120px] text-[13px] ${e.customMonthDisplay ? "text-slate-800 dark:text-slate-200 font-medium" : "text-slate-700 dark:text-slate-300 font-medium"}`}
                                     title={e.customMonthDisplay || e.month}
                                   >
                                     {(() => {
@@ -2779,12 +2755,12 @@ export function HoldAddDashboard() {
                                     })()}
                                   </td>
                                   <td
-                                    className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-2 text-center text-slate-800 dark:text-slate-100 font-normal whitespace-nowrap text-[13px]"
+                                    className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-2 text-center text-slate-800 dark:text-slate-100 font-normal whitespace-nowrap text-[13px]"
                                     title={e.bu}
                                   >
                                     {e.bu}
                                   </td>
-                                  <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-300 font-mono text-xs whitespace-nowrap min-w-[75px]">
+                                  <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-300 font-mono text-xs whitespace-nowrap min-w-[75px]">
                                     {rowOpenBal !== 0 ? (
                                       <span className="text-slate-800 dark:text-slate-100 font-normal">
                                         {fmt(rowOpenBal)}
@@ -2793,7 +2769,7 @@ export function HoldAddDashboard() {
                                       "0"
                                     )}
                                   </td>
-                                  <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right font-mono text-xs whitespace-nowrap min-w-[80px]">
+                                  <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right font-mono text-xs whitespace-nowrap min-w-[80px]">
                                     {!isRowDimmed && displayedThu !== 0 ? (
                                       <span className="text-slate-800 dark:text-slate-100 font-normal">
                                         {fmt(displayedThu)}
@@ -2802,7 +2778,7 @@ export function HoldAddDashboard() {
                                       "0"
                                     )}
                                   </td>
-                                  <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right font-mono text-xs whitespace-nowrap min-w-[80px]">
+                                  <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right font-mono text-xs whitespace-nowrap min-w-[80px]">
                                     {!isRowDimmed && displayedChi !== 0 ? (
                                       <span className="text-slate-800 dark:text-slate-100 font-normal">
                                         {fmt(displayedChi)}
@@ -2811,12 +2787,12 @@ export function HoldAddDashboard() {
                                       "0"
                                     )}
                                   </td>
-                                  <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right font-mono text-xs whitespace-nowrap min-w-[80px]">
+                                  <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right font-mono text-xs whitespace-nowrap min-w-[80px]">
                                     <span className="text-rose-600 dark:text-rose-400 font-semibold">
                                       {displayedRCloseStr}
                                     </span>
                                   </td>
-                                  <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right font-mono text-xs whitespace-nowrap min-w-[80px]">
+                                  <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right font-mono text-xs whitespace-nowrap min-w-[80px] bg-amber-50/60 dark:bg-amber-950/25">
                                     {e.add !== 0 ? (
                                       <span className="text-blue-600 dark:text-blue-400 font-medium">
                                         {fmt(e.add)}
@@ -2825,7 +2801,7 @@ export function HoldAddDashboard() {
                                       "0"
                                     )}
                                   </td>
-                                  <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right font-mono text-xs whitespace-nowrap min-w-[80px]">
+                                  <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right font-mono text-xs whitespace-nowrap min-w-[80px] bg-amber-50/60 dark:bg-amber-950/25">
                                     {e.hold !== 0 ? (
                                       <span className="text-amber-600 dark:text-amber-400 font-medium">
                                         {fmt(e.hold)}
@@ -2834,7 +2810,7 @@ export function HoldAddDashboard() {
                                       "0"
                                     )}
                                   </td>
-                                  <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right font-mono text-xs whitespace-nowrap min-w-[80px]">
+                                  <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right font-mono text-xs whitespace-nowrap min-w-[80px] bg-amber-50/60 dark:bg-amber-950/25">
                                     {e.cancel !== 0 ? (
                                       <span className="text-slate-500 dark:text-slate-400 font-medium">
                                         {fmt(e.cancel)}
@@ -2844,7 +2820,7 @@ export function HoldAddDashboard() {
                                     )}
                                   </td>
 
-                                  <td className="border-r border-b border-slate-200 dark:border-slate-800 p-1.5 text-center whitespace-nowrap text-[13px]">
+                                  <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-1.5 text-center whitespace-nowrap text-[13px]">
                                     {(() => {
                                       const isInteractive =
                                         (e.rawAdd || 0) !== 0 ||
@@ -2918,7 +2894,7 @@ export function HoldAddDashboard() {
                                     })()}
                                   </td>
                                   <td
-                                    className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-left text-muted-foreground min-w-[200px] text-[13px]"
+                                    className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-left text-muted-foreground min-w-[200px] text-[13px]"
                                     title={e.ghiChu}
                                   >
                                     {e.ghiChu || ""}
@@ -2931,34 +2907,34 @@ export function HoldAddDashboard() {
                             const finalCloseBal = buBalInfo?.closeBal || 0;
                             
                             const subtotalRow = (
-                              <tr key={`subtotal-${mk}-${bu}`} className="!bg-[#FAF9F6]/70 dark:!bg-slate-800/30 font-bold border-y-2 border-slate-200 dark:border-slate-800">
-                                <td colSpan={3} className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-300 font-sans uppercase tracking-wider text-[11px]">
+                              <tr key={`subtotal-${mk}-${bu}`} className="!bg-[#FAF9F6]/70 dark:!bg-slate-800/30 font-bold border-y-2 border-[#e7dbdc] dark:border-slate-800">
+                                <td colSpan={3} className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-300 font-sans uppercase tracking-wider text-[11px]">
                                   TỔNG BU - {bu}
                                 </td>
-                                <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-200 font-mono text-xs whitespace-nowrap">
+                                <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-200 font-mono text-xs whitespace-nowrap">
                                   {sumOpenBal !== 0 ? fmt(sumOpenBal) : "0"}
                                 </td>
-                                <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-200 font-mono text-xs whitespace-nowrap">
+                                <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-200 font-mono text-xs whitespace-nowrap">
                                   {sumThu !== 0 ? fmt(sumThu) : "0"}
                                 </td>
-                                <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-200 font-mono text-xs whitespace-nowrap">
+                                <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-200 font-mono text-xs whitespace-nowrap">
                                   {sumChi !== 0 ? fmt(sumChi) : "0"}
                                 </td>
-                                <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right font-mono text-xs whitespace-nowrap text-rose-600 dark:text-rose-400 font-bold">
+                                <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right font-mono text-xs whitespace-nowrap text-rose-600 dark:text-rose-400 font-bold">
                                   {finalCloseBal !== 0 ? fmt(finalCloseBal) : "0"}
                                 </td>
-                                <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-200 font-mono text-xs whitespace-nowrap">
+                                <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-200 font-mono text-xs whitespace-nowrap bg-amber-100/50 dark:bg-amber-900/30">
                                   {sumAdd !== 0 ? fmt(sumAdd) : "0"}
                                 </td>
-                                <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-200 font-mono text-xs whitespace-nowrap">
+                                <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-200 font-mono text-xs whitespace-nowrap bg-amber-100/50 dark:bg-amber-900/30">
                                   {sumHold !== 0 ? fmt(sumHold) : "0"}
                                 </td>
-                                <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-200 font-mono text-xs whitespace-nowrap">
+                                <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 text-right text-slate-700 dark:text-slate-200 font-mono text-xs whitespace-nowrap bg-amber-100/50 dark:bg-amber-900/30">
                                   {sumCancel !== 0 ? fmt(sumCancel) : "0"}
                                 </td>
 
-                                <td className="border-r border-b border-slate-200 dark:border-slate-800 p-1.5 !bg-[#FAF9F6]/70 dark:!bg-slate-800/30"></td>
-                                <td className="border-r border-b border-slate-200 dark:border-slate-800 p-2 !bg-[#FAF9F6]/70 dark:!bg-slate-800/30"></td>
+                                <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-1.5 !bg-[#FAF9F6]/70 dark:!bg-slate-800/30"></td>
+                                <td className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-2 !bg-[#FAF9F6]/70 dark:!bg-slate-800/30"></td>
                               </tr>
                             );
                             
@@ -2972,10 +2948,10 @@ export function HoldAddDashboard() {
             </tbody>
 
             <tfoot className="sticky bottom-0 z-20 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
-              <tr className="border-t-2 border-slate-300 dark:border-slate-700 bg-[#FAF9F6] dark:bg-slate-900">
+              <tr className="border-t-2 border-[#e7dbdc] dark:border-slate-700 bg-[#FAF9F6] dark:bg-slate-900">
                 <td
                   colSpan={3}
-                  className="border-r border-b border-slate-200 dark:border-slate-800 px-3 py-3 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 px-3 py-3 text-center font-sans font-bold text-[12px] uppercase tracking-wider text-slate-800 dark:text-slate-200 whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
                 >
                   TỔNG CỘNG THÁNG {currentPeriodVal} —{" "}
                   <span className="opacity-70 font-bold ml-1 tracking-normal font-mono text-xs">
@@ -2983,47 +2959,47 @@ export function HoldAddDashboard() {
                   </span>
                 </td>
                 <td 
-                  className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-right font-mono text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-right font-mono text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
                 >
                   {grandOpenBal !== 0 ? fmt(grandOpenBal) : "0"}
                 </td>
                 <td 
-                  className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-right font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-right font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
                 >
                   {grandThu !== 0 ? fmt(grandThu) : "0"}
                 </td>
                 <td 
-                  className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-right font-mono text-xs font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-right font-mono text-xs font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
                 >
                   {grandChi !== 0 ? fmt(grandChi) : "0"}
                 </td>
                 <td
-                  className={`border-r border-b border-slate-200 dark:border-slate-800 p-3 text-right font-mono text-xs font-bold whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20 ${grandBal >= 0 ? "text-slate-800 dark:text-slate-100" : "text-rose-600"}`}
+                  className={`border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-right font-mono text-xs font-bold whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20 ${grandBal >= 0 ? "text-slate-800 dark:text-slate-100" : "text-rose-600"}`}
                 >
                   {fmt(grandBal)}
                 </td>
                 <td 
-                  className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-right font-mono text-xs font-bold text-blue-600 dark:text-blue-450 whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-right font-mono text-xs font-bold text-blue-600 dark:text-blue-450 whitespace-nowrap bg-amber-100/70 dark:bg-amber-950/50 sticky bottom-0 z-20"
                 >
                   {grandAdd !== 0 ? fmt(grandAdd) : "0"}
                 </td>
                 <td 
-                  className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-right font-mono text-xs font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-right font-mono text-xs font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap bg-amber-100/70 dark:bg-amber-950/50 sticky bottom-0 z-20"
                 >
                   {grandHold !== 0 ? fmt(grandHold) : "0"}
                 </td>
                 <td 
-                  className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-right font-mono text-xs font-bold text-slate-500 dark:text-slate-450 whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-right font-mono text-xs font-bold text-slate-500 dark:text-slate-450 whitespace-nowrap bg-amber-100/70 dark:bg-amber-950/50 sticky bottom-0 z-20"
                 >
                   {grandCancel !== 0 ? fmt(grandCancel) : "0"}
                 </td>
                 <td 
-                  className="border-r border-b border-slate-200 dark:border-slate-800 p-3 text-center font-sans font-bold text-[11px] text-slate-700 dark:text-slate-300 whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 p-3 text-center font-sans font-bold text-[11px] text-slate-700 dark:text-slate-300 whitespace-nowrap bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
                 >
                   {confirmedIds.size} đã duyệt
                 </td>
                 <td 
-                  className="border-r border-b border-slate-200 dark:border-slate-800 min-w-[200px] bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
+                  className="border-r border-b border-[#e7dbdc] dark:border-slate-800 min-w-[200px] bg-[#FAF9F6] dark:bg-slate-900 sticky bottom-0 z-20"
                 />
               </tr>
             </tfoot>
@@ -3031,28 +3007,28 @@ export function HoldAddDashboard() {
         </div>
 
         {/* Caption & Footer Summary */}
-        <div className="flex-shrink-0 border-t border-border py-3 bg-muted/30 flex flex-col items-center justify-center gap-2.5 px-6">
+        <div className="flex-shrink-0 border-t border-[#e7dbdc] py-3 bg-muted/30 flex flex-col items-center justify-center gap-2.5 px-6">
           {/* Summary pills moved here */}
           <div className="flex gap-2 flex-wrap items-center justify-center">
-            <span className="text-[11px] bg-white border border-slate-200/60 rounded-full px-3 py-1 text-foreground flex items-center gap-1.5 shadow-sm">
+            <span className="text-[11px] bg-white border border-[#e7dbdc]/60 rounded-full px-3 py-1 text-foreground flex items-center gap-1.5 shadow-sm">
               <span className="text-muted-foreground font-bold uppercase tracking-wider text-[9px] font-sans">
                 CHI PHÍ LƯƠNG TA
               </span>
               <span
                 className="font-sans font-black text-emerald-600 text-[12px]"
-                style={{ color: "#4e1c2d" }}
+                style={{ color: "#4e1c2d", lineHeight: "14px", fontSize: "10px" }}
               >
                 {fmt(chiPhiLuongTaPillValue)}
               </span>
               <span className="text-slate-400 font-bold font-sans">?</span>
             </span>
-            <span className="text-[11px] bg-white border border-slate-200/60 rounded-full px-3 py-1 text-foreground flex items-center gap-1.5 shadow-sm">
+            <span className="text-[11px] bg-white border border-[#e7dbdc]/60 rounded-full px-3 py-1 text-foreground flex items-center gap-1.5 shadow-sm">
               <span className="text-muted-foreground font-bold uppercase tracking-wider text-[9px] font-sans">HOLD</span>
               <span className="font-sans font-black text-rose-600 text-[12px]">
                 {fmt(holdPillValue)}
               </span>
             </span>
-            <span className="text-[11px] bg-white border border-slate-200/60 rounded-full px-3 py-1 text-foreground flex items-center gap-1.5 shadow-sm">
+            <span className="text-[11px] bg-white border border-[#e7dbdc]/60 rounded-full px-3 py-1 text-foreground flex items-center gap-1.5 shadow-sm">
               <span className="text-muted-foreground font-bold uppercase tracking-wider text-[9px] font-sans">Add</span>
               <span
                 className="font-sans font-black text-blue-600 text-[12px]"
@@ -3062,7 +3038,7 @@ export function HoldAddDashboard() {
               </span>
               <span className="text-slate-400 font-bold font-sans">?</span>
             </span>
-            <span className="text-[11px] bg-white border border-slate-200/60 rounded-full px-3 py-1 text-foreground flex items-center gap-1.5 shadow-sm">
+            <span className="text-[11px] bg-white border border-[#e7dbdc]/60 rounded-full px-3 py-1 text-foreground flex items-center gap-1.5 shadow-sm">
               <span className="text-muted-foreground font-bold uppercase tracking-wider text-[9px] font-sans">Cancel</span>
               <span
                 className="font-sans font-black text-orange-600 text-[12px]"

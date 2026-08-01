@@ -1106,20 +1106,21 @@ export function TimesheetHub() {
             initial="hidden"
             animate="visible"
             exit={{ y: "100%", opacity: 0 }}
-            className="flex-1 flex flex-col min-h-0 gap-4 relative overflow-hidden bg-transparent w-full px-6 pt-2"
-            style={{ paddingBottom: "12px" }}
+            className="flex-1 flex flex-col min-h-0 gap-4 relative overflow-hidden bg-transparent w-full px-0 pt-2"
+            style={{ paddingBottom: "0px", paddingLeft: "12px", paddingRight: "12px" }}
           >
             {/* Inner Content Area holding Sidebar and Table */}
             <div 
               className={`flex-1 grid min-h-0 relative overflow-hidden ${
-                showSidebar ? "grid-cols-[238px_1fr]" : "grid-cols-1"
+                showSidebar ? "grid-cols-[230px_1fr]" : "grid-cols-1"
               } grid-rows-1 w-full h-full`}
+              style={{ paddingBottom: "0px" }}
             >
               {/* Left Panel: Sidebar Controls */}
               {showSidebar && (
                 <div 
                   className="w-full shrink-0 flex flex-col h-full select-none animate-in fade-in slide-in-from-left duration-500 bg-white border-r border-[var(--border)]"
-                  style={{ paddingBottom: "12px", paddingTop: "12px", paddingLeft: "12px", paddingRight: "12px", width: "238px" }}
+                  style={{ paddingBottom: "12px", paddingTop: "12px", paddingLeft: "12px", paddingRight: "12px", width: "230px", borderColor: "#f8f3fa", borderWidth: "0.5px", borderStyle: "solid" }}
                 >
                   <div 
                     className="flex flex-col h-full overflow-hidden w-full side-panel p-3"
@@ -1129,17 +1130,18 @@ export function TimesheetHub() {
                     {/* Scrollable Container for all Sidebar content */}
                     <div 
                       className="flex-1 overflow-y-auto custom-scrollbar pr-1.5 flex flex-col min-h-0 gap-6 w-full"
-                      style={{ paddingRight: "0px", height: "94.186px", paddingLeft: "12px", paddingRight: "12px" }}
+                      style={{ height: "94.186px", paddingLeft: "12px", paddingRight: "12px" }}
                     >
                       {/* Always show Summary */}
                       <div 
                         className="animate-in fade-in slide-in-from-top-2 duration-300 shrink-0"
+                        style={{ paddingTop: "12px" }}
                       >
                           <div id="summary-heading-container" className="mb-4" style={{ borderWidth: "0px" }}>
-                            <span className="section-label" style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--accent)", display: "block" }}>[ 01 ] Summary</span>
+                            <span className="section-label" style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--accent)", display: "block", paddingTop: "12px" }}>[ 01 ] Summary</span>
                           </div>
                           
-                          <div className="flex flex-col gap-[0.5rem] mt-[1.25rem]">
+                          <div className="flex flex-col gap-[0.5rem] mt-0" style={{ marginTop: "0px" }}>
                             <div 
                               className="bg-white border border-[var(--border)] px-[0.8rem] py-[0.5rem] flex flex-col gap-1 rounded-sm"
                               style={{ height: "51.807px", borderWidth: "0px", paddingTop: "0px", paddingBottom: "0px" }}
@@ -1147,7 +1149,7 @@ export function TimesheetHub() {
                               <span className="text-[0.55rem] uppercase tracking-[0.1em] text-muted-foreground font-bold">Total Entries</span>
                               <span className="text-[1.2rem] font-sans font-extrabold text-[foreground]">{currentData.length.toLocaleString('vi-VN')}</span>
                             </div>
-                            <div className="bg-[rose] px-[0.8rem] py-[0.5rem] flex flex-col gap-1 rounded-sm">
+                            <div className="bg-[rose] px-[0.8rem] py-[0.5rem] flex flex-col gap-1 rounded-sm" style={{ paddingTop: "0px", paddingBottom: "0px" }}>
                               <span className="text-[0.55rem] uppercase tracking-[0.1em] text-[foreground]/60 font-bold font-sans">Khong Luong</span>
                               <span className="text-[1.2rem] font-sans font-extrabold text-[foreground]">{calculatedRosterData.filter(d => d.loai === "KL").length.toLocaleString('vi-VN')}</span>
                             </div>
@@ -1158,7 +1160,7 @@ export function TimesheetHub() {
                       className="stat-group stat-card pt-6 border-t border-[var(--border)]"
                       style={{ marginBottom: "0px", paddingTop: "0px" }}
                     >
-                      <span className="section-label" style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--accent)", display: "block", marginBottom: "1rem" }}>Report Period</span>
+                      <span className="section-label" style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--accent)", display: "block", marginBottom: "0px" }}>Report Period</span>
                       <div className="value" style={{ fontSize: "1.8rem", fontWeight: 300, color: "#0d0d25" }}>
                         {fromDate && toDate 
                           ? format(new Date(`${toDate}T00:00:00`), "MMMM yyyy")
@@ -1361,18 +1363,18 @@ export function TimesheetHub() {
 
                     <div 
                       className="actions mt-auto pt-4 border-t border-[var(--border)] w-full shrink-0 flex flex-col gap-2"
-                      style={{ paddingLeft: "12px", paddingRight: "12px" }}
+                      style={{ paddingLeft: "12px", paddingRight: "12px", height: "90.4748px" }}
                     >
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button
                             type="button"
                             className="btn-secondary w-full flex items-center justify-center gap-1.5"
-                            style={{ height: "37.0704px", paddingTop: "0px", paddingBottom: "0px" }}
+                            style={{ height: "30.0686px", paddingTop: "0px", paddingBottom: "0px" }}
                             title="Cài đặt & Tiện ích"
                           >
                             <Settings className="w-3.5 h-3.5 hover:rotate-45 transition-transform duration-500 shrink-0" />
-                            <span>Settings</span>
+                            <span style={{ fontSize: "9.2px" }}>Settings</span>
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56 p-1.5 bg-white border border-border shadow-2xl rounded-2xl z-[99999]">
@@ -1424,7 +1426,7 @@ export function TimesheetHub() {
                       <button 
                         className="btn-primary w-full"
                         onClick={() => setView("upload")}
-                        style={{ height: "37.7759px", paddingTop: "0px", paddingBottom: "0px" }}
+                        style={{ height: "30.7656px", fontSize: "9.2px", paddingTop: "0px", paddingBottom: "0px" }}
                       >
                         Cấu hình
                       </button>
@@ -1446,7 +1448,7 @@ export function TimesheetHub() {
                 marginLeft: "16px"
               }}
             >
-              <div className="table-container flex-1 flex flex-col min-h-0 relative bg-card border border-border rounded-none shadow-sm overflow-hidden">
+              <div className="table-container flex-1 flex flex-col min-h-0 relative bg-card border border-border rounded-none shadow-sm overflow-hidden" style={{ borderWidth: "0.5px" }}>
                 {(location.state?.from === "audit" || location.state?.from === "audit_applied" || (location.state?.from && String(location.state.from).includes("audit"))) && (
                   <div className="bg-rose-50 border-b border-rose-200 px-4 py-2 flex items-center justify-between z-[150] shrink-0">
                     <div className="flex items-center gap-2 text-rose-800 text-xs font-bold">

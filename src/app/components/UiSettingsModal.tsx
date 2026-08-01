@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect, useCallback } from "react";
-import { X, Settings2, Trash2, Target } from "lucide-react";
+import { X, Settings2, Trash2, Target, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import localforage from "localforage";
 import { useAppData } from "../lib/contexts/AppDataContext";
@@ -56,6 +56,7 @@ export function UiSettingsModal({
   const [settings, setSettings] = useState<UiSettings>(defaultSettings);
   const { updateAppData } = useAppData();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [activeModalTab, setActiveModalTab] = useState<"general" | "div_selector">("general");
 
   // States for new custom selector style rule
   const [newSelector, setNewSelector] = useState("");
@@ -313,7 +314,7 @@ export function UiSettingsModal({
       const target = e.target as HTMLElement;
       
       // Do not highlight elements inside the settings panel itself
-      if (target.closest(".ui-settings-modal-root")) return;
+      if (target.closest(".fixed.inset-0") || target.closest(".fixed.top-4")) return;
 
       if (activeEl && activeEl !== target) {
         activeEl.classList.remove("inspector-hovered");
@@ -438,7 +439,7 @@ export function UiSettingsModal({
       e.stopPropagation();
 
       const target = e.target as HTMLElement;
-      if (target.closest(".ui-settings-modal-root")) return;
+      if (target.closest(".fixed.inset-0") || target.closest(".fixed.top-4")) return;
 
       const selector = getReadableSelector(target);
       handleSelectorChange(selector, target);
@@ -472,22 +473,12 @@ export function UiSettingsModal({
     };
   }, [isInspecting, handleSelectorChange]);
 
-  const sanitizeSelector = (sel: string) => {
-    // Use only first selector if user pasted a multi-selector list
-    const s = String(sel || "").trim();
-    if (!s) return "";
-    const parts = s.split(",").map(p => p.trim()).filter(Boolean);
-    // defensive: remove javascript: and unsafe tokens
-    const first = parts[0] || "";
-    return first.replace(/javascript:\s*/i, "").replace(/\s+/g, " ");
-  };
-
   const addCustomRule = () => {
     if (!newSelector.trim()) {
       toast.error("Vui lòng nhập hoặc chọn một CSS selector!");
       return;
     }
-    const cleanSelector = sanitizeSelector(newSelector);
+    const cleanSelector = newSelector.trim();
     const existingRules = settings.customRules || [];
     const index = existingRules.findIndex((r) => r.selector === cleanSelector);
 
@@ -514,23 +505,6 @@ export function UiSettingsModal({
     }
 
     setSettings({ ...settings, customRules: updatedRules });
-
-    // Try to verify selector targets something in the DOM and warn if not
-    try {
-      if (typeof window !== "undefined" && cleanSelector) {
-        try {
-          const found = document.querySelector(cleanSelector);
-          if (!found) {
-            toast.warn("Selector chưa khớp với bất kỳ phần tử nào trên trang. Vẫn lưu nhưng hãy kiểm tra lại selector.");
-          }
-        } catch (e) {
-          // invalid selector
-          toast.warn("Selector có vẻ không hợp lệ nhưng đã lưu. Vui lòng kiểm tra cú pháp CSS selector.");
-        }
-      }
-    } catch (err) {
-      // ignore environment issues
-    }
     
     // Reset form inputs
     setNewSelector("");
@@ -582,37 +556,6 @@ export function UiSettingsModal({
         fontSize: newFontSize,
       };
       applyUiSettings(settings, previewRule);
-
-      // Temporary: auto-tag prominent add buttons so .btn-secret styles apply even if app didn't mark them
-      try {
-        const tempTagged: HTMLElement[] = [];
-        if (typeof document !== "undefined") {
-          const candidates = Array.from(document.querySelectorAll('button, a, [role="button"]')) as HTMLElement[];
-          for (const el of candidates) {
-            const txt = (el.innerText || "").trim().toLowerCase();
-            if (!txt) continue;
-            if (txt.includes("thêm") || txt.includes("thêm dòng") || txt.includes("add") || txt.includes("secret") || txt.includes("cta")) {
-              if (!el.classList.contains("btn-secret")) {
-                el.classList.add("btn-secret");
-                el.dataset.tempBtnSecret = "1";
-                tempTagged.push(el);
-              }
-            }
-          }
-        }
-
-        return () => {
-          // cleanup temp tags on unmount/when modal closes
-          try {
-            tempTagged.forEach((t) => {
-              if (t && t.dataset && t.dataset.tempBtnSecret) {
-                t.classList.remove("btn-secret");
-                delete t.dataset.tempBtnSecret;
-              }
-            });
-          } catch (e) {}
-        };
-      } catch (e) {}
     }
   }, [settings, isOpen, newSelector, newRadius, newBg, newColor, newBorder, getCombinedPadding, getCombinedMargin, newWidth, newHeight, newFontSize]);
 
@@ -733,15 +676,29 @@ export function UiSettingsModal({
         onClick={onClose}
       >
         <div 
-          className={`bg-white border-4 border-primary rounded-2xl shadow-hard-lg max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 pointer-events-auto ui-settings-modal-root ${
+          className={`bg-white border-4 border-primary rounded-2xl shadow-hard-lg max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 pointer-events-auto ${
             isInspecting ? "opacity-0 pointer-events-none scale-95 invisible" : "scale-100"
           }`}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="p-4 flex justify-between items-center bg-background border-b-2 border-primary/10">
-            <h3 className="font-black text-xl uppercase flex items-center gap-2 text-primary tracking-wide">
-              <Settings2 className="w-6 h-6 text-accent animate-pulse" /> Cài đặt Giao diện
-            </h3>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <select
+                  value={activeModalTab}
+                  onChange={(e) => setActiveModalTab(e.target.value as "general" | "div_selector")}
+                  aria-label="Chọn chế độ hiển thị cài đặt giao diện"
+                  className="appearance-none bg-white border-2 border-primary rounded-lg pl-3 pr-8 py-1.5 font-bold text-xs text-primary focus:outline-none cursor-pointer shadow-sm"
+                >
+                  <option value="general">⚙️ Cài đặt chung (General)</option>
+                  <option value="div_selector">📐 Quản lý DIV & Style (Trang lớn)</option>
+                </select>
+                <ChevronDown className="w-4 h-4 text-primary absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+              <h3 className="font-black text-lg uppercase flex items-center gap-2 text-primary tracking-wide hidden sm:flex">
+                <Settings2 className="w-5 h-5 text-accent animate-pulse" /> {activeModalTab === "general" ? "Cài đặt Giao diện" : "Trang Quản lý DIV & Style"}
+              </h3>
+            </div>
             <button
               onClick={onClose}
               aria-label="Đóng cài đặt giao diện"
@@ -752,660 +709,667 @@ export function UiSettingsModal({
           </div>
 
           <div className="p-6 flex-1 overflow-y-auto bg-slate-50/50 text-primary custom-scrollbar">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Left Column: Colors, Background and Data Action */}
-              <div className="flex flex-col gap-6">
+            {activeModalTab === "div_selector" ? (
+              /* Trang Quản lý DIV & Style: CHỈ CHỨA MỤC 2 */
+              <div className="max-w-4xl mx-auto w-full">
                 <div className="bg-white p-5 rounded-xl border-2 border-primary/10 shadow-sm flex flex-col gap-4">
                   <h4 className="font-black text-sm text-primary tracking-widest uppercase border-b-2 border-primary/10 pb-2">
-                    1. MÀU SẮC & NỀN (COLORS & BG)
+                    2. FONT CHỮ & HIỂN THỊ (QUẢN LÝ DIV & STYLE)
                   </h4>
-          <div className="flex flex-col gap-1.5 border-b border-dashed border-primary/10 pb-4 mb-2">
-            <label htmlFor="preset-select" className="font-bold text-[0.8125rem] text-accent flex items-center gap-1.5">
-              <span>🎨 Giao diện mẫu (Taste Preset)</span>
-            </label>
-            <select
-              id="preset-select"
-              value={settings.preset || "systematic"}
-              onChange={(e) => {
-                const pId = e.target.value;
-                const presetData = TASTE_PRESETS[pId];
-                if (presetData) {
-                  setSettings((prev) => ({
-                    ...prev,
-                    preset: pId,
-                    bg: presetData.bg,
-                    accent: presetData.accent,
-                    text: presetData.text,
-                    border: presetData.border,
-                    stripeColor1: presetData.stripeColor1,
-                    stripeColor2: presetData.stripeColor2,
-                    gridLineColor: presetData.gridLineColor,
-                    tableHeaderBg: presetData.tableHeaderBg,
-                    tableFont: presetData.tableFont,
-                    tableRadius: presetData.tableRadius,
-                  }));
-                  toast.success(`Đã áp dụng giao diện: ${presetData.name}`);
-                }
-              }}
-              className="w-full border-2 border-primary rounded-lg p-2 font-bold text-sm outline-none focus:shadow-hard-sm transition-all bg-white text-primary"
-            >
-              {Object.values(TASTE_PRESETS).map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-            <p className="text-[10px] text-gray-500 font-medium">
-              * Thay đổi giao diện mẫu sẽ tự động cấu hình các thông số màu sắc, bo góc và phông chữ của bảng theo chuẩn Taste-Skill.
-            </p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="font-bold text-[0.8125rem]">
-              Ảnh nền (Background Image)
-            </label>
-            <div className="flex items-center gap-2">
-              <label className="flex-1 cursor-pointer bg-white border-2 border-primary rounded-lg p-2 text-center text-xs font-bold shadow-hard-sm hover:bg-primary/5 transition-all">
-                {settings.bgImage ? "Đổi ảnh nền" : "Tải ảnh lên"}
-                <input
-                  type="file"
-                  id="bg-image-upload"
-                  name="bg-image-upload"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => handleImageUpload(e)}
-                />
-              </label>
-              {settings.bgImage && (
-                <button
-                  onClick={() => setSettings({ ...settings, bgImage: "" })}
-                  aria-label="Xóa ảnh nền"
-                  className="p-2 border-2 border-destructive text-destructive rounded-lg shadow-hard-sm hover:bg-destructive/10 transition-all"
-                  title="Xóa ảnh nền"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-            {(settings.bgImage ||
-              settings.bgImageStyle?.startsWith("brand-stripes-")) && (
-              <>
-                <div
-                  className="h-24 w-full rounded-lg mt-1 border border-primary/20"
-                  style={{
-                    backgroundImage:
-                      settings.bgImageStyle === "brand-stripes-purple"
-                        ? "var(--pattern-stripes-purple)"
-                        : settings.bgImageStyle === "brand-stripes-green"
-                          ? "var(--pattern-stripes-green)"
-                          : settings.bgImageStyle === "brand-stripes-brown"
-                            ? "var(--pattern-stripes-brown)"
-                            : `url(${settings.bgImage})`,
-                    backgroundSize:
-                      settings.bgImageStyle === "pattern-sm"
-                        ? "30px"
-                        : settings.bgImageStyle === "pattern-md"
-                          ? "60px"
-                          : settings.bgImageStyle === "pattern-lg"
-                            ? "120px"
-                            : settings.bgImageStyle?.startsWith(
-                                  "brand-stripes-",
-                                )
-                              ? "20px 20px"
-                              : "cover",
-                    backgroundRepeat:
-                      settings.bgImageStyle?.startsWith("pattern") ||
-                      settings.bgImageStyle?.startsWith("brand-stripes")
-                        ? "repeat"
-                        : "no-repeat",
-                    backgroundPosition: settings.bgImageStyle?.startsWith(
-                      "pattern",
-                    )
-                      ? "top left"
-                      : "center",
-                    opacity: (settings.bgImageOpacity ?? 100) / 100,
-                  }}
-                />
-                <div className="flex flex-col gap-1 mt-1">
-                  <label
-                    htmlFor="bg-image-style"
-                    className="font-bold text-[0.8125rem]"
-                  >
-                    Kiểu hiển thị ảnh
-                  </label>
-                  <select
-                    id="bg-image-style"
-                    value={settings.bgImageStyle || "cover"}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        bgImageStyle: e.target.value as any,
-                      })
-                    }
-                    className="w-full border-2 border-primary rounded-lg p-2 font-bold text-sm outline-none focus:shadow-hard-sm transition-all bg-white"
-                  >
-                    <option value="cover">Lấp đầy màn hình (Cover)</option>
-                    <option value="contain">Vừa vặn màn hình (Contain)</option>
-                    <option value="original">Kích thước gốc (Original)</option>
-                    <option value="pattern-sm">Nhân bản (Nhỏ)</option>
-                    <option value="pattern-md">Nhân bản (Vừa)</option>
-                    <option value="pattern-lg">Nhân bản (Lớn)</option>
-                    <option value="brand-stripes-purple">Brand: Sọc Tím</option>
-                    <option value="brand-stripes-green">Brand: Sọc Xanh</option>
-                    <option value="brand-stripes-brown">Brand: Sọc Nâu</option>
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1 mt-1">
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-col gap-1">
                     <label className="font-bold text-[0.8125rem]">
-                      Độ đậm nhạt của ảnh
+                      Font chữ Bảng (Table Font)
                     </label>
-                    <span className="text-xs font-bold">
-                      {settings.bgImageOpacity ?? 100}%
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={settings.bgImageOpacity ?? 100}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        bgImageOpacity: Number(e.target.value),
-                      })
-                    }
-                    className="w-full accent-primary"
-                  />
-                </div>
-              </>
-            )}
-          </div>
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="accent-color"
-              className="font-bold text-[0.8125rem]"
-            >
-              Màu nhấn (Accent/Table)
-            </label>
-            <input
-              id="accent-color"
-              type="color"
-              value={
-                settings.accent?.startsWith("#") && settings.accent.length === 7
-                  ? settings.accent
-                  : "#C88493"
-              }
-              onChange={(e) =>
-                setSettings({ ...settings, accent: e.target.value })
-              }
-              className="w-10 h-10 cursor-pointer border-2 border-primary rounded-lg p-0.5 shadow-hard-sm"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <label htmlFor="text-color" className="font-bold text-[0.8125rem]">
-              Màu chữ (Text)
-            </label>
-            <input
-              id="text-color"
-              type="color"
-              value={
-                settings.text?.startsWith("#") && settings.text.length === 7
-                  ? settings.text
-                  : "#5D111A"
-              }
-              onChange={(e) =>
-                setSettings({ ...settings, text: e.target.value })
-              }
-              className="w-10 h-10 cursor-pointer border-2 border-primary rounded-lg p-0.5 shadow-hard-sm"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="stripe-color1"
-              className="font-bold text-[0.8125rem]"
-            >
-              Nền Web: Màu sọc 1
-            </label>
-            <input
-              id="stripe-color1"
-              type="color"
-              value={
-                settings.stripeColor1?.startsWith("#") &&
-                settings.stripeColor1.length === 7
-                  ? settings.stripeColor1
-                  : "#F6F4F0"
-              }
-              onChange={(e) =>
-                setSettings({ ...settings, stripeColor1: e.target.value })
-              }
-              className="w-10 h-10 cursor-pointer border-2 border-primary rounded-lg p-0.5 shadow-hard-sm"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="stripe-color2"
-              className="font-bold text-[0.8125rem]"
-            >
-              Nền Web: Màu sọc 2
-            </label>
-            <input
-              id="stripe-color2"
-              type="color"
-              value={
-                settings.stripeColor2?.startsWith("#") &&
-                settings.stripeColor2.length === 7
-                  ? settings.stripeColor2
-                  : "#F4ECD8"
-              }
-              onChange={(e) =>
-                setSettings({ ...settings, stripeColor2: e.target.value })
-              }
-              className="w-10 h-10 cursor-pointer border-2 border-primary rounded-lg p-0.5 shadow-hard-sm"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="border-color"
-              className="font-bold text-[0.8125rem]"
-            >
-              Viền & Đổ bóng (Border)
-            </label>
-            <input
-              id="border-color"
-              type="color"
-              value={
-                settings.border?.startsWith("#") && settings.border.length === 7
-                  ? settings.border
-                  : "#E7DBDC"
-              }
-              onChange={(e) =>
-                setSettings({ ...settings, border: e.target.value })
-              }
-              className="w-10 h-10 cursor-pointer border-2 border-primary rounded-lg p-0.5 shadow-hard-sm"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="grid-color"
-              className="font-bold text-[0.8125rem]"
-            >
-              Màu kẻ lưới (Grid Line)
-            </label>
-            <input
-              id="grid-color"
-              type="color"
-              value={
-                settings.gridLineColor?.startsWith("#") &&
-                settings.gridLineColor.length === 7
-                  ? settings.gridLineColor
-                  : "#e2e8f0"
-              }
-              onChange={(e) =>
-                setSettings({ ...settings, gridLineColor: e.target.value })
-              }
-              className="w-10 h-10 cursor-pointer border-2 border-primary rounded-lg p-0.5 shadow-hard-sm"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="table-header-bg"
-              className="font-bold text-[0.8125rem]"
-            >
-              Nền Tiêu đề Bảng (Header Bg)
-            </label>
-            <input
-              id="table-header-bg"
-              type="color"
-              value={
-                settings.tableHeaderBg?.startsWith("#") &&
-                settings.tableHeaderBg.length === 7
-                  ? settings.tableHeaderBg
-                  : "#f4efe2"
-              }
-              onChange={(e) =>
-                setSettings({ ...settings, tableHeaderBg: e.target.value })
-              }
-              className="w-10 h-10 cursor-pointer border-2 border-primary rounded-lg p-0.5 shadow-hard-sm"
-            />
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-xl border-2 border-primary/10 shadow-sm flex flex-col gap-4">
-          <h4 className="font-black text-sm text-red-500 tracking-widest uppercase border-b-2 border-red-500/10 pb-2">
-            3. DỮ LIỆU & LƯU TRỮ (DATA & ACTIONS)
-          </h4>
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => setShowClearConfirm(true)}
-              className="flex items-center justify-center gap-2 w-full bg-red-50 text-red-600 hover:bg-red-100 py-3 rounded-xl font-bold border-2 border-red-200 transition-colors cursor-pointer text-sm uppercase tracking-wide"
-            >
-              <Trash2 className="w-5 h-5" /> Xoá Toàn Bộ Dữ Liệu
-            </button>
-          </div>
-        </div>
-      </div> {/* Closes Left Column */}
-
-      {/* Right Column: Fonts & Custom CSS Rules (Select and Edit DIVs) */}
-      <div className="flex flex-col gap-6">
-        <div className="bg-white p-5 rounded-xl border-2 border-primary/10 shadow-sm flex flex-col gap-4">
-          <h4 className="font-black text-sm text-primary tracking-widest uppercase border-b-2 border-primary/10 pb-2">
-            2. FONT CHỮ & HIỂN THỊ
-          </h4>
-          <div className="flex flex-col gap-1">
-            <label className="font-bold text-[0.8125rem]">
-              Font chữ Bảng (Table Font)
-            </label>
-            <select
-              value={settings.tableFont || "var(--font-mono)"}
-              onChange={(e) =>
-                setSettings({ ...settings, tableFont: e.target.value })
-              }
-              className="w-full border-2 border-primary rounded-lg p-2 font-bold text-sm outline-none focus:shadow-hard-sm transition-all bg-white text-primary"
-            >
-              <option value="var(--font-mono)">JetBrains Mono (Sắc sảo / Kỹ thuật)</option>
-              <option value="var(--font-inter)">Inter (Hiện đại / Tối giản)</option>
-              <option value="var(--font-newsreader)">Newsreader (Cổ điển / Báo chí)</option>
-              <option value="var(--font-nunito)">Nunito (Mềm mại)</option>
-              <option value="var(--font-quicksand)">Quicksand (Tròn trịa)</option>
-            </select>
-          </div>
-
-          {/* Table Border Radius Slider */}
-          <div className="flex flex-col gap-1 mt-2">
-            <div className="flex justify-between items-center">
-              <label htmlFor="table-radius" className="font-bold text-[0.8125rem]">
-                Bo góc của bảng (Table Radius)
-              </label>
-              <span className="text-xs font-bold">{settings.tableRadius || "12px"}</span>
-            </div>
-            <input
-              id="table-radius"
-              type="range"
-              min="0"
-              max="30"
-              value={parseInt(settings.tableRadius || "12") || 0}
-              onChange={(e) =>
-                setSettings({ ...settings, tableRadius: `${e.target.value}px` })
-              }
-              className="w-full accent-primary"
-            />
-          </div>
-
-          {/* Custom Element Selector Styles */}
-          <div className="flex flex-col gap-2 mt-3 border-t border-primary/10 pt-3">
-            <label className="font-black text-xs text-primary/75 uppercase tracking-wider">
-              Chỉ định DIV & sửa styles
-            </label>
-            
-            <div className="flex flex-col gap-2 bg-slate-50 p-3 rounded-lg border border-primary/10 text-xs">
-              {/* Preset selectors quick pick */}
-              <div className="flex flex-col gap-1">
-                <span className="text-[0.65rem] font-bold text-primary/60 uppercase">Chọn nhanh phần tử:</span>
-                <div className="flex flex-wrap gap-1">
-                  {[
-                    { label: "Bảng điều khiển (Navbar)", val: "#app-navbar, .navbar-header" },
-                    { label: "Thanh bên (Sidebar)", val: "#app-sidebar, .side-panel" },
-                    { label: "Vùng làm việc (Main Content)", val: "#main-content, .content-area" },
-                    { label: "Vùng chứa Bảng (Table)", val: ".table-container, .data-table-wrapper" },
-                    { label: "Tiêu đề Bảng (Header TH)", val: ".table-container thead th, .data-table-wrapper thead th" },
-                    { label: "Thẻ Thống kê (Stat Card)", val: ".stat-card, .stat-group" },
-                    { label: "Nút bấm chính (Button)", val: "button.btn-primary, .btn-primary" },
-                    { label: "Thanh bộ lọc (Filter Toolbar)", val: ".filter-toolbar" }
-                  ].map((p) => (
-                    <button
-                      key={p.val}
-                      onClick={() => handleSelectorChange(p.val)}
-                      type="button"
-                      className="text-[0.55rem] font-bold bg-white border border-primary/20 hover:border-primary hover:bg-primary/5 px-2 py-1 rounded text-primary transition-all cursor-pointer"
+                    <select
+                      value={settings.tableFont || "var(--font-mono)"}
+                      onChange={(e) =>
+                        setSettings({ ...settings, tableFont: e.target.value })
+                      }
+                      className="w-full border-2 border-primary rounded-lg p-2 font-bold text-sm outline-none focus:shadow-hard-sm transition-all bg-white text-primary"
                     >
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                      <option value="var(--font-mono)">JetBrains Mono (Sắc sảo / Kỹ thuật)</option>
+                      <option value="var(--font-inter)">Inter (Hiện đại / Tối giản)</option>
+                      <option value="var(--font-newsreader)">Newsreader (Cổ điển / Báo chí)</option>
+                      <option value="var(--font-nunito)">Nunito (Mềm mại)</option>
+                      <option value="var(--font-quicksand)">Quicksand (Tròn trịa)</option>
+                    </select>
+                  </div>
 
-              {/* Selector Input */}
-              <div className="flex flex-col gap-1 mt-1">
-                <div className="flex justify-between items-center">
-                  <span className="text-[0.65rem] font-bold text-primary/60 uppercase">CSS Selector:</span>
-                  <button
-                    type="button"
-                    onClick={() => setIsInspecting(!isInspecting)}
-                    className={`text-[0.6rem] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer border flex items-center gap-1 ${
-                      isInspecting
-                        ? "bg-red-500 text-white border-red-500 hover:bg-red-600 animate-pulse"
-                        : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10 hover:border-primary"
-                    }`}
-                  >
-                    <Target className="w-3 h-3" />
-                    {isInspecting ? "Đang chọn... (Nhấn ESC)" : "Chọn từ màn hình"}
-                  </button>
-                </div>
-                <input
-                  type="text"
-                  placeholder="e.g. .side-panel hoặc #my-div"
-                  value={newSelector}
-                  onChange={(e) => handleSelectorChange(e.target.value)}
-                  className="w-full border border-primary/20 rounded p-1.5 bg-white text-primary text-xs outline-none focus:border-primary"
-                />
-              </div>
-
-              {/* Styles Inputs */}
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                <div className="flex flex-col gap-1">
-                  <span className="text-[0.6rem] font-bold text-primary/60">Bo góc (Radius):</span>
-                  <input
-                    type="text"
-                    placeholder="e.g. 16px hoặc 1rem"
-                    value={newRadius}
-                    onChange={(e) => setNewRadius(e.target.value)}
-                    className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-[0.6rem] font-bold text-primary/60">Màu nền (Bg):</span>
-                  <input
-                    type="text"
-                    placeholder="e.g. #ff0000, red, transparent"
-                    value={newBg}
-                    onChange={(e) => setNewBg(e.target.value)}
-                    className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-[0.6rem] font-bold text-primary/60">Màu chữ (Color):</span>
-                  <input
-                    type="text"
-                    placeholder="e.g. #000, white"
-                    value={newColor}
-                    onChange={(e) => setNewColor(e.target.value)}
-                    className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-[0.6rem] font-bold text-primary/60">Viền (Border):</span>
-                  <input
-                    type="text"
-                    placeholder="e.g. 2px solid #000"
-                    value={newBorder}
-                    onChange={(e) => setNewBorder(e.target.value)}
-                    className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5 mt-1 border-t border-primary/5 pt-2">
-                <span className="text-[0.65rem] font-bold text-primary/70 uppercase">Khoảng đệm (Padding):</span>
-                <div className="grid grid-cols-4 gap-1.5">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[0.55rem] font-bold text-primary/60 text-center">Top (px)</span>
-                    <input
-                      type="text"
-                      placeholder="0"
-                      value={padTop}
-                      onChange={(e) => setPadTop(e.target.value)}
-                      className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[0.55rem] font-bold text-primary/60 text-center">Right (px)</span>
-                    <input
-                      type="text"
-                      placeholder="0"
-                      value={padRight}
-                      onChange={(e) => setPadRight(e.target.value)}
-                      className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[0.55rem] font-bold text-primary/60 text-center">Bottom (px)</span>
-                    <input
-                      type="text"
-                      placeholder="0"
-                      value={padBottom}
-                      onChange={(e) => setPadBottom(e.target.value)}
-                      className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[0.55rem] font-bold text-primary/60 text-center">Left (px)</span>
-                    <input
-                      type="text"
-                      placeholder="0"
-                      value={padLeft}
-                      onChange={(e) => setPadLeft(e.target.value)}
-                      className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5 mt-1 border-t border-primary/5 pt-2">
-                <span className="text-[0.65rem] font-bold text-primary/70 uppercase">Lề ngoài (Margin):</span>
-                <div className="grid grid-cols-4 gap-1.5">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[0.55rem] font-bold text-primary/60 text-center">Top (px)</span>
-                    <input
-                      type="text"
-                      placeholder="0"
-                      value={marTop}
-                      onChange={(e) => setMarTop(e.target.value)}
-                      className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[0.55rem] font-bold text-primary/60 text-center">Right (px)</span>
-                    <input
-                      type="text"
-                      placeholder="0"
-                      value={marRight}
-                      onChange={(e) => setMarRight(e.target.value)}
-                      className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[0.55rem] font-bold text-primary/60 text-center">Bottom (px)</span>
-                    <input
-                      type="text"
-                      placeholder="0"
-                      value={marBottom}
-                      onChange={(e) => setMarBottom(e.target.value)}
-                      className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[0.55rem] font-bold text-primary/60 text-center">Left (px)</span>
-                    <input
-                      type="text"
-                      placeholder="0"
-                      value={marLeft}
-                      onChange={(e) => setMarLeft(e.target.value)}
-                      className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 mt-1">
-                <div className="flex flex-col gap-1">
-                  <span className="text-[0.6rem] font-bold text-primary/60">Cỡ chữ (Font Size):</span>
-                  <input
-                    type="text"
-                    placeholder="e.g. 14px, 1rem"
-                    value={newFontSize}
-                    onChange={(e) => setNewFontSize(e.target.value)}
-                    className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-[0.6rem] font-bold text-primary/60">Rộng (Width):</span>
-                  <input
-                    type="text"
-                    placeholder="e.g. 280px hoặc 100%"
-                    value={newWidth}
-                    onChange={(e) => setNewWidth(e.target.value)}
-                    className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-[0.6rem] font-bold text-primary/60">Cao (Height):</span>
-                  <input
-                    type="text"
-                    placeholder="e.g. 500px hoặc auto"
-                    value={newHeight}
-                    onChange={(e) => setNewHeight(e.target.value)}
-                    className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={addCustomRule}
-                className="mt-2 w-full bg-primary text-white hover:bg-primary/90 font-bold py-1.5 rounded transition-all text-[0.65rem] uppercase tracking-wider cursor-pointer"
-              >
-                ÁP DỤNG STYLE MỚI
-              </button>
-            </div>
-
-            {/* List of custom styles configured */}
-            {settings.customRules && settings.customRules.length > 0 && (
-              <div className="flex flex-col gap-1.5 mt-2 max-h-40 overflow-y-auto border border-primary/10 rounded-lg p-2 bg-white">
-                <span className="text-[0.6rem] font-black uppercase text-primary/50">Danh sách style đã đổi:</span>
-                {settings.customRules.map((rule) => (
-                  <div key={rule.id} className="flex justify-between items-center text-[0.65rem] border-b border-primary/5 pb-1 gap-2">
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="font-mono text-primary font-bold truncate">{rule.selector}</span>
-                      <span className="text-primary/60 font-medium text-[0.55rem] truncate">
-                        {[
-                          rule.radius && `r: ${rule.radius}`,
-                          rule.bg && `bg: ${rule.bg}`,
-                          rule.color && `c: ${rule.color}`,
-                          rule.fontSize && `fs: ${rule.fontSize}`,
-                          rule.border && `b: ${rule.border}`,
-                          rule.padding && `p: ${rule.padding}`,
-                          rule.margin && `m: ${rule.margin}`,
-                          rule.width && `w: ${rule.width}`,
-                          rule.height && `h: ${rule.height}`
-                        ].filter(Boolean).join(" // ")}
-                      </span>
+                  {/* Table Border Radius Slider */}
+                  <div className="flex flex-col gap-1 mt-2">
+                    <div className="flex justify-between items-center">
+                      <label htmlFor="table-radius" className="font-bold text-[0.8125rem]">
+                        Bo góc của bảng (Table Radius)
+                      </label>
+                      <span className="text-xs font-bold">{settings.tableRadius || "12px"}</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => removeCustomRule(rule.id)}
-                      className="text-red-500 hover:text-red-700 font-bold px-1 rounded hover:bg-red-50 cursor-pointer text-[0.55rem] uppercase tracking-wider shrink-0"
-                    >
-                      Xoá
-                    </button>
+                    <input
+                      id="table-radius"
+                      type="range"
+                      min="0"
+                      max="30"
+                      value={parseInt(settings.tableRadius || "12") || 0}
+                      onChange={(e) =>
+                        setSettings({ ...settings, tableRadius: `${e.target.value}px` })
+                      }
+                      className="w-full accent-primary"
+                    />
                   </div>
-                ))}
+
+                  {/* Custom Element Selector Styles */}
+                  <div className="flex flex-col gap-2 mt-3 border-t border-primary/10 pt-3">
+                    <label className="font-black text-xs text-primary/75 uppercase tracking-wider">
+                      Chỉ định DIV & sửa styles
+                    </label>
+                    
+                    <div className="flex flex-col gap-2 bg-slate-50 p-3 rounded-lg border border-primary/10 text-xs">
+                      {/* Preset selectors quick pick */}
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[0.65rem] font-bold text-primary/60 uppercase">Chọn nhanh phần tử:</span>
+                        <div className="flex flex-wrap gap-1">
+                          {[
+                            { label: "Bảng điều khiển (Navbar)", val: "#app-navbar, .navbar-header" },
+                            { label: "Thanh bên (Sidebar)", val: "#app-sidebar, .side-panel" },
+                            { label: "Vùng làm việc (Main Content)", val: "#main-content, .content-area" },
+                            { label: "Vùng chứa Bảng (Table)", val: ".table-container, .data-table-wrapper" },
+                            { label: "Vùng chứa trong Bảng (Table Div)", val: ".table-container > div.min-h-0" },
+                            { label: "Tiêu đề Bảng (Header TH)", val: ".table-container thead th, .data-table-wrapper thead th" },
+                            { label: "Thẻ Thống kê (Stat Card)", val: ".stat-card, .stat-group" },
+                            { label: "Nút bấm chính (Button)", val: "button.btn-primary, .btn-primary" },
+                            { label: "Thanh bộ lọc (Filter Toolbar)", val: ".filter-toolbar" }
+                          ].map((p) => (
+                            <button
+                              key={p.val}
+                              onClick={() => handleSelectorChange(p.val)}
+                              type="button"
+                              className="text-[0.55rem] font-bold bg-white border border-primary/20 hover:border-primary hover:bg-primary/5 px-2 py-1 rounded text-primary transition-all cursor-pointer"
+                            >
+                              {p.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Selector Input */}
+                      <div className="flex flex-col gap-1 mt-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[0.65rem] font-bold text-primary/60 uppercase">CSS Selector:</span>
+                          <button
+                            type="button"
+                            onClick={() => setIsInspecting(!isInspecting)}
+                            className={`text-[0.6rem] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer border flex items-center gap-1 ${
+                              isInspecting
+                                ? "bg-red-500 text-white border-red-500 hover:bg-red-600 animate-pulse"
+                                : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10 hover:border-primary"
+                            }`}
+                          >
+                            <Target className="w-3 h-3" />
+                            {isInspecting ? "Đang chọn... (Nhấn ESC)" : "Chọn từ màn hình"}
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="e.g. .side-panel hoặc #my-div"
+                          value={newSelector}
+                          onChange={(e) => handleSelectorChange(e.target.value)}
+                          className="w-full border border-primary/20 rounded p-1.5 bg-white text-primary text-xs outline-none focus:border-primary"
+                        />
+                      </div>
+
+                      {/* Styles Inputs */}
+                      <div className="grid grid-cols-2 gap-2 mt-1">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[0.6rem] font-bold text-primary/60">Bo góc (Radius):</span>
+                          <input
+                            type="text"
+                            placeholder="e.g. 16px hoặc 1rem"
+                            value={newRadius}
+                            onChange={(e) => setNewRadius(e.target.value)}
+                            className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[0.6rem] font-bold text-primary/60">Màu nền (Bg):</span>
+                          <input
+                            type="text"
+                            placeholder="e.g. #ff0000, red, transparent"
+                            value={newBg}
+                            onChange={(e) => setNewBg(e.target.value)}
+                            className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[0.6rem] font-bold text-primary/60">Màu chữ (Color):</span>
+                          <input
+                            type="text"
+                            placeholder="e.g. #000, white"
+                            value={newColor}
+                            onChange={(e) => setNewColor(e.target.value)}
+                            className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[0.6rem] font-bold text-primary/60">Viền (Border):</span>
+                          <input
+                            type="text"
+                            placeholder="e.g. 2px solid #000"
+                            value={newBorder}
+                            onChange={(e) => setNewBorder(e.target.value)}
+                            className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-1.5 mt-1 border-t border-primary/5 pt-2">
+                        <span className="text-[0.65rem] font-bold text-primary/70 uppercase">Khoảng đệm (Padding):</span>
+                        <div className="grid grid-cols-4 gap-1.5">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[0.55rem] font-bold text-primary/60 text-center">Top (px)</span>
+                            <input
+                              type="text"
+                              placeholder="0"
+                              value={padTop}
+                              onChange={(e) => setPadTop(e.target.value)}
+                              className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[0.55rem] font-bold text-primary/60 text-center">Right (px)</span>
+                            <input
+                              type="text"
+                              placeholder="0"
+                              value={padRight}
+                              onChange={(e) => setPadRight(e.target.value)}
+                              className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[0.55rem] font-bold text-primary/60 text-center">Bottom (px)</span>
+                            <input
+                              type="text"
+                              placeholder="0"
+                              value={padBottom}
+                              onChange={(e) => setPadBottom(e.target.value)}
+                              className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[0.55rem] font-bold text-primary/60 text-center">Left (px)</span>
+                            <input
+                              type="text"
+                              placeholder="0"
+                              value={padLeft}
+                              onChange={(e) => setPadLeft(e.target.value)}
+                              className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-1.5 mt-1 border-t border-primary/5 pt-2">
+                        <span className="text-[0.65rem] font-bold text-primary/70 uppercase">Lề ngoài (Margin):</span>
+                        <div className="grid grid-cols-4 gap-1.5">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[0.55rem] font-bold text-primary/60 text-center">Top (px)</span>
+                            <input
+                              type="text"
+                              placeholder="0"
+                              value={marTop}
+                              onChange={(e) => setMarTop(e.target.value)}
+                              className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[0.55rem] font-bold text-primary/60 text-center">Right (px)</span>
+                            <input
+                              type="text"
+                              placeholder="0"
+                              value={marRight}
+                              onChange={(e) => setMarRight(e.target.value)}
+                              className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[0.55rem] font-bold text-primary/60 text-center">Bottom (px)</span>
+                            <input
+                              type="text"
+                              placeholder="0"
+                              value={marBottom}
+                              onChange={(e) => setMarBottom(e.target.value)}
+                              className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[0.55rem] font-bold text-primary/60 text-center">Left (px)</span>
+                            <input
+                              type="text"
+                              placeholder="0"
+                              value={marLeft}
+                              onChange={(e) => setMarLeft(e.target.value)}
+                              className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none text-center"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 mt-1">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[0.6rem] font-bold text-primary/60">Cỡ chữ (Font Size):</span>
+                          <input
+                            type="text"
+                            placeholder="e.g. 14px, 1rem"
+                            value={newFontSize}
+                            onChange={(e) => setNewFontSize(e.target.value)}
+                            className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[0.6rem] font-bold text-primary/60">Rộng (Width):</span>
+                          <input
+                            type="text"
+                            placeholder="e.g. 280px hoặc 100%"
+                            value={newWidth}
+                            onChange={(e) => setNewWidth(e.target.value)}
+                            className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[0.6rem] font-bold text-primary/60">Cao (Height):</span>
+                          <input
+                            type="text"
+                            placeholder="e.g. 500px hoặc auto"
+                            value={newHeight}
+                            onChange={(e) => setNewHeight(e.target.value)}
+                            className="border border-primary/20 rounded p-1 bg-white text-primary text-xs outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={addCustomRule}
+                        className="mt-2 w-full bg-primary text-white hover:bg-primary/90 font-bold py-1.5 rounded transition-all text-[0.65rem] uppercase tracking-wider cursor-pointer"
+                      >
+                        ÁP DỤNG STYLE MỚI
+                      </button>
+                    </div>
+
+                    {/* List of custom styles configured */}
+                    {settings.customRules && settings.customRules.length > 0 && (
+                      <div className="flex flex-col gap-1.5 mt-2 max-h-40 overflow-y-auto border border-primary/10 rounded-lg p-2 bg-white">
+                        <span className="text-[0.6rem] font-black uppercase text-primary/50">Danh sách style đã đổi:</span>
+                        {settings.customRules.map((rule) => (
+                          <div key={rule.id} className="flex justify-between items-center text-[0.65rem] border-b border-primary/5 pb-1 gap-2">
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <span className="font-mono text-primary font-bold truncate">{rule.selector}</span>
+                              <span className="text-primary/60 font-medium text-[0.55rem] truncate">
+                                {[
+                                  rule.radius && `r: ${rule.radius}`,
+                                  rule.bg && `bg: ${rule.bg}`,
+                                  rule.color && `c: ${rule.color}`,
+                                  rule.fontSize && `fs: ${rule.fontSize}`,
+                                  rule.border && `b: ${rule.border}`,
+                                  rule.padding && `p: ${rule.padding}`,
+                                  rule.margin && `m: ${rule.margin}`,
+                                  rule.width && `w: ${rule.width}`,
+                                  rule.height && `h: ${rule.height}`
+                                ].filter(Boolean).join(" // ")}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeCustomRule(rule.id)}
+                              className="text-red-500 hover:text-red-700 font-bold px-1 rounded hover:bg-red-50 cursor-pointer text-[0.55rem] uppercase tracking-wider shrink-0"
+                            >
+                              Xoá
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Cài đặt chung (General Mode): MỤC 1 & MỤC 3 */
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Left Column: MỤC 1. MÀU SẮC & NỀN */}
+                <div className="flex flex-col gap-6">
+                  <div className="bg-white p-5 rounded-xl border-2 border-primary/10 shadow-sm flex flex-col gap-4">
+                    <h4 className="font-black text-sm text-primary tracking-widest uppercase border-b-2 border-primary/10 pb-2">
+                      1. MÀU SẮC & NỀN (COLORS & BG)
+                    </h4>
+                    <div className="flex flex-col gap-1.5 border-b border-dashed border-primary/10 pb-4 mb-2">
+                      <label htmlFor="preset-select" className="font-bold text-[0.8125rem] text-accent flex items-center gap-1.5">
+                        <span>🎨 Giao diện mẫu (Taste Preset)</span>
+                      </label>
+                      <select
+                        id="preset-select"
+                        value={settings.preset || "systematic"}
+                        onChange={(e) => {
+                          const pId = e.target.value;
+                          const presetData = TASTE_PRESETS[pId];
+                          if (presetData) {
+                            setSettings((prev) => ({
+                              ...prev,
+                              preset: pId,
+                              bg: presetData.bg,
+                              accent: presetData.accent,
+                              text: presetData.text,
+                              border: presetData.border,
+                              stripeColor1: presetData.stripeColor1,
+                              stripeColor2: presetData.stripeColor2,
+                              gridLineColor: presetData.gridLineColor,
+                              tableHeaderBg: presetData.tableHeaderBg,
+                              tableFont: presetData.tableFont,
+                              tableRadius: presetData.tableRadius,
+                            }));
+                            toast.success(`Đã áp dụng giao diện: ${presetData.name}`);
+                          }
+                        }}
+                        className="w-full border-2 border-primary rounded-lg p-2 font-bold text-sm outline-none focus:shadow-hard-sm transition-all bg-white text-primary"
+                      >
+                        {Object.values(TASTE_PRESETS).map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-[10px] text-gray-500 font-medium">
+                        * Thay đổi giao diện mẫu sẽ tự động cấu hình các thông số màu sắc, bo góc và phông chữ của bảng theo chuẩn Taste-Skill.
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="font-bold text-[0.8125rem]">
+                        Ảnh nền (Background Image)
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <label className="flex-1 cursor-pointer bg-white border-2 border-primary rounded-lg p-2 text-center text-xs font-bold shadow-hard-sm hover:bg-primary/5 transition-all">
+                          {settings.bgImage ? "Đổi ảnh nền" : "Tải ảnh lên"}
+                          <input
+                            type="file"
+                            id="bg-image-upload"
+                            name="bg-image-upload"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleImageUpload(e)}
+                          />
+                        </label>
+                        {settings.bgImage && (
+                          <button
+                            onClick={() => setSettings({ ...settings, bgImage: "" })}
+                            aria-label="Xóa ảnh nền"
+                            className="p-2 border-2 border-destructive text-destructive rounded-lg shadow-hard-sm hover:bg-destructive/10 transition-all"
+                            title="Xóa ảnh nền"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      {(settings.bgImage ||
+                        settings.bgImageStyle?.startsWith("brand-stripes-")) && (
+                        <>
+                          <div
+                            className="h-24 w-full rounded-lg mt-1 border border-primary/20"
+                            style={{
+                              backgroundImage:
+                                settings.bgImageStyle === "brand-stripes-purple"
+                                  ? "var(--pattern-stripes-purple)"
+                                  : settings.bgImageStyle === "brand-stripes-green"
+                                    ? "var(--pattern-stripes-green)"
+                                    : settings.bgImageStyle === "brand-stripes-brown"
+                                      ? "var(--pattern-stripes-brown)"
+                                      : `url(${settings.bgImage})`,
+                              backgroundSize:
+                                settings.bgImageStyle === "pattern-sm"
+                                  ? "30px"
+                                  : settings.bgImageStyle === "pattern-md"
+                                    ? "60px"
+                                    : settings.bgImageStyle === "pattern-lg"
+                                      ? "120px"
+                                      : settings.bgImageStyle?.startsWith(
+                                            "brand-stripes-",
+                                          )
+                                        ? "20px 20px"
+                                        : "cover",
+                              backgroundRepeat:
+                                settings.bgImageStyle?.startsWith("pattern") ||
+                                settings.bgImageStyle?.startsWith("brand-stripes")
+                                  ? "repeat"
+                                  : "no-repeat",
+                              backgroundPosition: settings.bgImageStyle?.startsWith(
+                                "pattern",
+                              )
+                                ? "top left"
+                                : "center",
+                              opacity: (settings.bgImageOpacity ?? 100) / 100,
+                            }}
+                          />
+                          <div className="flex flex-col gap-1 mt-1">
+                            <label
+                              htmlFor="bg-image-style"
+                              className="font-bold text-[0.8125rem]"
+                            >
+                              Kiểu hiển thị ảnh
+                            </label>
+                            <select
+                              id="bg-image-style"
+                              value={settings.bgImageStyle || "cover"}
+                              onChange={(e) =>
+                                setSettings({
+                                  ...settings,
+                                  bgImageStyle: e.target.value as any,
+                                })
+                              }
+                              className="w-full border-2 border-primary rounded-lg p-2 font-bold text-sm outline-none focus:shadow-hard-sm transition-all bg-white"
+                            >
+                              <option value="cover">Lấp đầy màn hình (Cover)</option>
+                              <option value="contain">Vừa vặn màn hình (Contain)</option>
+                              <option value="original">Kích thước gốc (Original)</option>
+                              <option value="pattern-sm">Nhân bản (Nhỏ)</option>
+                              <option value="pattern-md">Nhân bản (Vừa)</option>
+                              <option value="pattern-lg">Nhân bản (Lớn)</option>
+                              <option value="brand-stripes-purple">Brand: Sọc Tím</option>
+                              <option value="brand-stripes-green">Brand: Sọc Xanh</option>
+                              <option value="brand-stripes-brown">Brand: Sọc Nâu</option>
+                            </select>
+                          </div>
+                          <div className="flex flex-col gap-1 mt-1">
+                            <div className="flex justify-between items-center">
+                              <label className="font-bold text-[0.8125rem]">
+                                Độ đậm nhạt của ảnh
+                              </label>
+                              <span className="text-xs font-bold">
+                                {settings.bgImageOpacity ?? 100}%
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={settings.bgImageOpacity ?? 100}
+                              onChange={(e) =>
+                                setSettings({
+                                  ...settings,
+                                  bgImageOpacity: Number(e.target.value),
+                                })
+                              }
+                              className="w-full accent-primary"
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label
+                        htmlFor="accent-color"
+                        className="font-bold text-[0.8125rem]"
+                      >
+                        Màu nhấn (Accent/Table)
+                      </label>
+                      <input
+                        id="accent-color"
+                        type="color"
+                        value={
+                          settings.accent?.startsWith("#") && settings.accent.length === 7
+                            ? settings.accent
+                            : "#C88493"
+                        }
+                        onChange={(e) =>
+                          setSettings({ ...settings, accent: e.target.value })
+                        }
+                        className="w-10 h-10 cursor-pointer border-2 border-primary rounded-lg p-0.5 shadow-hard-sm"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="text-color" className="font-bold text-[0.8125rem]">
+                        Màu chữ (Text)
+                      </label>
+                      <input
+                        id="text-color"
+                        type="color"
+                        value={
+                          settings.text?.startsWith("#") && settings.text.length === 7
+                            ? settings.text
+                            : "#5D111A"
+                        }
+                        onChange={(e) =>
+                          setSettings({ ...settings, text: e.target.value })
+                        }
+                        className="w-10 h-10 cursor-pointer border-2 border-primary rounded-lg p-0.5 shadow-hard-sm"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label
+                        htmlFor="stripe-color1"
+                        className="font-bold text-[0.8125rem]"
+                      >
+                        Nền Web: Màu sọc 1
+                      </label>
+                      <input
+                        id="stripe-color1"
+                        type="color"
+                        value={
+                          settings.stripeColor1?.startsWith("#") &&
+                          settings.stripeColor1.length === 7
+                            ? settings.stripeColor1
+                            : "#F6F4F0"
+                        }
+                        onChange={(e) =>
+                          setSettings({ ...settings, stripeColor1: e.target.value })
+                        }
+                        className="w-10 h-10 cursor-pointer border-2 border-primary rounded-lg p-0.5 shadow-hard-sm"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label
+                        htmlFor="stripe-color2"
+                        className="font-bold text-[0.8125rem]"
+                      >
+                        Nền Web: Màu sọc 2
+                      </label>
+                      <input
+                        id="stripe-color2"
+                        type="color"
+                        value={
+                          settings.stripeColor2?.startsWith("#") &&
+                          settings.stripeColor2.length === 7
+                            ? settings.stripeColor2
+                            : "#F4ECD8"
+                        }
+                        onChange={(e) =>
+                          setSettings({ ...settings, stripeColor2: e.target.value })
+                        }
+                        className="w-10 h-10 cursor-pointer border-2 border-primary rounded-lg p-0.5 shadow-hard-sm"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label
+                        htmlFor="border-color"
+                        className="font-bold text-[0.8125rem]"
+                      >
+                        Viền & Đổ bóng (Border)
+                      </label>
+                      <input
+                        id="border-color"
+                        type="color"
+                        value={
+                          settings.border?.startsWith("#") && settings.border.length === 7
+                            ? settings.border
+                            : "#E7DBDC"
+                        }
+                        onChange={(e) =>
+                          setSettings({ ...settings, border: e.target.value })
+                        }
+                        className="w-10 h-10 cursor-pointer border-2 border-primary rounded-lg p-0.5 shadow-hard-sm"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label
+                        htmlFor="grid-color"
+                        className="font-bold text-[0.8125rem]"
+                      >
+                        Màu kẻ lưới (Grid Line)
+                      </label>
+                      <input
+                        id="grid-color"
+                        type="color"
+                        value={
+                          settings.gridLineColor?.startsWith("#") &&
+                          settings.gridLineColor.length === 7
+                            ? settings.gridLineColor
+                            : "#e2e8f0"
+                        }
+                        onChange={(e) =>
+                          setSettings({ ...settings, gridLineColor: e.target.value })
+                        }
+                        className="w-10 h-10 cursor-pointer border-2 border-primary rounded-lg p-0.5 shadow-hard-sm"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label
+                        htmlFor="table-header-bg"
+                        className="font-bold text-[0.8125rem]"
+                      >
+                        Nền Tiêu đề Bảng (Header Bg)
+                      </label>
+                      <input
+                        id="table-header-bg"
+                        type="color"
+                        value={
+                          settings.tableHeaderBg?.startsWith("#") &&
+                          settings.tableHeaderBg.length === 7
+                            ? settings.tableHeaderBg
+                            : "#f4efe2"
+                        }
+                        onChange={(e) =>
+                          setSettings({ ...settings, tableHeaderBg: e.target.value })
+                        }
+                        className="w-10 h-10 cursor-pointer border-2 border-primary rounded-lg p-0.5 shadow-hard-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: MỤC 3. DỮ LIỆU & LƯU TRỮ */}
+                <div className="flex flex-col gap-6">
+                  <div className="bg-white p-5 rounded-xl border-2 border-primary/10 shadow-sm flex flex-col gap-4">
+                    <h4 className="font-black text-sm text-red-500 tracking-widest uppercase border-b-2 border-red-500/10 pb-2">
+                      3. DỮ LIỆU & LƯU TRỮ (DATA & ACTIONS)
+                    </h4>
+                    <div className="flex flex-col gap-3">
+                      <button
+                        onClick={() => setShowClearConfirm(true)}
+                        className="flex items-center justify-center gap-2 w-full bg-red-50 text-red-600 hover:bg-red-100 py-3 rounded-xl font-bold border-2 border-red-200 transition-colors cursor-pointer text-sm uppercase tracking-wide"
+                      >
+                        <Trash2 className="w-5 h-5" /> Xoá Toàn Bộ Dữ Liệu
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
-        </div>
-      </div> {/* Closes Right Column */}
-    </div> {/* Closes Grid */}
-  </div> {/* Closes scrollable modal body */}
 
   <div className="p-4 flex gap-3 bg-background border-t-2 border-primary/10 shrink-0">
     <button

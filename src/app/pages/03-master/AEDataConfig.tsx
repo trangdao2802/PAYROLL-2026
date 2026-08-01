@@ -24,6 +24,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import * as XLSX from "xlsx";
 import { useAppData } from "../../lib/contexts/AppDataContext";
+import { buildPivotFromAppData } from "../../lib/utils/pivot-utils";
 import {
   readExcelFile,
   parseMoneyToNumber,
@@ -2214,6 +2215,79 @@ export function AEDataConfig({
         };
       }, false);
 
+      // Đồng bộ dữ liệu Pivot Master
+      try {
+        const pivotBuffers: { name: string; bank?: string; buffer: ArrayBuffer }[] = [];
+        for (const item of targets) {
+          if (item.fileObj && item.fileObj instanceof File) {
+            try {
+              const buf = await item.fileObj.arrayBuffer();
+              pivotBuffers.push({ name: item.name || item.fileObj.name, bank: item.bank, buffer: buf });
+            } catch (e) {
+              console.warn("Lỗi đọc file buffer cho pivot", e);
+            }
+          }
+        }
+
+        let pivotResult: any = null;
+        if (pivotBuffers.length > 0) {
+          try {
+            const PivotWorker = (await import("../../workers/pivot.worker?worker&inline")).default;
+            pivotResult = await new Promise((resolve, reject) => {
+              const worker = new PivotWorker();
+              worker.onmessage = (e: any) => {
+                worker.terminate();
+                if (e.data.success) {
+                  resolve({
+                    ...e.data.result,
+                    sourceInfo: `Đồng bộ từ ${pivotBuffers.length} file Master`
+                  });
+                } else {
+                  reject(new Error(e.data.error));
+                }
+              };
+              worker.onerror = (err) => {
+                worker.terminate();
+                reject(err);
+              };
+              worker.postMessage({ fileList: pivotBuffers });
+            });
+          } catch (wErr) {
+            console.warn("Lỗi worker pivot, chuyển sang fallback:", wErr);
+          }
+        }
+
+        if (!pivotResult || !pivotResult.groupedData || Object.keys(pivotResult.groupedData).length === 0) {
+          const fallback = buildPivotFromAppData(verifiedSheet1Data, mergedHoldData, rosterDataToAppend);
+          pivotResult = {
+            groupedData: fallback.groupedData,
+            typeColumns: fallback.typeColumns,
+            logs: [],
+            sourceInfo: `Đồng bộ từ ${verifiedSheet1Data.length} dòng dữ liệu Sheet 1`
+          };
+        }
+
+        if (pivotResult && pivotResult.groupedData) {
+          localStorage.setItem("pivot_master_processed_data", JSON.stringify({
+            groupedData: pivotResult.groupedData,
+            typeColumns: pivotResult.typeColumns,
+            diagnosticLogs: pivotResult.logs || [],
+            sourceInfo: pivotResult.sourceInfo,
+            updatedAt: Date.now()
+          }));
+          window.dispatchEvent(new CustomEvent("pivot-data-updated", {
+            detail: {
+              groupedData: pivotResult.groupedData,
+              typeColumns: pivotResult.typeColumns,
+              diagnosticLogs: pivotResult.logs || [],
+              sourceInfo: pivotResult.sourceInfo
+            }
+          }));
+        }
+      } catch (pivotErr) {
+        console.error("Error creating pivot master data:", pivotErr);
+      }
+
       toast.success(
         `Xử lý xong: ${verifiedSheet1Data.length} Sheet1, ${finalBankData.length} Bank, ${verifiedHoldData.length} Hold.`,
       );
@@ -2353,7 +2427,7 @@ export function AEDataConfig({
                     className="cursor-pointer font-bold uppercase text-[0.6875rem] gap-3 p-3 rounded-xl transition-all hover:bg-primary/5"
                   >
                     <Plus className="w-4 h-4" />
-                    <span className="btn-secret">Thêm dòng mới</span>
+                    <span>Thêm dòng mới</span>
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
@@ -2439,46 +2513,46 @@ export function AEDataConfig({
           <div className="flex-1 min-h-0 w-full max-w-full overflow-auto custom-scrollbar data-table-wrapper rounded-xl border border-[#E2E8F0] shadow-sm p-1" style={{ backgroundColor: "#faf9f6" }}>
             <table className="w-full border-separate border-spacing-0 table-auto text-left" style={{ borderWidth: "0.5px" }}>
               <thead>
-                <tr className="bg-[#F3EFE0]">
+                <tr style={{ backgroundColor: "var(--table-header-bg, #FAF3E8)" }}>
                   <th
-                    style={{ padding: "10px 14px" }}
-                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] text-center border-b border-r border-[#E2E8F0] whitespace-nowrap min-w-[60px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
+                    style={{ padding: "10px 14px", backgroundColor: "var(--table-header-bg, #FAF3E8)" }}
+                    className="sticky top-0 z-20 text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] text-center border-b border-r border-[#E2E8F0] whitespace-nowrap min-w-[60px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
                   >
                     No
                   </th>
                   <th
-                    style={{ padding: "10px 14px" }}
-                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-left min-w-[280px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
+                    style={{ padding: "10px 14px", backgroundColor: "var(--table-header-bg, #FAF3E8)" }}
+                    className="sticky top-0 z-20 text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-center min-w-[280px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
                   >
                     TÊN FILE
                   </th>
                   <th
-                    style={{ padding: "10px 14px" }}
-                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-left min-w-[180px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
+                    style={{ padding: "10px 14px", backgroundColor: "var(--table-header-bg, #FAF3E8)" }}
+                    className="sticky top-0 z-20 text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-center min-w-[180px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
                   >
                     BANK
                   </th>
                   <th
-                    style={{ padding: "10px 14px" }}
-                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-center min-w-[120px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
+                    style={{ padding: "10px 14px", backgroundColor: "var(--table-header-bg, #FAF3E8)" }}
+                    className="sticky top-0 z-20 text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-center min-w-[120px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
                   >
                     THÁNG
                   </th>
                   <th
-                    style={{ padding: "10px 14px" }}
-                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-left min-w-[320px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
+                    style={{ padding: "10px 14px", backgroundColor: "var(--table-header-bg, #FAF3E8)" }}
+                    className="sticky top-0 z-20 text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-center min-w-[320px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
                   >
                     NGUỒN
                   </th>
                   <th
-                    style={{ padding: "10px 14px" }}
-                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-center min-w-[150px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
+                    style={{ padding: "10px 14px", backgroundColor: "var(--table-header-bg, #FAF3E8)" }}
+                    className="sticky top-0 z-20 text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] border-b border-r border-[#E2E8F0] whitespace-nowrap text-center min-w-[150px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
                   >
                     TRẠNG THÁI
                   </th>
                   <th
-                    style={{ padding: "10px 14px" }}
-                    className="sticky top-0 z-20 bg-[#F3EFE0] text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] text-center border-b border-[#E2E8F0] whitespace-nowrap min-w-[70px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
+                    style={{ padding: "10px 14px", backgroundColor: "var(--table-header-bg, #FAF3E8)" }}
+                    className="sticky top-0 z-20 text-[0.8em] font-bold text-primary uppercase tracking-[0.18em] text-center border-b border-[#E2E8F0] whitespace-nowrap min-w-[70px] shadow-[0_1px_0_rgba(0,0,0,0.1)]"
                   >
                     XÓA
                   </th>

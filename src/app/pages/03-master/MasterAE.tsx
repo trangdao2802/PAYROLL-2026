@@ -119,6 +119,7 @@ export function MasterAE() {
     const handleFilter = (e: any) => {
       if (e.detail && e.detail.search) {
         setSearchTerm(e.detail.search);
+        setShowSearch(true);
         if (e.detail.from === "BulkPayment") {
           setCameFromBulkPayment(true);
         }
@@ -126,7 +127,7 @@ export function MasterAE() {
     };
     window.addEventListener("master-ae-filter", handleFilter);
     return () => window.removeEventListener("master-ae-filter", handleFilter);
-  }, [setSearchTerm]);
+  }, [setSearchTerm, setShowSearch]);
 
   useEffect(() => {
     const handleRequestTabChange = (e: any) => {
@@ -163,6 +164,7 @@ export function MasterAE() {
       headers.forEach((h: string) => {
         newRow[h] = "";
       });
+      newRow["Tháng báo cáo"] = appData.globalMonth || "03.2026";
 
       let insertIdx = idx;
       if (insertIdx === undefined && tableRef.current) {
@@ -304,17 +306,7 @@ export function MasterAE() {
         return mappedRow;
       });
 
-      // For Hold_AE, we show everything up to the selected month
-      if (activeTab === "Hold_AE") {
-        const filteredRows = mappedData.filter((r: any) => {
-          const rowMonth = r["Tháng báo cáo"];
-          const rowLimit = parseToMonthIndex(rowMonth);
-          return rowLimit <= currentLimit;
-        });
-        return { ...raw, data: filteredRows };
-      }
-      
-      // For other tabs (Sheet1_AE, BulkPayment, Pivot), we show ONLY the selected month
+      // Filter all tabs (including Hold_AE) by ONLY the selected reporting month
       const filteredRows = mappedData.filter((r: any) => {
         const rowMonthStr = r["Tháng báo cáo"];
         const rowLimit = parseToMonthIndex(rowMonthStr);
@@ -340,6 +332,28 @@ export function MasterAE() {
   const totalSheet1Filtered = useMemo(() => {
     return filteredSheet1Data.reduce((acc, row: any) => acc + parseMoneyToNumber(row["TOTAL PAYMENT"] || row["Total Payment"] || row["Số tiền"] || row["Sale Incentive Amount"] || row["Grand Total"] || row["Payment Amount"] || 0), 0);
   }, [filteredSheet1Data]);
+
+  const currentTabTotalSum = useMemo(() => {
+    if (!currentData || !Array.isArray(currentData.data)) return 0;
+    return currentData.data.reduce((acc, row: any) => {
+      const val = parseMoneyToNumber(
+        row["TOTAL PAYMENT"] || 
+        row["Total Payment"] || 
+        row["Số tiền"] || 
+        row["Sale Incentive Amount"] || 
+        row["Grand Total"] || 
+        row["Payment Amount"] || 
+        row["SỐ TIỀN"] ||
+        row["Số Tiền"] ||
+        row["Amount"] ||
+        row["amount"] ||
+        row["Phát sinh tăng/giảm"] ||
+        row["Số tiền phạt"] ||
+        0
+      );
+      return acc + val;
+    }, 0);
+  }, [currentData]);
 
   const recordsByCategory = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -412,98 +426,73 @@ export function MasterAE() {
       });
     }
 
-    const cleanHeaders = headers.filter(h => {
-      const u = String(h).trim().toUpperCase();
-      return u !== "ID" && u !== "_ID" && u !== "UUID" && u !== "ROWID" && u !== "RECORDID" && !u.startsWith("_");
-    });
-
-    // Ensure "Tháng báo cáo" exists and is visible for relevant tabs
-    const hUp = cleanHeaders.map(h => String(h).toUpperCase());
-    if (!hUp.includes("THÁNG BÁO CÁO")) {
-      cleanHeaders.push("Tháng báo cáo");
-    }
-
-    const sheet1DesiredOrder = [
-      "NO.",
-      "THÁNG BÁO CÁO",
-      "L07",
-      "BUSINESS",
-      "ID NUMBER",
-      "FULL NAME",
+    const sheet1HiddenCols = [
       "SALARY SCALE",
       "FROM",
       "TO",
-      "BANK ACCOUNT NUMBER",
       "BANK NAME",
       "CITAD CODE",
       "TAX CODE",
       "CONTRACT NO",
-      "CHARGE TO LXO",
-      "CHARGE TO EC",
-      "CHARGE TO PT-DEMO",
-      "CHARGE MKT LOCAL",
-      "CHARGE TO OTHER",
-      "CHARGE RENEWAL PROJECTS",
-      "CHARGE DISCOVERY CAMP",
-      "CHARGE SUMMER OUTING",
-      "CHARGE SUMMER INSTRUCTORS",
-      "TOTAL PAYMENT"
+      "TÊN FILE",
+      "CENTER"
     ];
 
-    if (activeTab === "Sheet1_AE") {
-      cleanHeaders.sort((a, b) => {
-        const idxA = sheet1DesiredOrder.indexOf(a.toUpperCase());
-        const idxB = sheet1DesiredOrder.indexOf(b.toUpperCase());
-        if (idxA === -1 && idxB === -1) return 0;
-        if (idxA === -1) return 1;
-        if (idxB === -1) return -1;
-        return idxA - idxB;
-      });
-    } else {
-      const isNoCol = (h: string) => {
-        const u = String(h).trim().toUpperCase();
-        return u === "NO." || u === "NO" || u === "STT";
-      };
+    let cleanHeaders = headers.filter(h => {
+      const u = String(h).trim().toUpperCase();
+      if (u === "ID" || u === "_ID" || u === "UUID" || u === "ROWID" || u === "RECORDID" || u.startsWith("_")) {
+        return false;
+      }
+      if (activeTab === "Sheet1_AE" && sheet1HiddenCols.includes(u)) {
+        return false;
+      }
+      return true;
+    });
 
-      // Keep only the first "No." column, remove duplicates
-      const firstNoIdx = cleanHeaders.findIndex(isNoCol);
-      if (firstNoIdx !== -1) {
-        for (let i = cleanHeaders.length - 1; i > firstNoIdx; i--) {
-          if (isNoCol(cleanHeaders[i])) {
-            cleanHeaders.splice(i, 1);
-          }
-        }
-      }
-
-      let noIdx = cleanHeaders.findIndex(isNoCol);
-      let insertIdx = noIdx !== -1 ? noIdx + 1 : 0;
-      
-      const hUpLocal = cleanHeaders.map(h => String(h).trim().toUpperCase());
-      
-      if (!hUpLocal.includes("THÁNG BÁO CÁO")) {
-        cleanHeaders.splice(insertIdx, 0, "Tháng báo cáo");
-      } else {
-        // Move to after NO. column
-        const idx = hUpLocal.indexOf("THÁNG BÁO CÁO");
-        if (idx !== -1) {
-          const actualHeader = cleanHeaders[idx];
-          cleanHeaders.splice(idx, 1);
-          
-          noIdx = cleanHeaders.findIndex(isNoCol);
-          insertIdx = noIdx !== -1 ? noIdx + 1 : 0;
-          
-          cleanHeaders.splice(insertIdx, 0, actualHeader);
-        }
-      }
-      
-      // Enforce NO. / STT at index 0 explicitly
-      const currentNoIdx = cleanHeaders.findIndex(isNoCol);
-      if (currentNoIdx > 0) {
-        const actualNo = cleanHeaders[currentNoIdx];
-        cleanHeaders.splice(currentNoIdx, 1);
-        cleanHeaders.splice(0, 0, actualNo);
-      }
+    // Ensure "Tháng báo cáo" exists and is visible for relevant tabs
+    const hUp = cleanHeaders.map(h => String(h).toUpperCase());
+    if (!hUp.includes("THÁNG BÁO CÁO") && activeTab !== "Bank_North_AE") {
+      cleanHeaders.push("Tháng báo cáo");
     }
+
+    const isNoCol = (h: string) => {
+      const u = String(h).trim().toUpperCase();
+      return u === "NO." || u === "NO" || u === "STT";
+    };
+    const isBusCol = (h: string) => {
+      const u = String(h).trim().toUpperCase();
+      return u === "BUSINESS" || u === "BU";
+    };
+    const isL07Col = (h: string) => {
+      const u = String(h).trim().toUpperCase();
+      return u === "L07";
+    };
+    const isNoteCol = (h: string) => {
+      const u = String(h).trim().toUpperCase();
+      return u === "NOTE" || u === "DIỄN GIẢI";
+    };
+
+    const noCol = cleanHeaders.find(isNoCol);
+    const busCol = cleanHeaders.find(isBusCol);
+    const l07Col = cleanHeaders.find(isL07Col);
+    const noteCol = cleanHeaders.find(isNoteCol);
+
+    const remaining = cleanHeaders.filter(h => !isNoCol(h) && !isBusCol(h) && !isL07Col(h) && !isNoteCol(h));
+
+    const finalHeaders: string[] = [];
+    if (noCol) finalHeaders.push(noCol);
+    else finalHeaders.push("No.");
+
+    if (busCol) finalHeaders.push(busCol);
+    if (l07Col) finalHeaders.push(l07Col);
+
+    finalHeaders.push(...remaining);
+
+    if (noteCol && activeTab === "Hold_AE") {
+      finalHeaders.push(noteCol);
+    }
+
+    cleanHeaders = finalHeaders;
 
     return cleanHeaders
       .map((header: string) => {
@@ -576,9 +565,7 @@ export function MasterAE() {
 
         let hidden = false;
         if (activeTab === "Sheet1_AE") {
-          hidden = !sheet1DesiredOrder.includes(h) || h === "NO." || h === "STT";
-        } else {
-          if (h === "NO." || h === "STT") hidden = true;
+          hidden = sheet1HiddenCols.includes(h);
         }
 
         // Custom render for "Tháng báo cáo" to ensure it's always populated
@@ -648,7 +635,7 @@ export function MasterAE() {
                     <button
                       className={`flex items-center justify-between gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg border shadow-sm transition-all select-none h-7 w-24 hover:brightness-95 active:scale-95 ${
                         !isPeriodMatch
-                          ? "bg-secondary/30 border-border text-foreground/40 opacity-40 cursor-not-allowed pointer-events-none shadow-none"
+                          ? "bg-secondary/30 border-[#e7dbdc] text-foreground/40 opacity-40 cursor-not-allowed pointer-events-none shadow-none"
                           : activeColor
                       }`}
                       title={!isPeriodMatch ? `Chỉ sửa đổi được tại card tháng chọn: ${rowReportingMonth}` : `Bấm để chọn nghiệp vụ`}
@@ -665,7 +652,7 @@ export function MasterAE() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="center"
-                    className="w-36 border border-border shadow-xl p-1 bg-card text-card-foreground rounded-xl relative z-50 animate-in fade-in-50 zoom-in-95 duration-100"
+                    className="w-36 border border-[#e7dbdc] shadow-xl p-1 bg-card text-card-foreground rounded-xl relative z-50 animate-in fade-in-50 zoom-in-95 duration-100"
                   >
                       <DropdownMenuLabel className="font-bold uppercase text-[9px] tracking-widest text-foreground/40 px-2.5 py-1">
                         Nghiệp vụ
@@ -875,27 +862,25 @@ export function MasterAE() {
                   )}
                   {activeTab === "Pivot" && <PivotSheet />}
                   {activeTab !== "BulkPayment" && activeTab !== "Pivot" && (
-                    <div className="flex-1 flex flex-col min-h-0 w-full overflow-hidden relative">
+                    <div className="flex-1 flex flex-col min-h-0 w-full h-full overflow-hidden relative">
                       <div className="absolute inset-0 striped-pattern opacity-[0.05] pointer-events-none overflow-hidden" />
                       
                       {activeTab === "Hold_AE" ? (
-                        <div className="flex-1 flex flex-col min-h-0 w-full h-full relative master-ae-table-wrapper overflow-hidden">
-                          <HoldAETable
-                            ref={tableRef}
-                            searchTerm={searchTerm}
-                            onSearchTermChange={setSearchTerm}
-                            onAddRow={handleAddRow}
-                            cameFromBulkPayment={cameFromBulkPayment}
-                            onBackToBulkPayment={() => {
-                              setSearchTerm("");
-                              localStorage.removeItem("master_ae_search");
-                              localStorage.setItem("bulk_payment_right_tab", "reconcile");
-                              setActiveTab("BulkPayment");
-                              setCameFromBulkPayment(false);
-                              window.dispatchEvent(new CustomEvent("bulk-payment-set-right-tab", { detail: { tab: "reconcile" } }));
-                            }}
-                          />
-                        </div>
+                        <HoldAETable
+                          ref={tableRef}
+                          searchTerm={searchTerm}
+                          onSearchTermChange={setSearchTerm}
+                          onAddRow={handleAddRow}
+                          cameFromBulkPayment={cameFromBulkPayment}
+                          onBackToBulkPayment={() => {
+                            setSearchTerm("");
+                            localStorage.removeItem("master_ae_search");
+                            localStorage.setItem("bulk_payment_right_tab", "reconcile");
+                            setActiveTab("BulkPayment");
+                            setCameFromBulkPayment(false);
+                            window.dispatchEvent(new CustomEvent("bulk-payment-set-right-tab", { detail: { tab: "reconcile" } }));
+                          }}
+                        />
                       ) : currentData.data.length === 0 ? (
                         <div className="flex-1 flex flex-col items-center justify-center text-primary/10 p-12 relative z-10">
                           <div className="w-20 h-20 bg-secondary/20 rounded-full flex items-center justify-center mb-6 border border-primary/5">
@@ -910,11 +895,11 @@ export function MasterAE() {
                         </div>
                       ) : (
                         <div 
-                          className="flex-1 flex flex-col min-h-0 w-full h-full px-0 py-0 m-0 relative overflow-hidden gap-0 bg-white border border-slate-300 dark:border-slate-700 shadow-xs z-10"
+                          className="flex-1 flex flex-col min-h-0 w-full h-full px-0 py-0 m-0 relative overflow-hidden gap-0 bg-white border border-[#e7dbdc] dark:border-slate-700 shadow-xs z-10"
                           style={{ borderRadius: "0px", borderWidth: "1px", borderColor: "#cbd5e1" }}
                         >
                           {/* Top Toolbar Header with Settings Button */}
-                          <div className="px-6 py-2.5 border-b border-slate-300 bg-[#FAF9F6] flex items-center justify-between gap-4 shrink-0 select-none" style={{ borderRadius: "0px" }}>
+                          <div className="px-6 py-2.5 border-b border-[#e7dbdc] flex items-center justify-between gap-4 shrink-0 select-none" style={{ borderRadius: "0px", paddingBottom: "12px", backgroundColor: "var(--table-header-bg, #FAF9F6)" }}>
                             <div className="flex items-center gap-4">
                               <div className="flex items-center gap-2">
                                 <span className="font-display font-bold text-xs uppercase tracking-wider text-primary">
@@ -947,51 +932,88 @@ export function MasterAE() {
                                   </button>
                                 )}
                                 
-                                {/* Search Input directly adjacent to Settings icon */}
-                                <div 
-                                  className="flex items-center gap-2 px-3.5 py-1 text-xs w-48 sm:w-64 bg-white border border-slate-200/80 shadow-xs rounded-full h-9 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all"
-                                  style={{ borderRadius: "24px" }}
-                                >
-                                  <Search className="w-4 h-4 text-slate-400 shrink-0" />
-                                  <input
-                                    type="text"
-                                    placeholder="Tìm kiếm..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full bg-transparent border-none outline-none text-xs text-slate-800 placeholder:text-slate-400"
-                                  />
-                                  {searchTerm && (
-                                    <button
-                                      onClick={() => setSearchTerm("")}
-                                      className="text-slate-400 hover:text-slate-700 text-xs p-0.5 transition-colors cursor-pointer"
-                                      title="Xóa tìm kiếm"
-                                    >
-                                      <X className="w-3.5 h-3.5" />
-                                    </button>
-                                  )}
-                                </div>
-
-                                {/* Nút Cài đặt (Settings Button) */}
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <button
-                                      className="w-9 h-9 rounded-full bg-white border border-slate-200/80 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center shrink-0"
-                                      title="Cài đặt & Thao tác"
-                                    >
-                                      <Settings className="w-4 h-4 text-slate-600 hover:rotate-45 transition-transform duration-300" />
-                                    </button>
-                                  </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-slate-100 z-[99999]">
-                                  <DropdownMenuLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 py-2">
-                                    Action Center
-                                  </DropdownMenuLabel>
-                                  <DropdownMenuSeparator className="bg-slate-50" />
-                                  <DropdownMenuItem
-                                    onClick={() => handleAddRow()}
-                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+                                {/* Search Input shown dynamically based on showSearch state */}
+                                {showSearch ? (
+                                  <div 
+                                    className="flex items-center gap-2 px-3.5 py-1 text-xs bg-white border border-[#e7dbdc]/80 shadow-xs rounded-full h-9 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all animate-in fade-in slide-in-from-right duration-250"
+                                    style={{ borderRadius: "24px", width: "450px" }}
                                   >
+                                    <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                                    <input
+                                      type="text"
+                                      placeholder="Tìm kiếm..."
+                                      value={searchTerm}
+                                      onChange={(e) => setSearchTerm(e.target.value)}
+                                      className="w-full bg-transparent border-none outline-none text-xs text-slate-800 placeholder:text-slate-400"
+                                    />
+                                    {searchTerm && (
+                                      <button
+                                        onClick={() => setSearchTerm("")}
+                                        className="text-slate-400 hover:text-slate-700 text-xs p-0.5 transition-colors cursor-pointer"
+                                        title="Xóa tìm kiếm"
+                                      >
+                                        <X className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                    <button
+                                      onClick={() => {
+                                        setShowSearch(false);
+                                        setSearchTerm("");
+                                      }}
+                                      className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1 rounded-full transition-colors cursor-pointer"
+                                      title="Đóng tìm kiếm"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  /* Total Number / Sum Pill replacing Search when hidden */
+                                  <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#cbd5e1] rounded-full h-8 select-none whitespace-nowrap flex-nowrap shrink-0 shadow-3xs">
+                                    <span className="text-[9.5px] font-extrabold text-slate-500 uppercase tracking-widest font-sans">
+                                      TỔNG TIỀN:
+                                    </span>
+                                    <span className="text-[11px] font-mono font-black text-rose-600">
+                                      {formatMoneyVND(currentTabTotalSum).replace(" ₫", "")}
+                                    </span>
+                                    <span className="text-[9px] font-bold text-[#781D1D] font-sans">
+                                      VND
+                                    </span>
+                                  </div>
+                                )}
+ 
+                                 {/* Nút Cài đặt (Settings Button) */}
+                                 <DropdownMenu>
+                                   <DropdownMenuTrigger asChild>
+                                     <button
+                                       className="w-9 h-9 rounded-full bg-white border border-[#e7dbdc]/80 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center shrink-0"
+                                       title="Cài đặt & Thao tác"
+                                     >
+                                       <Settings className="w-4 h-4 text-slate-600 hover:rotate-45 transition-transform duration-300" />
+                                     </button>
+                                   </DropdownMenuTrigger>
+                                 <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-slate-100 z-[99999]">
+                                   <DropdownMenuLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 py-2">
+                                     Action Center
+                                   </DropdownMenuLabel>
+                                   <DropdownMenuSeparator className="bg-slate-50" />
+                                   
+                                   {/* Toggle Search Menu Item */}
+                                   <DropdownMenuItem
+                                     onClick={() => setShowSearch(!showSearch)}
+                                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+                                   >
+                                     <Search className="w-4 h-4 text-primary" />
+                                     <span className="text-xs font-bold text-slate-700">
+                                       {showSearch ? "Ẩn công cụ tìm kiếm" : "Tìm kiếm..."}
+                                     </span>
+                                   </DropdownMenuItem>
+
+                                   <DropdownMenuItem
+                                     onClick={() => handleAddRow()}
+                                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+                                   >
                                     <Plus className="w-4 h-4 text-primary" />
-                                    <span className="text-xs font-bold text-slate-700 btn-secret">Thêm dòng mới</span>
+                                    <span className="text-xs font-bold text-slate-700">Thêm dòng mới</span>
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={handleRefreshData}
@@ -1042,6 +1064,8 @@ export function MasterAE() {
 
                           <DataTable
                             className="!overflow-visible"
+                            hideColumnVisibilityToggle={false}
+                            showRowNumber={true}
                             scrollContainerStyle={{ borderRadius: "0", border: "none" }}
                             storageKey={`master-ae-${activeTab}`}
                             ignoreSavedHiddenColumns={true}
@@ -1059,9 +1083,8 @@ export function MasterAE() {
                             hideSearch={true}
                             showPagination={true}
                             showFooter={true}
-                            footerClassName="bg-[#FAF9F6] text-slate-800 border-t border-slate-300 font-bold"
-                            showRowNumber={true}
-                            headerClassName="bg-[#FAF9F6] text-slate-800 border-slate-300 font-bold"
+                            footerClassName="bg-[var(--table-header-bg,#FAF9F6)] text-slate-800 border-t border-[#e7dbdc] font-bold"
+                            headerClassName="bg-[var(--table-header-bg,#FAF9F6)] text-slate-800 border-[#e7dbdc] font-bold"
                           />
                         </div>
                       )}

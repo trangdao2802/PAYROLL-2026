@@ -62,7 +62,7 @@ export function RosterRawTable({
       <div className="flex-1 flex flex-col overflow-hidden bg-transparent border-0 scroll-wrapper">
         <div 
           className="bg-white border-b border-slate-100 flex items-center justify-between shrink-0"
-          style={{ height: "48px", paddingLeft: "12px", paddingRight: "12px", paddingBottom: "8px", paddingTop: "8px" }}
+          style={{ height: "48px", paddingLeft: "12px", paddingRight: "12px", paddingBottom: "12px", paddingTop: "12px" }}
         >
           <div className="flex items-center gap-2">
             {onToggleSidebar && (

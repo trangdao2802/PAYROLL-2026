@@ -1,5 +1,5 @@
 import React from "react";
-import { PanelLeft } from "lucide-react";
+import { Table2, Eye, EyeOff } from "lucide-react";
 import { formatMoneyVND } from "../../../lib/utils/data-utils";
 
 interface MktLocalNorthPivotTableRow {
@@ -35,34 +35,48 @@ export const MktLocalNorthPivotTable: React.FC<MktLocalNorthPivotTableProps> = (
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-transparent border-0">
       {/* Header Info - Consistent with other tables */}
       <div 
-        className="flex items-center justify-between shrink-0 bg-white border-b border-slate-100"
-        style={{ height: "48px", paddingLeft: "12px", paddingRight: "12px", paddingBottom: "8px", paddingTop: "8px" }}
+        className="flex items-center justify-between shrink-0"
+        style={{ height: "64px", paddingLeft: "20px", paddingRight: "39px", paddingBottom: "12px", paddingTop: "12px" }}
       >
-        <div className="flex items-center gap-2">
-          {onToggleSidebar && (
-            <button
-              onClick={onToggleSidebar}
-              className="flex items-center justify-center rounded-full border border-slate-200/90 bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-900 transition-all shadow-xs cursor-pointer w-7 h-7 p-0 active:scale-95 shrink-0"
-              title={showSidebar ? "Ẩn Panel Sidebar" : "Hiện Panel Sidebar"}
-              type="button"
-            >
-              <PanelLeft className="w-3.5 h-3.5 text-primary" />
-            </button>
-          )}
-          <div className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse" />
-          <h3 className="font-bold uppercase tracking-wider text-primary text-[11px]">
-            • PIVOT TABLE - MKT LOCAL NORTH
-          </h3>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col items-end">
-            <span className="text-[8px] font-bold text-foreground/60 uppercase tracking-tighter whitespace-nowrap">SỐ DÒNG</span>
-            <span className="text-xs font-black text-foreground font-mono">{rows.length}</span>
+        <div className="flex items-center gap-3" style={{ paddingRight: "0px" }}>
+          <div className="flex items-center gap-2">
+            {onToggleSidebar && (
+              <button
+                onClick={onToggleSidebar}
+                className="flex items-center justify-center p-1.5 rounded-full border border-primary/10 text-primary hover:bg-primary/5 transition-all cursor-pointer active:scale-95 shadow-sm"
+                title={showSidebar ? "Ẩn thanh bên" : "Hiện thanh bên"}
+              >
+                {showSidebar ? (
+                  <Eye className="w-4 h-4" />
+                ) : (
+                  <EyeOff className="w-4 h-4 text-slate-400" />
+                )}
+              </button>
+            )}
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
+               <Table2 className="w-4 h-4 text-primary" />
+            </div>
           </div>
-          <div className="flex flex-col items-end border-l border-border pl-4">
-            <span className="text-[8px] font-bold text-foreground/60 uppercase tracking-tighter whitespace-nowrap">TỔNG PHÍ</span>
-            <div className="bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
-              <span className="text-xs font-black text-foreground font-mono tracking-tight">{formatMoneyVND(grandTotals.grandTotal)}</span>
+          <div>
+            <h3 className="font-display font-black text-[15px] text-foreground tracking-tight uppercase leading-none">
+              PIVOT TABLE
+            </h3>
+            <p className="text-[10px] text-muted-foreground font-medium mt-0.5 uppercase tracking-[0.05em]">
+              MKT LOCAL NORTH • Payroll Summary
+            </p>
+          </div>
+        </div>
+        <div 
+          className="flex items-center gap-6"
+        >
+          <div className="flex flex-col items-end">
+            <span className="text-[9px] font-bold text-foreground/60 uppercase tracking-tighter">SỐ DÒNG</span>
+            <span className="text-sm font-black text-foreground">{rows.length}</span>
+          </div>
+          <div className="flex flex-col items-end border-l border-border pl-6" style={{ color: "#d997a8" }}>
+            <span className="text-[9px] font-bold text-foreground/60 uppercase tracking-tighter">TỔNG PHÍ</span>
+            <div className="bg-accent/10 px-2.5 py-0.5 rounded-lg border border-accent/20">
+                <span className="text-sm font-black text-accent tracking-tight">{formatMoneyVND(grandTotals.grandTotal)}</span>
             </div>
           </div>
         </div>

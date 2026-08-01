@@ -1,4 +1,4 @@
-- AI Coding Agent Instructions: Taste-Skill Integration
+# AI Coding Agent Instructions: Taste-Skill Integration
 
 This workspace has integrated the **Taste-Skill** framework (`/taste-skill-main/`). All AI agents working in this repository must strictly adhere to the following directives to ensure high-end, premium, and functional UI/UX craftsmanship that is free of "AI slop" or default templates.
 

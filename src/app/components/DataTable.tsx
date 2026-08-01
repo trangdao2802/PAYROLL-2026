@@ -215,6 +215,7 @@ interface DataTableProps {
   tableStyle?: React.CSSProperties;
   ignoreSavedHiddenColumns?: boolean;
   onResetFilters?: () => void;
+  hideColumnVisibilityToggle?: boolean;
 }
 
 const ColumnFilter = ({
@@ -466,10 +467,10 @@ const ColumnFilter = ({
 };
 
 const getBorderClass = (headerClass?: string) => {
-  if (!headerClass) return "border-[#E2E8F0]";
+  if (!headerClass) return "border-[#e7dbdc]";
   const parts = headerClass.split(/\s+/);
   const borderClass = parts.find(p => p.startsWith("border-") && !["border-b", "border-r", "border-t", "border-l", "border-none", "border-separate", "border-collapse", "border-0", "border-1", "border-2", "border-4", "border-8"].includes(p));
-  return borderClass || "border-[#E2E8F0]";
+  return borderClass || "border-[#e7dbdc]";
 };
 
 const DataRow = React.memo(
@@ -540,7 +541,7 @@ const DataRow = React.memo(
         {selectable && (
           <td
             onClick={() => toggleRow(rowId)}
-            className={`text-accent whitespace-nowrap border-b border-r ${borderClass || "border-[#E2E8F0]"} ${isSelected ? "bg-accent/10" : ""} ${stickyFirstColumn ? "sticky-col-selectable" : ""}`}
+            className={`text-accent whitespace-nowrap border-b border-r ${borderClass || "border-[#e7dbdc]"} ${isSelected ? "bg-accent/10" : ""} ${stickyFirstColumn ? "sticky-col-selectable" : ""}`}
             style={{
               padding: "var(--table-padding, 0.4rem 0.6rem)",
               boxShadow: isRowActive ? "inset 4px 0 0 theme(colors.accent.DEFAULT/0.4)" : undefined,
@@ -561,7 +562,7 @@ const DataRow = React.memo(
 
         {showRowNumber && (
           <td
-            className={`border-b border-r ${borderClass || "border-[#E2E8F0]"} select-none ${stickyFirstColumn ? "sticky-col-row-number" : ""}`}
+            className={`border-b border-r ${borderClass || "border-[#e7dbdc]"} select-none ${stickyFirstColumn ? "sticky-col-row-number" : ""}`}
             style={{
               padding: "var(--table-padding, 0.4rem 0.6rem)",
               textAlign: "center",
@@ -607,7 +608,7 @@ const DataRow = React.memo(
               className={`${col.cellClassName?.includes("whitespace-pre-wrap") ? "" : "whitespace-nowrap"} select-none ${getAlignment(col)} relative 
               ${isInRange ? "bg-accent/20 z-10" : ""} 
               ${isActive ? "bg-accent/15 z-10 font-medium" : ""} 
-              text-[1em] leading-[1.7] font-normal text-[#4A3E3E] border-b border-r ${borderClass || "border-[#E2E8F0]"} ${col.cellClassName || ""}
+              text-[1em] leading-[1.7] font-normal text-[#4A3E3E] border-b border-r ${borderClass || "border-[#e7dbdc]"} ${col.cellClassName || ""}
               ${stickyFirstColumn && cIdx === 0 ? "sticky-col-first-data" : ""}
             `}
               style={{
@@ -798,6 +799,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
       tableStyle,
       ignoreSavedHiddenColumns = false,
       onResetFilters,
+      hideColumnVisibilityToggle = false,
     },
     ref,
   ) => {
@@ -1621,12 +1623,32 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
         }
         
         // Use requestAnimationFrame to let the DOM update if we just scrolled vertically,
-        // then find the td element and ensure it is visible horizontally.
+        // then find the td element and ensure it is fully visible vertically and horizontally.
         requestAnimationFrame(() => {
           const container = scrollContainerRef.current;
           if (!container) return;
           const td = container.querySelector(`td[data-r="${activeCell.r}"][data-c="${activeCell.c}"]`) as HTMLElement;
           if (td) {
+            // Precise vertical alignment check
+            const headerHeight = container.querySelector("thead")?.offsetHeight || 40;
+            const footerHeight = showFooter ? (container.querySelector("tfoot")?.offsetHeight || 40) : 0;
+            
+            const tdTop = td.offsetTop;
+            const tdBottom = tdTop + td.offsetHeight;
+            
+            const viewTop = container.scrollTop;
+            const viewBottom = viewTop + container.clientHeight;
+            
+            const topSafety = headerHeight + 8;
+            const bottomSafety = footerHeight + 20; // 20px extra padding for scrollbars
+            
+            if (tdTop < viewTop + topSafety) {
+              container.scrollTop = tdTop - topSafety;
+            } else if (tdBottom > viewBottom - bottomSafety) {
+              container.scrollTop = tdBottom - container.clientHeight + bottomSafety;
+            }
+
+            // Horizontal alignment check
             const leftOffset = td.offsetLeft;
             const cellWidth = td.offsetWidth;
             
@@ -2493,19 +2515,19 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
 
     const densityStyles = {
       compact: {
-        padding: "2px 6px",
+        padding: "1.5px 4px",
+        fontSize: "0.65rem",
+        headerFontSize: "0.6rem",
+      },
+      normal: {
+        padding: "3.5px 7px",
         fontSize: "0.7rem",
         headerFontSize: "0.65rem",
       },
-      normal: {
-        padding: "6px 10px",
-        fontSize: "0.75rem",
-        headerFontSize: "0.75rem",
-      },
       relaxed: {
-        padding: "10px 16px",
-        fontSize: "0.85rem",
-        headerFontSize: "0.85rem",
+        padding: "6px 12px",
+        fontSize: "0.75rem",
+        headerFontSize: "0.7rem",
       },
     };
 
@@ -2543,11 +2565,11 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
           onMouseDown={(e) => handleHeaderMouseDown(e, cIdx)}
           onMouseEnter={(e) => handleHeaderMouseEnter(e, cIdx)}
           onContextMenu={(e) => handleContextMenu(e, -1, cIdx)}
-          className={`relative ${stickyClass} ${col.group ? "has-group" : ""} whitespace-normal align-middle cursor-pointer select-none group border-r ${borderClass} text-center ${filteredHeaderClass} ${col.headerClassName || ""} shadow-[0_1px_0_var(--table-border-color,#E2E8F0)] text-[0.75rem] font-bold uppercase ${col.group ? "" : "text-slate-800"}`}
+          className={`relative ${stickyClass} ${col.group ? "has-group" : ""} whitespace-normal align-middle cursor-pointer select-none group border-r ${borderClass} text-center ${filteredHeaderClass} ${col.headerClassName || ""} shadow-[0_1px_0_var(--table-border-color,#e7dbdc)] text-[var(--header-font-size,0.65rem)] font-bold uppercase ${col.group ? "" : "text-slate-800"}`}
           style={{
-            padding: "var(--table-padding, 0.4rem 0.6rem)",
-            paddingTop: "5px",
-            paddingBottom: "5px",
+            padding: "var(--table-padding, 0.25rem 0.4rem)",
+            paddingTop: "2.5px",
+            paddingBottom: "2.5px",
             backgroundColor: filteredHeaderBgColor,
             width: widthStyle,
             minWidth: widthStyle,
@@ -2597,7 +2619,13 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
               onMouseDown={(e) => handleResizeStart(e, col.key)}
               onDoubleClick={() => handleResizeDoubleClick(col.key)}
               className={`absolute -right-[8px] top-0 bottom-0 w-[16px] cursor-col-resize group/resizer z-[70] flex justify-center`}
-              style={cIdx === 15 ? { width: 0, height: 0, opacity: 0, pointerEvents: "none" } : {}}
+              style={
+                cIdx === 15 
+                  ? { width: 0, height: 0, opacity: 0, pointerEvents: "none" } 
+                  : cIdx === 5 
+                    ? { width: "11.9933px" } 
+                    : {}
+              }
             >
               <div
                 className={`w-[1px] h-full transition-colors bg-transparent group-hover/resizer:bg-accent/40 ${resizingCol?.key === col.key ? "bg-accent" : ""}`}
@@ -2627,7 +2655,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
         <div
           id="table-card"
           ref={tableRef}
-          className={`table-container data-table-wrapper flex flex-col flex-1 min-h-0 min-w-0 w-full max-w-full outline-none overflow-hidden relative ${className || ""} ${hasActiveFilters ? "bg-amber-50/[0.005]" : ""}`}
+          className={`table-container data-table-wrapper flex flex-col flex-1 min-h-0 w-full max-w-full outline-none overflow-hidden relative ${className || ""} ${hasActiveFilters ? "bg-amber-50/[0.005]" : ""}`}
           style={
             {
               borderColor: hasActiveFilters ? "#fbbf24" : "var(--border, #E7DBDC)",
@@ -2647,7 +2675,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
           <div
             ref={scrollContainerRef}
             tabIndex={0}
-            className={`flex-1 overflow-y-auto overflow-x-auto custom-scrollbar outline-none bg-transparent relative min-h-0 min-w-0 transition-opacity duration-100 mb-0 w-full max-w-full ${isStale ? "opacity-60" : "opacity-100"}`}
+            className={`flex-1 overflow-y-auto overflow-x-auto custom-scrollbar outline-none bg-transparent relative min-h-0 transition-opacity duration-100 mb-0 w-full max-w-full ${isStale ? "opacity-60" : "opacity-100"}`}
             onFocus={() => !activeCell && setActiveCellWithSource({ r: 0, c: 0 }, "keyboard")}
             onMouseMove={handleTableMouseMove}
             style={{ 
@@ -2656,7 +2684,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
               overflowAnchor: "none",
               borderRadius: '0px',
               borderStyle: 'none',
-              borderWidth: '0px',
+              borderWidth: '0.4px',
               borderColor: 'var(--border, #E7DBDC)',
               paddingTop: "0px",
               paddingBottom: "0px",
@@ -2697,18 +2725,18 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   );
                 })}
               </colgroup>
-              <thead className={stickyHeader ? "sticky top-0 z-[120] bg-[var(--table-header-bg,var(--secondary,#FAF9F6))] shadow-[0_1px_0_var(--table-border-color,#E2E8F0)]" : ""}>
+              <thead className={stickyHeader ? "sticky top-0 z-[120] bg-[var(--table-header-bg,var(--secondary,#FAF9F6))] shadow-[0_1px_0_var(--table-border-color,#e7dbdc)]" : ""}>
                 {/* Grouped Headers Row if any column has a group defined */}
                 {columns.some(c => c.group) && (
                   <tr className="bg-[var(--table-header-bg,var(--secondary,#FAF9F6))]">
                     {selectable && (
                       <th
                         rowSpan={2}
-                        className={`${stickyFirstColumn ? "sticky-col-selectable sticky-header-col" : ""} w-10 border-r ${borderClass} text-center ${headerClassName ? headerClassName : "bg-[var(--table-header-bg,var(--secondary,#FAF9F6))]"}` + ` shadow-[0_1px_0_var(--table-border-color,#E2E8F0)] text-[0.75rem] font-bold uppercase text-slate-800 whitespace-normal align-middle`}
+                        className={`${stickyFirstColumn ? "sticky-col-selectable sticky-header-col" : ""} w-10 border-r ${borderClass} text-center ${headerClassName ? headerClassName : "bg-[var(--table-header-bg,var(--secondary,#FAF9F6))]"}` + ` shadow-[0_1px_0_var(--table-border-color,#e7dbdc)] text-[var(--header-font-size,0.65rem)] font-bold uppercase text-slate-800 whitespace-normal align-middle`}
                         style={{ 
-                          padding: "var(--table-padding, 0.4rem 0.6rem)", 
-                          paddingTop: "5px", 
-                          paddingBottom: "5px", 
+                          padding: "var(--table-padding, 0.25rem 0.4rem)", 
+                          paddingTop: "2.5px", 
+                          paddingBottom: "2.5px", 
                           backgroundColor: "var(--table-header-bg, var(--secondary, #FAF9F6))",
                           ...(stickyFirstColumn ? { left: 0 } : {})
                         }}
@@ -2744,11 +2772,11 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                     {isRowNumberVisible && (
                       <th
                         rowSpan={2}
-                        className={`${stickyFirstColumn ? "sticky-col-row-number" : ""} sticky-header-col w-[50px] border-r ${borderClass} text-center ${headerClassName ? headerClassName : "bg-[var(--table-header-bg,var(--secondary,#FAF9F6))]"}` + ` shadow-[0_1px_0_var(--table-border-color,#E2E8F0)] text-[0.75rem] font-bold uppercase text-slate-800 whitespace-normal align-middle`}
+                        className={`${stickyFirstColumn ? "sticky-col-row-number" : ""} sticky-header-col w-[50px] border-r ${borderClass} text-center ${headerClassName ? headerClassName : "bg-[var(--table-header-bg,var(--secondary,#FAF9F6))]"}` + ` shadow-[0_1px_0_var(--table-border-color,#e7dbdc)] text-[var(--header-font-size,0.65rem)] font-bold uppercase text-slate-800 whitespace-normal align-middle`}
                         style={{ 
-                          padding: "var(--table-padding, 0.4rem 0.6rem)", 
-                          paddingTop: "5px", 
-                          paddingBottom: "5px", 
+                          padding: "var(--table-padding, 0.25rem 0.4rem)", 
+                          paddingTop: "2.5px", 
+                          paddingBottom: "2.5px", 
                           backgroundColor: "var(--table-header-bg, var(--secondary, #FAF9F6))",
                           ...(stickyFirstColumn ? { left: selectable ? 40 : 0 } : {})
                         }}
@@ -2783,7 +2811,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                             <th 
                               key={idx} 
                               colSpan={g.count}
-                              className={`has-group ${groupBg} border-r ${borderClass} py-2 text-[0.75rem] font-bold uppercase text-center shadow-[0_1px_0_var(--table-border-color,#E2E8F0)] whitespace-normal align-middle`}
+                              className={`has-group ${groupBg} border-r ${borderClass} py-1 text-[var(--header-font-size,0.65rem)] font-bold uppercase text-center shadow-[0_1px_0_var(--table-border-color,#e7dbdc)] whitespace-normal align-middle`}
                               style={{ backgroundColor: "var(--table-header-bg, var(--secondary, #FAF9F6))" }}
                             >
                               {g.group}
@@ -2800,11 +2828,11 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                 <tr className={headerClassName ? "" : "bg-[var(--table-header-bg,var(--secondary,#FAF9F6))] text-foreground"}>
                   {selectable && !columns.some(c => c.group) && (
                     <th
-                      className={`${stickyFirstColumn ? "sticky-col-selectable sticky-header-col" : ""} w-10 border-r ${borderClass} text-center ${headerClassName ? headerClassName : "bg-[var(--table-header-bg,var(--secondary,#FAF9F6))]"}` + ` shadow-[0_1px_0_var(--table-border-color,#E2E8F0)] text-[0.75rem] font-bold uppercase text-slate-800 whitespace-normal align-middle`}
+                      className={`${stickyFirstColumn ? "sticky-col-selectable sticky-header-col" : ""} w-10 border-r ${borderClass} text-center ${headerClassName ? headerClassName : "bg-[var(--table-header-bg,var(--secondary,#FAF9F6))]"}` + ` shadow-[0_1px_0_var(--table-border-color,#e7dbdc)] text-[var(--header-font-size,0.65rem)] font-bold uppercase text-slate-800 whitespace-normal align-middle`}
                       style={{ 
-                        padding: "var(--table-padding, 0.4rem 0.6rem)", 
-                        paddingTop: "5px", 
-                        paddingBottom: "5px", 
+                        padding: "var(--table-padding, 0.25rem 0.4rem)", 
+                        paddingTop: "2.5px", 
+                        paddingBottom: "2.5px", 
                         backgroundColor: "var(--table-header-bg, var(--secondary, #FAF9F6))",
                         ...(stickyFirstColumn ? { left: 0 } : {})
                       }}
@@ -2839,11 +2867,11 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   )}
                   {isRowNumberVisible && !columns.some(c => c.group) && (
                     <th
-                      className={`${stickyFirstColumn ? "sticky-col-row-number sticky-header-col" : ""} w-[50px] border-r ${borderClass} text-center ${headerClassName ? headerClassName : "bg-[var(--table-header-bg,var(--secondary,#FAF9F6))]"}` + ` shadow-[0_1px_0_var(--table-border-color,#E2E8F0)] text-[0.75rem] font-bold uppercase text-slate-800 whitespace-normal align-middle`}
+                      className={`${stickyFirstColumn ? "sticky-col-row-number sticky-header-col" : ""} w-[50px] border-r ${borderClass} text-center ${headerClassName ? headerClassName : "bg-[var(--table-header-bg,var(--secondary,#FAF9F6))]"}` + ` shadow-[0_1px_0_var(--table-border-color,#e7dbdc)] text-[var(--header-font-size,0.65rem)] font-bold uppercase text-slate-800 whitespace-normal align-middle`}
                       style={{ 
-                        padding: "var(--table-padding, 0.4rem 0.6rem)", 
-                        paddingTop: "5px", 
-                        paddingBottom: "5px", 
+                        padding: "var(--table-padding, 0.25rem 0.4rem)", 
+                        paddingTop: "2.5px", 
+                        paddingBottom: "2.5px", 
                         backgroundColor: "var(--table-header-bg, var(--secondary, #FAF9F6))",
                         ...(stickyFirstColumn ? { left: selectable ? 40 : 0 } : {})
                       }}
@@ -2984,273 +3012,138 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   }}
                 >
                   <tr
-                    className={`${footerClassName || headerClassName || "bg-[var(--table-header-bg,var(--secondary))]"} ${(footerClassName || headerClassName || "").includes("text-") ? "" : "text-slate-800"} font-bold total-row`}
+                    className={`${footerClassName || headerClassName || "bg-[var(--table-header-bg,var(--secondary,#FAF9F6))]"}` + ` ${(footerClassName || headerClassName || "").includes("text-") ? "" : "text-slate-800"} font-bold total-row`}
                   >
-                    {stickyFirstColumn ? (
-                      <>
-                        {selectable && (
-                          <td
-                            className={`border-b border-t border-slate-300 border-r ${borderClass || "border-[#E2E8F0]"} ${footerClassName || headerClassName || "bg-[var(--table-header-bg,var(--secondary))]"} ${(footerClassName || headerClassName || "").includes("text-") ? "" : "text-slate-800"} font-bold sticky-col-selectable sticky-footer-col total-row`}
-                            style={{
-                              position: "sticky",
-                              bottom: 0,
-                              zIndex: 45,
-                              width: "40px",
-                              minWidth: "40px",
-                              maxWidth: "40px",
-                              left: 0,
-                              backgroundColor: (footerClassName || headerClassName) ? undefined : "var(--table-header-bg, var(--secondary))"
-                            }}
-                          />
-                        )}
-                        {isRowNumberVisible && (
-                          <td
-                            className={`border-b border-t border-slate-300 border-r ${borderClass || "border-[#E2E8F0]"} ${footerClassName || headerClassName || "bg-[var(--table-header-bg,var(--secondary))]"} ${(footerClassName || headerClassName || "").includes("text-") ? "" : "text-slate-800"} font-bold sticky-col-row-number sticky-footer-col total-row`}
-                            style={{
-                              position: "sticky",
-                              bottom: 0,
-                              zIndex: 45,
-                              width: "50px",
-                              minWidth: "50px",
-                              maxWidth: "50px",
-                              left: selectable ? 40 : 0,
-                              backgroundColor: (footerClassName || headerClassName) ? undefined : "var(--table-header-bg, var(--secondary))"
-                            }}
-                          />
-                        )}
-                        {(() => {
-                          const colIsNumericList = visibleColumns.map((col) => {
-                            const effectiveType = columnTypes[col.key] || col.type;
-                            let colIsNumeric =
-                              effectiveType === "number" ||
-                              effectiveType === "currency" ||
-                              effectiveType === "money";
-                            
-                            // Check samples to detect numeric type
-                            if (
-                              !colIsNumeric &&
-                              effectiveType !== "text" &&
-                              effectiveType !== "label" &&
-                              effectiveType !== "date" &&
-                              filteredAndSortedData.length > 0 &&
-                              col.key !== "STT" &&
-                              col.key !== "stt"
-                            ) {
-                              let numericCount = 0;
-                              let totalValCount = 0;
-                              const sampleSize = Math.min(20, filteredAndSortedData.length);
-                              for (let i = 0; i < sampleSize; i++) {
-                                const r = filteredAndSortedData[i];
-                                if (r) {
-                                  const rawVal = r[col.key];
-                                  if (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== "") {
-                                    totalValCount++;
-                                    const str = String(rawVal).trim();
-                                    const parsed = parseMoneyToNumber(str);
-                                    if (parsed !== 0 || str === "0") {
-                                      numericCount++;
-                                    }
-                                  }
-                                }
-                              }
-                              if (totalValCount > 0 && numericCount / totalValCount > 0.7) {
-                                colIsNumeric = true;
-                              }
-                            }
-                            return colIsNumeric;
-                          });
-
-                          return visibleColumns.map((col: any, cIdx: number) => {
-                            const colIsNumeric = colIsNumericList[cIdx] || (col as any).showGrandTotal;
-                            const grandTotal = colIsNumeric
-                              ? filteredAndSortedData.reduce(
-                                  (sum, row) => {
-                                    if (totalCalculationOverride) {
-                                      const override = totalCalculationOverride(row, col.key);
-                                      if (override !== null) return sum + override;
-                                    }
-                                    const val = parseMoneyToNumber(row[col.key]);
-                                    return sum + (val || 0);
-                                  },
-                                  0,
-                                )
-                              : null;
-
-                            const colWidth = columnWidths[col.key] || col.width;
-                            const widthStyle = colWidth
-                              ? typeof colWidth === "number"
-                                ? `${colWidth}px`
-                                : colWidth
-                              : undefined;
-
-                            return (
-                              <td
-                                key={`footer-grand-${col.key}`}
-                                className={`whitespace-nowrap font-bold border-b border-t border-slate-300 border-r ${borderClass} ${getAlignment(col)} uppercase text-[0.75rem] ${footerClassName || headerClassName || "bg-[var(--table-header-bg,var(--secondary))]"} ${(footerClassName || headerClassName || "").includes("text-") ? "" : "text-slate-800"} ${col.footerClassName || ""} sticky-col-first-data sticky-footer-col total-row`}
-                                style={{
-                                  padding: "var(--table-padding, 0.4rem 0.6rem)",
-                                  paddingTop: "5px",
-                                  paddingBottom: "5px",
-                                  fontFamily: "var(--font-table, var(--font-main))",
-                                  width: widthStyle,
-                                  minWidth: widthStyle,
-                                  maxWidth: widthStyle,
-                                  overflow: cIdx === 0 ? "visible" : "hidden",
-                                  textOverflow: cIdx === 0 ? "clip" : "ellipsis",
-                                  position: "sticky",
-                                  bottom: 0,
-                                  zIndex: cIdx === 0 ? 45 : 30,
-                                  backgroundColor: (footerClassName || headerClassName) ? undefined : "var(--table-header-bg, var(--secondary))",
-                                  ...(cIdx === 0 ? {
-                                    left: (selectable ? 40 : 0) + (isRowNumberVisible ? 50 : 0),
-                                  } : {})
-                                }}
-                              >
-                                {cIdx === 0
-                                  ? `TỔNG CỘNG (${filteredAndSortedData.length} dòng)`
-                                  : colIsNumeric && col.key !== "STT" && col.key !== "stt" && grandTotal !== null
-                                    ? formatValue(grandTotal, col.type === "number" ? "number" : "currency")
-                                    : ""}
-                              </td>
-                            );
-                          });
-                        })()}
-                      </>
-                    ) : (
-                      <>
-                        {(() => {
-                          // Non-sticky layout: we can merge the selectable, showRowNumber, and the first few visible columns.
-                          let firstNumericIdx = -1;
-                          const colIsNumericList = visibleColumns.map((col, cIdx) => {
-                            const effectiveType = columnTypes[col.key] || col.type;
-                            let colIsNumeric =
-                              effectiveType === "number" ||
-                              effectiveType === "currency" ||
-                              effectiveType === "money";
-
-                            if (
-                              !colIsNumeric &&
-                              effectiveType !== "text" &&
-                              effectiveType !== "label" &&
-                              effectiveType !== "date" &&
-                              filteredAndSortedData.length > 0 &&
-                              col.key !== "STT" &&
-                              col.key !== "stt"
-                            ) {
-                              let numericCount = 0;
-                              let totalValCount = 0;
-                              const sampleSize = Math.min(20, filteredAndSortedData.length);
-                              for (let i = 0; i < sampleSize; i++) {
-                                const r = filteredAndSortedData[i];
-                                if (r) {
-                                  const rawVal = r[col.key];
-                                  if (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== "") {
-                                    totalValCount++;
-                                    const str = String(rawVal).trim();
-                                    const parsed = parseMoneyToNumber(str);
-                                    if (parsed !== 0 || str === "0") {
-                                      numericCount++;
-                                    }
-                                  }
-                                }
-                              }
-                              if (totalValCount > 0 && numericCount / totalValCount > 0.7) {
-                                colIsNumeric = true;
-                              }
-                            }
-                            
-                            if (colIsNumeric && col.key !== "STT" && col.key !== "stt" && firstNumericIdx === -1) {
-                              firstNumericIdx = cIdx;
-                            }
-                            
-                            return colIsNumeric;
-                          });
-
-                          const maxMergeCount = (firstNumericIdx === -1)
-                            ? Math.min(4, visibleColumns.length)
-                            : Math.max(1, Math.min(firstNumericIdx, 4));
-
-                          const totalColSpan = (selectable ? 1 : 0) + (isRowNumberVisible ? 1 : 0) + maxMergeCount;
-
-                          const mergedCells = [];
-
-                          // Render the giant merged cell first
-                          mergedCells.push(
-                            <td
-                              key="footer-grand-merged-title"
-                              colSpan={totalColSpan}
-                              className={`whitespace-nowrap font-bold border-b border-t border-slate-300 border-r ${borderClass} text-left uppercase text-[0.75rem] ${footerClassName || headerClassName || "bg-[var(--table-header-bg,var(--secondary))]"} ${(footerClassName || headerClassName || "").includes("text-") ? "" : "text-slate-800"} total-row`}
-                              style={{
-                                padding: "var(--table-padding, 0.4rem 0.6rem)",
-                                paddingTop: "5px",
-                                paddingBottom: "5px",
-                                fontFamily: "var(--font-table, var(--font-main))",
-                                position: "sticky",
-                                bottom: 0,
-                                zIndex: 30,
-                                backgroundColor: (footerClassName || headerClassName) ? undefined : "var(--table-header-bg, var(--secondary))",
-                              }}
-                            >
-                              TỔNG CỘNG ({filteredAndSortedData.length} dòng)
-                            </td>
-                          );
-
-                          // Now map the remaining visible columns starting from maxMergeCount
-                          for (let cIdx = maxMergeCount; cIdx < visibleColumns.length; cIdx++) {
-                            const col = visibleColumns[cIdx];
-                            const colIsNumeric = colIsNumericList[cIdx] || (col as any).showGrandTotal;
-                            const grandTotal = colIsNumeric
-                              ? filteredAndSortedData.reduce(
-                                  (sum, row) => {
-                                    if (totalCalculationOverride) {
-                                      const override = totalCalculationOverride(row, col.key);
-                                      if (override !== null) return sum + override;
-                                    }
-                                    const val = parseMoneyToNumber(row[col.key]);
-                                    return sum + (val || 0);
-                                  },
-                                  0,
-                                )
-                              : null;
-
-                            const colWidth = columnWidths[col.key] || col.width;
-                            const widthStyle = colWidth
-                              ? typeof colWidth === "number"
-                                ? `${colWidth}px`
-                                : colWidth
-                              : undefined;
-
-                            mergedCells.push(
-                              <td
-                                key={`footer-grand-${col.key}`}
-                                className={`whitespace-nowrap font-bold border-b border-t border-slate-300 border-r ${borderClass} ${getAlignment(col)} uppercase text-[0.75rem] ${footerClassName || headerClassName || "bg-[var(--table-header-bg,var(--secondary))]"} ${(footerClassName || headerClassName || "").includes("text-") ? "" : "text-slate-800"} ${col.footerClassName || ""} total-row`}
-                                style={{
-                                  padding: "var(--table-padding, 0.4rem 0.6rem)",
-                                  paddingTop: "5px",
-                                  paddingBottom: "5px",
-                                  fontFamily: "var(--font-table, var(--font-main))",
-                                  width: widthStyle,
-                                  minWidth: widthStyle,
-                                  maxWidth: widthStyle,
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  position: "sticky",
-                                  bottom: 0,
-                                  zIndex: 30,
-                                  backgroundColor: (footerClassName || headerClassName) ? undefined : "var(--table-header-bg, var(--secondary))",
-                                }}
-                              >
-                                {colIsNumeric && col.key !== "STT" && col.key !== "stt" && grandTotal !== null
-                                  ? formatValue(grandTotal, col.type === "number" ? "number" : "currency")
-                                  : ""}
-                              </td>
-                            );
-                          }
-
-                          return mergedCells;
-                        })()}
-                      </>
+                    {selectable && (
+                      <td
+                        className={`border-b border-t border-[#e7dbdc] border-r ${borderClass || "border-[#e7dbdc]"} ${footerClassName || headerClassName || "bg-[var(--table-header-bg,var(--secondary,#FAF9F6))]"}` + ` ${(footerClassName || headerClassName || "").includes("text-") ? "" : "text-slate-800"} font-bold ${stickyFirstColumn ? "sticky-col-selectable sticky-footer-col" : "sticky-footer-col"} total-row`}
+                        style={{
+                          position: "sticky",
+                          bottom: 0,
+                          zIndex: stickyFirstColumn ? 45 : 30,
+                          width: "40px",
+                          minWidth: "40px",
+                          maxWidth: "40px",
+                          ...(stickyFirstColumn ? { left: 0 } : {}),
+                          backgroundColor: "var(--table-header-bg, var(--secondary, #FAF9F6))"
+                        }}
+                      />
                     )}
+                    {isRowNumberVisible && (
+                      <td
+                        className={`border-b border-t border-[#e7dbdc] border-r ${borderClass || "border-[#e7dbdc]"} ${footerClassName || headerClassName || "bg-[var(--table-header-bg,var(--secondary,#FAF9F6))]"}` + ` ${(footerClassName || headerClassName || "").includes("text-") ? "" : "text-slate-800"} font-bold ${stickyFirstColumn ? "sticky-col-row-number sticky-footer-col" : "sticky-footer-col"} total-row`}
+                        style={{
+                          position: "sticky",
+                          bottom: 0,
+                          zIndex: stickyFirstColumn ? 45 : 30,
+                          width: "50px",
+                          minWidth: "50px",
+                          maxWidth: "50px",
+                          ...(stickyFirstColumn ? { left: selectable ? 40 : 0 } : {}),
+                          backgroundColor: "var(--table-header-bg, var(--secondary, #FAF9F6))"
+                        }}
+                      />
+                    )}
+                    {(() => {
+                      const colIsNumericList = visibleColumns.map((col) => {
+                        const effectiveType = columnTypes[col.key] || col.type;
+                        let colIsNumeric =
+                          effectiveType === "number" ||
+                          effectiveType === "currency" ||
+                          effectiveType === "money";
+                        
+                        if (
+                          !colIsNumeric &&
+                          effectiveType !== "text" &&
+                          effectiveType !== "label" &&
+                          effectiveType !== "date" &&
+                          filteredAndSortedData.length > 0 &&
+                          col.key !== "STT" &&
+                          col.key !== "stt"
+                        ) {
+                          let numericCount = 0;
+                          let totalValCount = 0;
+                          const sampleSize = Math.min(20, filteredAndSortedData.length);
+                          for (let i = 0; i < sampleSize; i++) {
+                            const r = filteredAndSortedData[i];
+                            if (r) {
+                              const rawVal = r[col.key];
+                              if (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== "") {
+                                totalValCount++;
+                                const str = String(rawVal).trim();
+                                const parsed = parseMoneyToNumber(str);
+                                if (parsed !== 0 || str === "0") {
+                                  numericCount++;
+                                }
+                              }
+                            }
+                          }
+                          if (totalValCount > 0 && numericCount / totalValCount > 0.7) {
+                            colIsNumeric = true;
+                          }
+                        }
+                        return colIsNumeric;
+                      });
+
+                      return visibleColumns.map((col: any, cIdx: number) => {
+                        const colIsNumeric = colIsNumericList[cIdx] || (col as any).showGrandTotal;
+                        const grandTotal = colIsNumeric
+                          ? filteredAndSortedData.reduce(
+                              (sum, row) => {
+                                if (totalCalculationOverride) {
+                                  const override = totalCalculationOverride(row, col.key);
+                                  if (override !== null) return sum + override;
+                                }
+                                const val = parseMoneyToNumber(row[col.key]);
+                                return sum + (val || 0);
+                              },
+                              0,
+                            )
+                          : null;
+
+                        const colWidth = columnWidths[col.key] || col.width;
+                        const widthStyle = colWidth
+                          ? typeof colWidth === "number"
+                            ? `${colWidth}px`
+                            : colWidth
+                          : undefined;
+
+                        const isFirstDataCol = cIdx === 0;
+
+                        return (
+                          <td
+                            key={`footer-grand-${col.key}`}
+                            className={`whitespace-nowrap font-bold border-b border-t border-[#e7dbdc] border-r ${borderClass} ${getAlignment(col)} uppercase text-[0.75rem] ${footerClassName || headerClassName || "bg-[var(--table-header-bg,var(--secondary,#FAF9F6))]"}` + ` ${(footerClassName || headerClassName || "").includes("text-") ? "" : "text-slate-800"} ${col.footerClassName || ""} ${stickyFirstColumn && isFirstDataCol ? "sticky-col-first-data sticky-footer-col" : ""} total-row`}
+                            style={{
+                              padding: "var(--table-padding, 0.4rem 0.6rem)",
+                              paddingTop: "5px",
+                              paddingBottom: "5px",
+                              fontFamily: "var(--font-table, var(--font-main))",
+                              width: widthStyle,
+                              minWidth: widthStyle,
+                              maxWidth: widthStyle,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              position: "sticky",
+                              bottom: 0,
+                              zIndex: (stickyFirstColumn && isFirstDataCol) ? 45 : 30,
+                              backgroundColor: "var(--table-header-bg, #FAF9F6)",
+                              ...((stickyFirstColumn && isFirstDataCol) ? {
+                                left: (selectable ? 40 : 0) + (isRowNumberVisible ? 50 : 0),
+                              } : {})
+                            }}
+                          >
+                            {isFirstDataCol
+                              ? (colIsNumeric && grandTotal !== null
+                                  ? `TỔNG: ${formatValue(grandTotal, col.type === "number" ? "number" : "currency")}`
+                                  : `TỔNG CỘNG (${filteredAndSortedData.length} dòng)`)
+                              : (colIsNumeric && col.key !== "STT" && col.key !== "stt" && grandTotal !== null
+                                  ? formatValue(grandTotal, col.type === "number" ? "number" : "currency")
+                                  : "")}
+                          </td>
+                        );
+                      });
+                    })()}
                   </tr>
                 </tfoot>
               )}
@@ -3260,13 +3153,14 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
             {/* Footer — Floating Card Style mimicking payment page */}
           {showPagination && (
           <div
-            className="flex items-center justify-between shrink-0 z-40 relative bg-white"
+            className="flex items-center justify-between shrink-0 z-40 relative table-footer-pagination"
             style={{
               height: "44.9802px",
               borderWidth: "0px",
               borderStyle: "none",
               borderRadius: "0px",
               borderColor: "transparent",
+              backgroundColor: "var(--table-header-bg, var(--secondary, #FAF9F6))",
               marginTop: "0px",
               marginBottom: "0px",
               marginRight: "0px",
@@ -3291,10 +3185,10 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                     scrollContainerRef.current?.scrollTo({ top: 0 });
                   }}
                 >
-                  <SelectTrigger className="rounded-[15px] px-2 text-[12px] font-bold text-foreground border-border bg-card hover:bg-muted transition-colors shadow-sm" style={{ height: "20px", width: "100.988px" }}>
+                  <SelectTrigger className="rounded-[15px] px-2 text-[12px] font-bold text-foreground border-[#e7dbdc] bg-card hover:bg-muted transition-colors shadow-sm" style={{ height: "20px", width: "100.988px" }}>
                     <SelectValue placeholder="Chọn..." />
                   </SelectTrigger>
-                  <SelectContent className="bg-[var(--popover)] border-border z-[99999] opacity-100">
+                  <SelectContent className="bg-[var(--popover)] border-[#e7dbdc] z-[99999] opacity-100">
                     <SelectItem value="10" className="text-[12px] font-bold">10 dòng</SelectItem>
                     <SelectItem value="20" className="text-[12px] font-bold">20 dòng</SelectItem>
                     <SelectItem value="50" className="text-[12px] font-bold">50 dòng</SelectItem>
@@ -3305,6 +3199,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
               </div>
 
               {/* Column Visibility Toggle moved to footer - Icon button only */}
+              {!hideColumnVisibilityToggle && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
@@ -3315,9 +3210,9 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                     <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" side="top" className="w-60 max-h-[350px] overflow-y-auto bg-popover dark:bg-[var(--card)] opacity-100 z-[99999] border-border shadow-2xl p-1 rounded-xl">
+                <DropdownMenuContent align="start" side="top" className="w-60 max-h-[350px] overflow-y-auto bg-popover dark:bg-[var(--card)] opacity-100 z-[99999] border-[#e7dbdc] shadow-2xl p-1 rounded-xl">
                   <DropdownMenuLabel className="text-xs font-bold text-foreground/70 uppercase px-2 py-1.5">
-                    Cột hiển thị ({visibleColumns.length + (isRowNumberVisible ? 1 : 0)}/{allDropdownColumns.length})
+                    Cột hiển thị ({visibleColumns.length + (isRowNumberVisible ? 1 : 0)}/${allDropdownColumns.length})
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -3359,6 +3254,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+              )}
 
               <div 
                 className="flex items-center gap-1.5 hidden md:flex border-l border-slate-100 pl-3"
@@ -3370,7 +3266,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                 }}
               >
                 <SaveStatusCard 
-                  className="!px-1.5 !py-0.5 !rounded-[10px] bg-slate-50 border border-border/80 shadow-none gap-1 ml-1"
+                  className="!px-1.5 !py-0.5 !rounded-[10px] bg-slate-50 border border-[#e7dbdc]/80 shadow-none gap-1 ml-1"
                   style={{
                     paddingLeft: "0px",
                     paddingRight: "0px",
@@ -3400,7 +3296,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   setCurrentPage(1);
                   scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="flex items-center justify-center w-6 h-6 rounded-md border border-border bg-white text-foreground hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 cursor-pointer select-none"
+                className="flex items-center justify-center w-6 h-6 rounded-md border border-[#e7dbdc] bg-white text-foreground hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 cursor-pointer select-none"
                 title="Trang đầu"
               >
                 <ChevronsLeft className="w-3.5 h-3.5" />
@@ -3412,7 +3308,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   setCurrentPage((p) => Math.max(1, p - 1));
                   scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="flex items-center justify-center w-6 h-6 rounded-md border border-border bg-white text-foreground hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 cursor-pointer select-none"
+                className="flex items-center justify-center w-6 h-6 rounded-md border border-[#e7dbdc] bg-white text-foreground hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 cursor-pointer select-none"
                 title="Trang trước"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
@@ -3429,7 +3325,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   setCurrentPage((p) => Math.min(totalPages, p + 1));
                   scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="flex items-center justify-center w-6 h-6 rounded-md border border-border bg-white text-foreground hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 cursor-pointer select-none"
+                className="flex items-center justify-center w-6 h-6 rounded-md border border-[#e7dbdc] bg-white text-foreground hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 cursor-pointer select-none"
                 title="Trang sau"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -3441,7 +3337,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   setCurrentPage(totalPages);
                   scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="flex items-center justify-center w-6 h-6 rounded-md border border-border bg-white text-foreground hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 cursor-pointer select-none"
+                className="flex items-center justify-center w-6 h-6 rounded-md border border-[#e7dbdc] bg-white text-foreground hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 cursor-pointer select-none"
                 title="Trang cuối"
               >
                 <ChevronsRight className="w-3.5 h-3.5" />
@@ -3587,7 +3483,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   className="w-full px-3 py-2 text-left text-[0.625rem] font-black uppercase tracking-wider hover:bg-accent/10 flex items-center gap-2.5 transition-colors group text-accent hover:text-accent/80"
                 >
                   <FileText className="w-3.5 h-3.5 text-accent/60 group-hover:text-accent transition-colors" />
-                  <span className="btn-secret">Thêm dòng mới</span>
+                  <span>Thêm dòng mới</span>
                 </button>
 
                 <DropdownMenuSeparator className="bg-primary/10 mx-1" />

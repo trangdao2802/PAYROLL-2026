@@ -25,6 +25,7 @@ import {
   AlertCircle,
   ChevronDown,
   LayoutDashboard,
+  Home,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
@@ -162,12 +163,14 @@ export function Navbar({ onToggleMobileMenu, onOpenSettings }: NavbarProps) {
         <div className="flex items-center gap-2">
           <Link
             to="/"
-            className={`flex items-center justify-center w-8 h-8 rounded-lg hover:bg-slate-100/80 transition-all text-primary active:scale-95 ${
-              location.pathname === "/" ? "bg-slate-100/50 opacity-100" : "opacity-70 hover:opacity-100"
+            className={`flex items-center justify-center w-8 h-8 rounded-full border transition-all active:scale-95 outline-none focus:outline-none focus-visible:outline-none shadow-2xs ${
+              location.pathname === "/" 
+                ? "bg-rose-50 border-[#781D1D]/40 text-[#781D1D]" 
+                : "bg-white border-[#e7dbdc] text-slate-700 hover:bg-rose-50/60 hover:text-[#781D1D] opacity-90 hover:opacity-100"
             }`}
-            title="Dashboard"
+            title="Dashboard Overview"
           >
-            <span style={{ fontSize: "16px" }}>🏠</span>
+            <Home className="w-4 h-4 text-[#781D1D]" />
           </Link>
           {location.pathname === "/" && (
             <div className="flex items-center animate-in fade-in slide-in-from-left-4 duration-500">
@@ -194,7 +197,7 @@ export function Navbar({ onToggleMobileMenu, onOpenSettings }: NavbarProps) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="flex items-center gap-2 h-8 text-primary hover:text-slate-900 transition-all group font-black lowercase tracking-[0.05em] cursor-pointer active:scale-95 px-2"
+                    className="flex items-center gap-2 h-8 text-primary hover:text-slate-900 transition-all group font-black lowercase tracking-[0.05em] cursor-pointer active:scale-95 px-2 outline-none focus:outline-none focus-visible:outline-none"
                     style={{ fontSize: "11px" }}
                   >
                     <span style={{ fontSize: "12px" }}>{currentPageLabel}</span>
@@ -214,7 +217,7 @@ export function Navbar({ onToggleMobileMenu, onOpenSettings }: NavbarProps) {
                            window.dispatchEvent(new CustomEvent("master-ae-request-tab-change", { detail: { tab: t.id } }));
                         }
                       }}
-                      className="text-[11px] font-bold lowercase tracking-tight px-3 py-2.5 rounded-lg cursor-pointer flex items-center gap-2 hover:bg-primary/5 focus:bg-primary/5 transition-colors"
+                      className="text-[11px] font-bold lowercase tracking-tight px-3 py-2.5 rounded-lg cursor-pointer flex items-center gap-2 hover:bg-primary/5 focus:bg-primary/5 transition-colors outline-none focus:outline-none focus-visible:outline-none"
                     >
                       <t.icon className="w-3.5 h-3.5 opacity-60" />
                       {t.label}
@@ -234,7 +237,7 @@ export function Navbar({ onToggleMobileMenu, onOpenSettings }: NavbarProps) {
                   <Link
                     key={item.id}
                     to={item.path}
-                    className={`font-sans lowercase font-bold tracking-[0.1em] text-primary no-underline relative transition-opacity ${
+                    className={`font-sans lowercase font-bold tracking-[0.1em] text-primary no-underline relative transition-opacity outline-none focus:outline-none focus-visible:outline-none ${
                       isActive ? "opacity-100 after:content-[''] after:absolute after:-bottom-[6px] after:left-0 after:w-full after:h-[1.5px] after:bg-primary" : "opacity-40 hover:opacity-100"
                     }`}
                     style={{ fontSize: "10px", lineHeight: "15.8px" }}

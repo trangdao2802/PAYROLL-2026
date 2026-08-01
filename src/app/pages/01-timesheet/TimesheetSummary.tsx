@@ -1065,27 +1065,28 @@ export default function TimesheetSummaryPage({ onBack }: TimesheetSummaryPagePro
               </button>
             )}
             <div 
-              className="bg-primary flex items-center justify-center rounded-xl shadow-md shadow-primary/20 shrink-0"
-              style={{ width: "39.998px", height: "39.998px" }}
+              className="bg-primary flex items-center justify-center shadow-md shadow-primary/20 shrink-0"
+              style={{ width: "39.998px", height: "39.998px", borderRadius: "27px" }}
             >
               <FileSpreadsheet className="text-white" style={{ width: "23px", height: "23px" }} />
             </div>
 
             <div style={{ paddingTop: "0px", paddingBottom: "0px" }}>
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <h1 className="font-normal font-serif tracking-tight flex items-baseline gap-1" style={{ lineHeight: "1.2", fontSize: "22px", color: "#4c504a" }}>
+                <h1 className="font-normal font-serif tracking-tight flex items-baseline gap-1" style={{ lineHeight: "1.2", fontSize: "26px", color: "#4c504a" }}>
                   Data{" "}
-                  <span className="not-italic font-script text-[#c09e9a] text-2xl lowercase inline-block" style={{ fontFamily: "Waterfall, cursive", lineHeight: "1" }}>
+                  <span className="not-italic font-script text-[#c09e9a] lowercase inline-block" style={{ fontFamily: "Waterfall, cursive", lineHeight: "1", fontSize: "33px", fontWeight: "normal" }}>
                     summary
                   </span>
                   <span 
-                    className="text-xl tracking-tight" 
+                    className="tracking-tight" 
                     style={{ 
-                      lineHeight: "1",
+                      lineHeight: "23px",
                       fontFamily: "Corinthia, cursive",
                       fontWeight: "bold",
                       color: "#c09e9a",
-                      marginLeft: "4px"
+                      marginLeft: "4px",
+                      fontSize: "23px"
                     }}
                   >
                     & Source

@@ -14,6 +14,16 @@ import {
 import { parseMoneyToNumber, removeVietnameseTones } from "../../../lib/utils/data-utils";
 import { toast } from "sonner";
 
+const HOLD_HIDDEN_COLS = [
+  "TÊN FILE",
+  "MÃ AE",
+  "TAX CODE",
+  "CONTRACT NO",
+  "TÌNH TRẠNG THANH TOÁN",
+  "TRẠNG THÁI",
+  "DIỄN GIẢI"
+];
+
 function cleanIDNumber(val: unknown): string {
   if (val === undefined || val === null) return "";
   let str = String(val).trim();
@@ -111,7 +121,7 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
       const filteredRows = raw.data.filter((r: any) => {
         const rowMonth = r["Tháng báo cáo"] || r["_fileMonth"] || "";
         const rowLimit = parseToMonthIndex(rowMonth);
-        return rowLimit <= currentLimit;
+        return rowLimit === currentLimit;
       }).map((row: any) => {
         // Enforce default total payment sign when Reporting Month equals Arising Month
         const rowReportingMonth = String(row["Tháng báo cáo"] || "").trim();
@@ -328,6 +338,7 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
 
       headers = headers!.filter(h => {
         const u = String(h).trim().toUpperCase();
+        if (HOLD_HIDDEN_COLS.includes(u)) return false;
         return u !== "ID" && u !== "_ID" && u !== "UUID" && u !== "ROWID" && u !== "RECORDID" && !u.startsWith("_");
       });
 
@@ -337,52 +348,43 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
         headers.push("Tháng báo cáo");
       }
 
-      const desiredOrder = [
-        "THÁNG BÁO CÁO",
-        "TÊN FILE",
-        "BU",
-        "BUSINESS",
-        "L07",
-        "PHÂN QUYỀN",
-        "MÃ AE",
-        "STK AE",
-        "BENEFICIARY NAME",
-        "FULL NAME",
-        "ID NUMBER",
-        "BANK ACCOUNT NUMBER",
-        "TAX CODE",
-        "CONTRACT NO",
-        "SALES/REHIRING AE GP AMOUNT (FINAL)",
-        "TOTAL PAYMENT",
-        "BANK",
-        "NOTE",
-        "THÁNG PHÁT SINH",
-        "NGHIỆP VỤ",
-        "TÌNH TRẠNG THANH TOÁN",
-        "TRẠNG THÁI",
-        "SHEET SOURCE"
-      ];
-
-      headers.sort((a, b) => {
-        const idxA = desiredOrder.indexOf(a.toUpperCase());
-        const idxB = desiredOrder.indexOf(b.toUpperCase());
-        if (idxA === -1 && idxB === -1) return 0;
-        if (idxA === -1) return 1;
-        if (idxB === -1) return -1;
-        return idxA - idxB;
-      });
-
       const isNoCol = (h: string) => {
         const u = String(h).trim().toUpperCase();
         return u === "NO." || u === "NO" || u === "STT";
       };
+      const isBusCol = (h: string) => {
+        const u = String(h).trim().toUpperCase();
+        return u === "BUSINESS" || u === "BU";
+      };
+      const isL07Col = (h: string) => {
+        const u = String(h).trim().toUpperCase();
+        return u === "L07";
+      };
+      const isNoteCol = (h: string) => {
+        const u = String(h).trim().toUpperCase();
+        return u === "NOTE" || u === "DIỄN GIẢI";
+      };
 
-      const firstNoIdx = headers.findIndex(isNoCol);
-      if (firstNoIdx !== -1) {
-        const actualNo = headers[firstNoIdx];
-        headers = headers.filter((h, idx) => idx === firstNoIdx || !isNoCol(h));
-        headers = [actualNo, ...headers.filter(h => h !== actualNo)];
-      }
+      const noCol = headers.find(isNoCol);
+      const busCol = headers.find(isBusCol);
+      const l07Col = headers.find(isL07Col);
+      const noteCol = headers.find(isNoteCol);
+
+      const remaining = headers.filter(h => !isNoCol(h) && !isBusCol(h) && !isL07Col(h) && !isNoteCol(h));
+
+      const finalHeaders: string[] = [];
+      if (noCol) finalHeaders.push(noCol);
+      else finalHeaders.push("STT");
+
+      if (busCol) finalHeaders.push(busCol);
+      if (l07Col) finalHeaders.push(l07Col);
+
+      finalHeaders.push(...remaining);
+
+      if (noteCol) finalHeaders.push(noteCol);
+      else finalHeaders.push("Note");
+
+      headers = finalHeaders;
 
       return headers
         .map((header: string) => {
@@ -507,7 +509,7 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
             key: header,
             label: h === "STT" ? "No." : header,
             type,
-            hidden: !desiredOrder.includes(h) || h === "STT" || h === "NO.",
+            hidden: HOLD_HIDDEN_COLS.includes(h),
             sortable: header !== "Nghiệp vụ",
             filterable: true,
             readOnly: isReadOnly,
@@ -550,11 +552,11 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
 
     return (
       <div 
-        className="master-ae-table-wrapper hold-dashboard-card flex-1 flex flex-col min-h-0 min-w-0 w-full h-full px-0 py-0 m-0 relative overflow-hidden gap-0 bg-white border border-slate-300 dark:border-slate-700 shadow-xs"
+        className="flex-1 flex flex-col min-h-0 w-full h-full px-0 py-0 m-0 relative overflow-hidden gap-0 bg-white border border-[#e7dbdc] dark:border-[#e7dbdc] shadow-xs z-10"
         style={{ borderRadius: "0px", borderWidth: "1px", borderColor: "#cbd5e1" }}
       >
         {/* Top Toolbar Header with Settings Button */}
-        <div className="px-6 py-2.5 border-b border-slate-300 bg-[#FAF9F6] flex items-center justify-between gap-4 shrink-0 select-none" style={{ borderRadius: "0px" }}>
+        <div className="px-6 py-2.5 border-b border-[#e7dbdc] flex items-center justify-between gap-4 shrink-0 select-none" style={{ borderRadius: "0px", backgroundColor: "var(--table-header-bg, #FAF9F6)" }}>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="font-display font-bold text-xs uppercase tracking-wider text-primary">
@@ -570,8 +572,8 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
             {cameFromBulkPayment && (
               <button
                 onClick={() => onBackToBulkPayment?.()}
-                className="h-8 px-3 mr-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 font-bold text-xs"
-                style={{ borderRadius: "9999px" }}
+                className="h-[30px] px-3 mr-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 font-bold text-xs"
+                style={{ borderRadius: "9999px", height: "30px" }}
                 title="Quay lại Bảng Đối Soát"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
@@ -581,8 +583,8 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
             
             {/* Search Input */}
             <div 
-              className="flex items-center gap-2 h-9 px-3.5 py-1 text-xs w-48 sm:w-64 bg-white border border-slate-200/80 shadow-xs focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all rounded-full"
-              style={{ borderRadius: "24px" }}
+              className="flex items-center gap-2 h-[30px] px-3.5 py-1 text-xs w-48 sm:w-64 bg-white border border-[#e7dbdc]/80 shadow-xs focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all rounded-full"
+              style={{ borderRadius: "24px", height: "30px" }}
             >
               <Search className="w-4 h-4 text-blue-500 shrink-0" />
               <input
@@ -607,8 +609,8 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="w-9 h-9 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center"
-                  style={{ borderRadius: "9999px" }}
+                  className="w-[30px] h-[30px] bg-white border border-[#e7dbdc] text-slate-700 hover:bg-slate-50 transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center"
+                  style={{ borderRadius: "9999px", height: "30px", width: "30px" }}
                   title="Cài đặt & Thao tác"
                 >
                   <Settings className="w-4 h-4 text-slate-600" />
@@ -625,7 +627,7 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
                   >
                     <Plus className="w-4 h-4 text-primary" />
-                    <span className="text-xs font-bold text-slate-700 btn-secret">Thêm dòng mới</span>
+                    <span className="text-xs font-bold text-slate-700">Thêm dòng mới</span>
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem
@@ -677,9 +679,9 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
         </div>
 
           <DataTable
-            className="data-table-wrapper flex-1 min-h-0 min-w-0 overflow-auto custom-scrollbar"
-            scrollContainerStyle={{ borderRadius: "0", border: "none", overflow: 'auto' }}
-            tableStyle={{ width: '100%', minWidth: '600px' }}
+            className="flex-1 !overflow-visible"
+            hideColumnVisibilityToggle={false}
+            scrollContainerStyle={{ borderRadius: "0", border: "none" }}
             stickyFirstColumn={false}
             showPagination={true}
             ref={ref}
@@ -734,12 +736,12 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
           ignoreSavedHiddenColumns={true}
           hideSearch={true}
           showFooter={true}
-          footerClassName="bg-[#FAF9F6] text-slate-800 border-t border-slate-300 font-bold"
+          footerClassName="bg-[var(--table-header-bg,#FAF9F6)] text-slate-800 border-t border-[#e7dbdc] font-bold"
           totalCalculationOverride={(row: any, colKey: string) => {
             if (colKey === "TOTAL PAYMENT" && row._isPastMonthHoldOrCancel) return 0;
             return null;
           }}
-          headerClassName="bg-[#FAF9F6] text-slate-800 border-slate-300 font-bold"
+          headerClassName="bg-[var(--table-header-bg,#FAF9F6)] text-slate-800 border-[#e7dbdc] font-bold"
         />
       </div>
     );

@@ -9,7 +9,13 @@ export interface CustomRule {
   bg?: string;
   color?: string;
   border?: string;
+  borderColor?: string;
+  borderWidth?: string;
   padding?: string;
+  paddingTop?: string;
+  paddingBottom?: string;
+  paddingLeft?: string;
+  paddingRight?: string;
   margin?: string;
   width?: string;
   height?: string;
@@ -312,8 +318,7 @@ export function applyUiSettings(settings: UiSettings, previewRule?: Partial<Cust
     root.style.setProperty("--stripe-color2", settings.stripeColor2);
   if (settings.gridLineColor)
     root.style.setProperty("--grid-line-color", settings.gridLineColor);
-  if (settings.tableHeaderBg)
-    root.style.setProperty("--table-header-bg", settings.tableHeaderBg);
+  root.style.setProperty("--table-header-bg", settings.tableHeaderBg || "#FAF3E8");
 
   if (settings.titleAlign) {
     const [flexAlign, textAlign] = settings.titleAlign.split("|");
@@ -373,6 +378,23 @@ export function applyUiSettings(settings: UiSettings, previewRule?: Partial<Cust
       font-size: ${settings.fontSize || "13px"} !important;
     }
 
+    table th, 
+    .data-table-wrapper th, 
+    .pivot-table-container th, 
+    .master-ae-table-wrapper th,
+    .audit-data-table-wrapper th {
+      text-align: center !important;
+    }
+
+    table th > div, 
+    .data-table-wrapper th > div, 
+    .pivot-table-container th > div, 
+    .master-ae-table-wrapper th > div,
+    .audit-data-table-wrapper th > div {
+      justify-content: center !important;
+      text-align: center !important;
+    }
+
     table thead th, 
     table thead tr, 
     .data-table-wrapper thead th, 
@@ -380,7 +402,20 @@ export function applyUiSettings(settings: UiSettings, previewRule?: Partial<Cust
     .pivot-table-container thead th,
     .pivot-table-container thead tr,
     .master-ae-table-wrapper thead th,
-    .master-ae-table-wrapper thead tr {
+    .master-ae-table-wrapper thead tr,
+    .audit-data-table-wrapper thead th,
+    .audit-data-table-wrapper thead tr,
+    table tfoot,
+    table tfoot tr,
+    table tfoot td,
+    table tfoot th,
+    .data-table-wrapper tfoot td,
+    .master-ae-table-wrapper tfoot td,
+    .pivot-table-container tfoot td,
+    .audit-data-table-wrapper tfoot td,
+    .total-row,
+    .total-row td,
+    .total-row th {
       background-color: ${settings.tableHeaderBg || "#FAF3E8"} !important;
       color: ${settings.accent || "#5D111A"} !important;
     }
@@ -452,7 +487,13 @@ export function applyUiSettings(settings: UiSettings, previewRule?: Partial<Cust
           ${rule.bg ? `background-color: ${rule.bg} !important;` : ""}
           ${rule.color ? `color: ${rule.color} !important; stroke: ${rule.color} !important; fill: currentColor !important;` : ""}
           ${rule.border ? `border: ${rule.border} !important;` : ""}
+          ${rule.borderColor ? `border-color: ${rule.borderColor} !important;` : ""}
+          ${rule.borderWidth ? `border-width: ${rule.borderWidth} !important;` : ""}
           ${rule.padding ? `padding: ${rule.padding} !important;` : ""}
+          ${rule.paddingTop ? `padding-top: ${rule.paddingTop} !important;` : ""}
+          ${rule.paddingBottom ? `padding-bottom: ${rule.paddingBottom} !important;` : ""}
+          ${rule.paddingLeft ? `padding-left: ${rule.paddingLeft} !important;` : ""}
+          ${rule.paddingRight ? `padding-right: ${rule.paddingRight} !important;` : ""}
           ${rule.margin ? `margin: ${rule.margin} !important;` : ""}
           ${rule.width ? `width: ${rule.width} !important;` : ""}
           ${rule.height ? `height: ${rule.height} !important;` : ""}
@@ -493,7 +534,13 @@ export function applyUiSettings(settings: UiSettings, previewRule?: Partial<Cust
         ${previewRule.bg ? `background-color: ${previewRule.bg} !important;` : ""}
         ${previewRule.color ? `color: ${previewRule.color} !important; stroke: ${previewRule.color} !important; fill: currentColor !important;` : ""}
         ${previewRule.border ? `border: ${previewRule.border} !important;` : ""}
+        ${previewRule.borderColor ? `border-color: ${previewRule.borderColor} !important;` : ""}
+        ${previewRule.borderWidth ? `border-width: ${toPx(previewRule.borderWidth)} !important;` : ""}
         ${previewRule.padding ? `padding: ${toPx(previewRule.padding)} !important;` : ""}
+        ${previewRule.paddingTop ? `padding-top: ${toPx(previewRule.paddingTop)} !important;` : ""}
+        ${previewRule.paddingBottom ? `padding-bottom: ${toPx(previewRule.paddingBottom)} !important;` : ""}
+        ${previewRule.paddingLeft ? `padding-left: ${toPx(previewRule.paddingLeft)} !important;` : ""}
+        ${previewRule.paddingRight ? `padding-right: ${toPx(previewRule.paddingRight)} !important;` : ""}
         ${previewRule.margin ? `margin: ${toPx(previewRule.margin)} !important;` : ""}
         ${previewRule.width ? `width: ${toPx(previewRule.width)} !important;` : ""}
         ${previewRule.height ? `height: ${toPx(previewRule.height)} !important;` : ""}
@@ -557,7 +604,21 @@ export async function loadUiSettings(): Promise<UiSettings> {
     }
 
     if (!result.customRules || !Array.isArray(result.customRules)) {
-      result.customRules = [];
+      result.customRules = [...defaultCustomRules];
+    } else {
+      defaultCustomRules.forEach((defRule) => {
+        const idx = result.customRules!.findIndex(
+          (r) => r.selector === defRule.selector || r.id === defRule.id
+        );
+        if (idx === -1) {
+          result.customRules!.push(defRule);
+        } else if (
+          defRule.selector === ".table-container > div.min-h-0" ||
+          defRule.id.startsWith("rule-focus-")
+        ) {
+          result.customRules![idx] = { ...result.customRules![idx], ...defRule };
+        }
+      });
     }
 
     return result;

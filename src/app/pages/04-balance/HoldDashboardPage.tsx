@@ -21,7 +21,7 @@ export function HoldDashboardPage(): React.ReactElement {
 
           {/* Main Content Card matching Master AE and Pivot Sheet styles */}
           <div 
-            className="bg-white dark:bg-card force-light dark:force-dark flex-1 flex flex-col min-h-0 relative z-10 w-full overflow-hidden border border-border/40 shadow-sm hold-dashboard-card"
+            className="bg-white dark:bg-card force-light dark:force-dark flex-1 flex flex-col min-h-0 relative z-10 w-full overflow-hidden border border-[#e7dbdc] shadow-sm hold-dashboard-card"
             style={{ borderRadius: "0px" }}
           >
             <HoldAddDashboard />
