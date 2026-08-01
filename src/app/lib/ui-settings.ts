@@ -606,17 +606,28 @@ export async function loadUiSettings(): Promise<UiSettings> {
     if (!result.customRules || !Array.isArray(result.customRules)) {
       result.customRules = [...defaultCustomRules];
     } else {
+      // Filter out any leaked un-scoped rules that distort Timesheet, Audit, Balance
+      result.customRules = result.customRules.filter((r) => {
+        if (!r || !r.selector) return false;
+        const sel = r.selector.trim();
+        if (
+          sel === ".table-container > div.min-h-0" ||
+          sel.includes("div#root:nth-of-type") ||
+          sel.includes("main > div.min-h-0") ||
+          r.id?.startsWith("rule-focus-") ||
+          r.id === "rule-table-container-div-min-h-0"
+        ) {
+          return false;
+        }
+        return true;
+      });
+
       defaultCustomRules.forEach((defRule) => {
         const idx = result.customRules!.findIndex(
           (r) => r.selector === defRule.selector || r.id === defRule.id
         );
         if (idx === -1) {
           result.customRules!.push(defRule);
-        } else if (
-          defRule.selector === ".table-container > div.min-h-0" ||
-          defRule.id.startsWith("rule-focus-")
-        ) {
-          result.customRules![idx] = { ...result.customRules![idx], ...defRule };
         }
       });
     }

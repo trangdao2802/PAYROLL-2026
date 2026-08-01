@@ -1,9 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect, react-hooks/purity */
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import * as XLSX from "xlsx";
-import { Download, RefreshCw, FileSpreadsheet, Eye, ArrowUpDown, Upload, SlidersHorizontal, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronDown } from "lucide-react";
+import { Download, RefreshCw, FileSpreadsheet, Eye, ArrowUpDown, Upload, SlidersHorizontal, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, Trash2 } from "lucide-react";
 import { useAppData } from "../../lib/contexts/AppDataContext";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
 
 // ==========================================
 // MAPPING DEFINITIONS & LOGIC FROM USER SPEC
@@ -225,7 +232,6 @@ export function PivotSheet() {
     }
     return [];
   });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_sourceInfo, _setSourceInfo] = useState<string>(() => {
     try {
       const cached = localStorage.getItem("pivot_master_processed_data");
@@ -245,6 +251,162 @@ export function PivotSheet() {
   const [hiddenColumns, setHiddenColumns] = useState<Record<string, boolean>>({});
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+  // Column Widths state & resize logic
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
+    try {
+      const cached = localStorage.getItem("pivot_master_column_widths");
+      if (cached) return JSON.parse(cached);
+    } catch {
+      // ignore
+    }
+    return {
+      no: 50,
+      business: 90,
+      charge: 220,
+      grandTotal: 140,
+    };
+  });
+
+  const resizingColRef = useRef<{ colKey: string; startX: number; startWidth: number } | null>(null);
+
+  const handleResizeStart = (e: React.MouseEvent, colKey: string, defaultW = 120) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startWidth = columnWidths[colKey] || defaultW;
+    resizingColRef.current = { colKey, startX, startWidth };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!resizingColRef.current) return;
+      const deltaX = moveEvent.clientX - resizingColRef.current.startX;
+      const newWidth = Math.max(45, resizingColRef.current.startWidth + deltaX);
+      setColumnWidths(prev => {
+        const next = { ...prev, [resizingColRef.current!.colKey]: newWidth };
+        try {
+          localStorage.setItem("pivot_master_column_widths", JSON.stringify(next));
+        } catch {
+          // ignore
+        }
+        return next;
+      });
+    };
+
+    const handleMouseUp = () => {
+      resizingColRef.current = null;
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  };
+
+  // Cell editing state
+  const [editingCell, setEditingCell] = useState<{
+    bu: string;
+    l07: string;
+    field: string;
+  } | null>(null);
+
+  const [editValue, setEditValue] = useState<string>("");
+
+  const handleStartEdit = (bu: string, l07: string, field: string, currentValue: any) => {
+    setEditingCell({ bu, l07, field });
+    setEditValue(currentValue === undefined || currentValue === null ? "" : String(currentValue));
+  };
+
+  const saveToCache = (newGroupedData: any, newTypeColumns = typeColumns) => {
+    try {
+      localStorage.setItem("pivot_master_processed_data", JSON.stringify({
+        groupedData: newGroupedData,
+        typeColumns: newTypeColumns,
+        diagnosticLogs,
+        sourceInfo: _sourceInfo,
+        updatedAt: Date.now()
+      }));
+    } catch (e) {
+      console.warn("Failed saving pivot data to cache", e);
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingCell) return;
+    const { bu, l07, field } = editingCell;
+
+    setGroupedData(prev => {
+      const nextData = JSON.parse(JSON.stringify(prev));
+      if (!nextData[bu] || !nextData[bu][l07]) return prev;
+
+      if (field === "bu") {
+        const newBu = editValue.trim().toUpperCase() || "UNKNOWN";
+        if (newBu !== bu) {
+          if (!nextData[newBu]) nextData[newBu] = {};
+          nextData[newBu][l07] = nextData[bu][l07];
+          delete nextData[bu][l07];
+          if (Object.keys(nextData[bu]).length === 0) {
+            delete nextData[bu];
+          }
+        }
+      } else if (field === "l07") {
+        const newL07 = editValue.trim() || "UNKNOWN";
+        if (newL07 !== l07) {
+          nextData[bu][newL07] = nextData[bu][l07];
+          delete nextData[bu][l07];
+        }
+      } else {
+        const rawNum = editValue.replace(/,/g, "").trim();
+        const numVal = parseFloat(rawNum);
+        const finalVal = isNaN(numVal) ? 0 : numVal;
+        nextData[bu][l07][field] = finalVal;
+      }
+
+      saveToCache(nextData);
+      return nextData;
+    });
+
+    setEditingCell(null);
+    setEditValue("");
+    toast.success("Đã cập nhật dữ liệu ô Pivot Master");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCell(null);
+    setEditValue("");
+  };
+
+  const handleAddRow = () => {
+    const defaultBU = "AHN";
+    const defaultL07 = `CENTER_${Date.now().toString().slice(-4)}`;
+    setGroupedData(prev => {
+      const nextData = JSON.parse(JSON.stringify(prev));
+      if (!nextData[defaultBU]) nextData[defaultBU] = {};
+      nextData[defaultBU][defaultL07] = {};
+      typeColumns.forEach(t => {
+        nextData[defaultBU][defaultL07][t] = 0;
+      });
+      saveToCache(nextData);
+      return nextData;
+    });
+    toast.success(`Đã thêm dòng mới với Center/L07: ${defaultL07}`);
+  };
+
+  const handleDeleteRow = (bu: string, l07: string) => {
+    if (window.confirm(`Bạn có chắc chắn muốn xóa dòng ${bu} - ${l07}?`)) {
+      setGroupedData(prev => {
+        const nextData = JSON.parse(JSON.stringify(prev));
+        if (nextData[bu] && nextData[bu][l07]) {
+          delete nextData[bu][l07];
+          if (Object.keys(nextData[bu]).length === 0) {
+            delete nextData[bu];
+          }
+        }
+        saveToCache(nextData);
+        return nextData;
+      });
+      toast.success(`Đã xóa dòng ${bu} - ${l07}`);
+    }
+  };
   
   const settingsMenuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -735,43 +897,128 @@ export function PivotSheet() {
     if (paginatedRows.length === 0) {
       return (
         <tr>
-          <td colSpan={4 + typeColumns.length} className="py-12 text-center text-slate-400 text-sm bg-white">
+          <td colSpan={5 + typeColumns.length} className="py-12 text-center text-slate-400 text-sm bg-white">
             <span>Chưa có dữ liệu. Vui lòng tải file ở bảng <span className="font-semibold text-slate-600">Cài đặt & Tải file (Master)</span> và nhấn <span className="font-semibold text-slate-600">Xử lý dữ liệu</span>.</span>
           </td>
         </tr>
       );
     }
 
-    return paginatedRows.map((item, idx) => (
-      <tr 
-        key={`${item.bu}-${item.l07}`} 
-        className={`transition-colors border-b border-[#e7dbdc] ${idx % 2 === 0 ? "bg-white" : "bg-[#FAF9F6]/40"} hover:bg-amber-50/40`}
-      >
-        {!hiddenColumns.no && (
-          <td className="py-2 px-2.5 sm:px-3 text-center border-r border-b border-[#e7dbdc] font-mono text-slate-600 text-xs">{item.globalRowId}</td>
-        )}
-        {!hiddenColumns.business && (
-          <td className="py-2 px-3 sm:px-3.5 text-center border-r border-b border-[#e7dbdc] font-bold text-slate-800 text-xs bg-slate-50/50">{item.bu}</td>
-        )}
-        {!hiddenColumns.charge && (
-          <td className="py-2 px-3 sm:px-3.5 text-left border-r border-b border-[#e7dbdc] text-slate-800 font-medium truncate max-w-[240px] text-xs" title={item.l07}>{item.l07}</td>
-        )}
-        {typeColumns.map((type, tIdx) => {
-          if (hiddenColumns[`type_${type}`]) return null;
-          const val = item.values[tIdx];
-          return (
-            <td key={type} className="py-2 px-3 sm:px-3.5 text-right border-r border-b border-[#e7dbdc] font-mono text-slate-700 text-xs">
-              {val === 0 ? <span className="text-slate-300">0</span> : val.toLocaleString('vi-VN')}
+    return paginatedRows.map((item, idx) => {
+      const isEditingThisRow = editingCell?.bu === item.bu && editingCell?.l07 === item.l07;
+
+      return (
+        <tr 
+          key={`${item.bu}-${item.l07}`} 
+          className={`transition-colors border-b border-[#e7dbdc] ${idx % 2 === 0 ? "bg-white" : "bg-[#FAF9F6]/40"} hover:bg-amber-50/40`}
+        >
+          {!hiddenColumns.no && (
+            <td 
+              style={{ width: columnWidths["no"] || 50, minWidth: columnWidths["no"] || 50, maxWidth: columnWidths["no"] || 50 }}
+              className="py-2 px-2 text-center border-r border-b border-[#e7dbdc] font-mono text-slate-600 text-xs relative group/no"
+            >
+              <span>{item.globalRowId}</span>
+              <button
+                onClick={() => handleDeleteRow(item.bu, item.l07)}
+                className="opacity-0 group-hover/no:opacity-100 absolute right-1 top-1/2 -translate-y-1/2 text-rose-500 hover:text-rose-700 transition-opacity p-0.5 cursor-pointer"
+                title="Xóa dòng"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
             </td>
-          );
-        })}
-        {!hiddenColumns.grandTotal && (
-          <td className="py-2 px-3 sm:px-3.5 text-right border-r border-b border-[#e7dbdc] font-bold text-[#781D1D] bg-amber-50/40 font-mono text-xs">
-            {item.rowTotal === 0 ? <span className="text-slate-300">0</span> : Math.round(item.rowTotal).toLocaleString('vi-VN')}
-          </td>
-        )}
-      </tr>
-    ));
+          )}
+          {!hiddenColumns.business && (
+            <td 
+              style={{ width: columnWidths["business"] || 90, minWidth: columnWidths["business"] || 90, maxWidth: columnWidths["business"] || 90 }}
+              onDoubleClick={() => handleStartEdit(item.bu, item.l07, "bu", item.bu)}
+              className="py-2 px-2.5 text-center border-r border-b border-[#e7dbdc] font-bold text-slate-800 text-xs bg-slate-50/50 cursor-pointer hover:bg-amber-100/60 transition-colors"
+              title="Nhấp đúp để sửa Business"
+            >
+              {isEditingThisRow && editingCell.field === "bu" ? (
+                <input
+                  autoFocus
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveEdit();
+                    if (e.key === "Escape") handleCancelEdit();
+                  }}
+                  onBlur={handleSaveEdit}
+                  className="w-full bg-amber-50 border border-amber-400 font-bold text-slate-900 text-xs px-1.5 py-0.5 rounded outline-none focus:ring-1 focus:ring-amber-500 text-center"
+                />
+              ) : (
+                <span>{item.bu}</span>
+              )}
+            </td>
+          )}
+          {!hiddenColumns.charge && (
+            <td 
+              style={{ width: columnWidths["charge"] || 220, minWidth: columnWidths["charge"] || 220, maxWidth: columnWidths["charge"] || 220 }}
+              onDoubleClick={() => handleStartEdit(item.bu, item.l07, "l07", item.l07)}
+              className="py-2 px-2.5 text-left border-r border-b border-[#e7dbdc] text-slate-800 font-medium truncate text-xs cursor-pointer hover:bg-amber-100/60 transition-colors"
+              title={`Nhấp đúp để sửa L07 (${item.l07})`}
+            >
+              {isEditingThisRow && editingCell.field === "l07" ? (
+                <input
+                  autoFocus
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveEdit();
+                    if (e.key === "Escape") handleCancelEdit();
+                  }}
+                  onBlur={handleSaveEdit}
+                  className="w-full bg-amber-50 border border-amber-400 font-medium text-slate-900 text-xs px-1.5 py-0.5 rounded outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              ) : (
+                <span>{item.l07}</span>
+              )}
+            </td>
+          )}
+          {typeColumns.map((type, tIdx) => {
+            if (hiddenColumns[`type_${type}`]) return null;
+            const val = item.values[tIdx];
+            const colKey = `type_${type}`;
+            const w = columnWidths[colKey] || 120;
+            const isEditingCell = isEditingThisRow && editingCell.field === type;
+
+            return (
+              <td 
+                key={type} 
+                style={{ width: w, minWidth: w, maxWidth: w }}
+                onDoubleClick={() => handleStartEdit(item.bu, item.l07, type, val)}
+                className="py-2 px-2.5 text-right border-r border-b border-[#e7dbdc] font-mono text-slate-700 text-xs cursor-pointer hover:bg-amber-100/60 transition-colors"
+                title={`Nhấp đúp để sửa số tiền (${type})`}
+              >
+                {isEditingCell ? (
+                  <input
+                    autoFocus
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSaveEdit();
+                      if (e.key === "Escape") handleCancelEdit();
+                    }}
+                    onBlur={handleSaveEdit}
+                    className="w-full bg-amber-50 border border-amber-400 font-mono text-slate-900 text-xs text-right px-1.5 py-0.5 rounded outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                ) : (
+                  <span>{val === 0 ? <span className="text-slate-300">0</span> : val.toLocaleString('vi-VN')}</span>
+                )}
+              </td>
+            );
+          })}
+          {!hiddenColumns.grandTotal && (
+            <td 
+              style={{ width: columnWidths["grandTotal"] || 140, minWidth: columnWidths["grandTotal"] || 140, maxWidth: columnWidths["grandTotal"] || 140 }}
+              className="py-2 px-2.5 text-right border-r border-b border-[#e7dbdc] font-bold text-[#781D1D] bg-amber-50/40 font-mono text-xs"
+            >
+              {item.rowTotal === 0 ? <span className="text-slate-300">0</span> : Math.round(item.rowTotal).toLocaleString('vi-VN')}
+            </td>
+          )}
+        </tr>
+      );
+    });
   };
 
   return (
@@ -821,64 +1068,92 @@ export function PivotSheet() {
                 {!hiddenColumns.no && (
                   <th 
                     onClick={() => handleSort("no")}
-                    className="py-2.5 px-2.5 sm:px-3 text-center border-r border-b border-[#e7dbdc] min-w-[44px] sticky top-0 cursor-pointer hover:bg-slate-200/60 transition-colors select-none text-[#781D1D]"
-                    style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                    style={{ width: columnWidths["no"] || 50, minWidth: columnWidths["no"] || 50, maxWidth: columnWidths["no"] || 50, backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                    className="py-2.5 px-2 text-center border-r border-b border-[#e7dbdc] sticky top-0 cursor-pointer hover:bg-slate-200/60 transition-colors select-none text-[#781D1D] relative group"
                   >
                     <div className="flex items-center justify-center gap-1">
                       <span>No.</span>
                       <ArrowUpDown className="w-3 h-3 text-[#781D1D]/60 shrink-0" />
                     </div>
+                    <div 
+                      onMouseDown={(e) => handleResizeStart(e, "no", 50)}
+                      className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/60 group-hover:bg-slate-300/60 z-20 select-none"
+                      title="Kéo cạnh phải để thay đổi độ rộng cột"
+                    />
                   </th>
                 )}
                 {!hiddenColumns.business && (
                   <th 
                     onClick={() => handleSort("bu")}
-                    className="py-2.5 px-3 sm:px-3.5 text-center border-r border-b border-[#e7dbdc] min-w-[80px] sticky top-0 cursor-pointer hover:bg-slate-200/60 transition-colors select-none text-[#781D1D]"
-                    style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                    style={{ width: columnWidths["business"] || 90, minWidth: columnWidths["business"] || 90, maxWidth: columnWidths["business"] || 90, backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                    className="py-2.5 px-2.5 text-center border-r border-b border-[#e7dbdc] sticky top-0 cursor-pointer hover:bg-slate-200/60 transition-colors select-none text-[#781D1D] relative group"
                   >
                     <div className="flex items-center justify-center gap-1">
                       <span>Business</span>
                       <ArrowUpDown className="w-3 h-3 text-[#781D1D]/60 shrink-0" />
                     </div>
+                    <div 
+                      onMouseDown={(e) => handleResizeStart(e, "business", 90)}
+                      className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/60 group-hover:bg-slate-300/60 z-20 select-none"
+                      title="Kéo cạnh phải để thay đổi độ rộng cột"
+                    />
                   </th>
                 )}
                 {!hiddenColumns.charge && (
                   <th 
                     onClick={() => handleSort("l07")}
-                    className="py-2.5 px-3 sm:px-3.5 text-center border-r border-b border-[#e7dbdc] min-w-[180px] sticky top-0 cursor-pointer hover:bg-slate-200/60 transition-colors select-none text-[#781D1D]"
-                    style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                    style={{ width: columnWidths["charge"] || 220, minWidth: columnWidths["charge"] || 220, maxWidth: columnWidths["charge"] || 220, backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                    className="py-2.5 px-2.5 text-center border-r border-b border-[#e7dbdc] sticky top-0 cursor-pointer hover:bg-slate-200/60 transition-colors select-none text-[#781D1D] relative group"
                   >
                     <div className="flex items-center justify-center gap-1">
                       <span>L07</span>
                       <ArrowUpDown className="w-3 h-3 text-[#781D1D]/60 shrink-0" />
                     </div>
+                    <div 
+                      onMouseDown={(e) => handleResizeStart(e, "charge", 220)}
+                      className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/60 group-hover:bg-slate-300/60 z-20 select-none"
+                      title="Kéo cạnh phải để thay đổi độ rộng cột"
+                    />
                   </th>
                 )}
                 {typeColumns.map(type => {
                   if (hiddenColumns[`type_${type}`]) return null;
+                  const colKey = `type_${type}`;
+                  const w = columnWidths[colKey] || 120;
                   return (
                     <th 
                       key={type} 
                       onClick={() => handleSort(`type_${type}`)}
-                      className="py-2.5 px-3 sm:px-3.5 text-center border-r border-b border-[#e7dbdc] min-w-[90px] sticky top-0 cursor-pointer hover:bg-slate-200/60 transition-colors select-none text-[#781D1D]"
-                      style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                      style={{ width: w, minWidth: w, maxWidth: w, backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                      className="py-2.5 px-2.5 text-center border-r border-b border-[#e7dbdc] sticky top-0 cursor-pointer hover:bg-slate-200/60 transition-colors select-none text-[#781D1D] relative group"
                     >
                       <div className="flex items-center justify-center gap-1">
-                        <span>{type}</span>
+                        <span className="truncate">{type}</span>
                         <ArrowUpDown className="w-3 h-3 text-[#781D1D]/60 shrink-0" />
                       </div>
+                      <div 
+                        onMouseDown={(e) => handleResizeStart(e, colKey, 120)}
+                        className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/60 group-hover:bg-slate-300/60 z-20 select-none"
+                        title="Kéo cạnh phải để thay đổi độ rộng cột"
+                      />
                     </th>
                   );
                 })}
                 {!hiddenColumns.grandTotal && (
                   <th 
                     onClick={() => handleSort("rowTotal")}
-                    className="py-2.5 px-3 sm:px-3.5 text-center border-r border-b border-[#e7dbdc] min-w-[110px] bg-amber-100/70 text-[#781D1D] font-bold sticky top-0 cursor-pointer hover:bg-amber-200/70 transition-colors select-none"
+                    style={{ width: columnWidths["grandTotal"] || 140, minWidth: columnWidths["grandTotal"] || 140, maxWidth: columnWidths["grandTotal"] || 140 }}
+                    className="py-2.5 px-2.5 text-center border-r border-b border-[#e7dbdc] bg-amber-100/70 text-[#781D1D] font-bold sticky top-0 cursor-pointer hover:bg-amber-200/70 transition-colors select-none relative group"
                   >
                     <div className="flex items-center justify-center gap-1">
                       <span>TỔNG CỘNG</span>
                       <ArrowUpDown className="w-3 h-3 text-[#781D1D] shrink-0" />
                     </div>
+                    <div 
+                      onMouseDown={(e) => handleResizeStart(e, "grandTotal", 140)}
+                      className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/60 group-hover:bg-slate-300/60 z-20 select-none"
+                      title="Kéo cạnh phải để thay đổi độ rộng cột"
+                    />
                   </th>
                 )}
               </tr>
@@ -893,37 +1168,42 @@ export function PivotSheet() {
               <tr style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}>
                 {!hiddenColumns.no && (
                   <td 
-                    className="py-2.5 px-2.5 sm:px-3 text-center border-r border-t border-b border-[#e7dbdc]"
-                    style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                    style={{ width: columnWidths["no"] || 50, minWidth: columnWidths["no"] || 50, maxWidth: columnWidths["no"] || 50, backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                    className="py-2.5 px-2.5 text-center border-r border-t border-b border-[#e7dbdc]"
                   ></td>
                 )}
                 {!hiddenColumns.business && (
                   <td 
-                    className="py-2.5 px-3 sm:px-3.5 text-center border-r border-t border-b border-[#e7dbdc]"
-                    style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                    style={{ width: columnWidths["business"] || 90, minWidth: columnWidths["business"] || 90, maxWidth: columnWidths["business"] || 90, backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                    className="py-2.5 px-2.5 text-center border-r border-t border-b border-[#e7dbdc]"
                   ></td>
                 )}
                 {!hiddenColumns.charge && (
                   <td 
-                    className="py-2.5 px-3 sm:px-3.5 text-left border-r border-t border-b border-[#e7dbdc] uppercase tracking-wide font-bold text-[#781D1D]"
-                    style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                    style={{ width: columnWidths["charge"] || 220, minWidth: columnWidths["charge"] || 220, maxWidth: columnWidths["charge"] || 220, backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                    className="py-2.5 px-2.5 text-left border-r border-t border-b border-[#e7dbdc] uppercase tracking-wide font-bold text-[#781D1D]"
                   >TỔNG CỘNG ({totalRowsCount})</td>
                 )}
                 {grandTotals.map((v, idx) => {
                   const type = typeColumns[idx];
                   if (hiddenColumns[`type_${type}`]) return null;
+                  const colKey = `type_${type}`;
+                  const w = columnWidths[colKey] || 120;
                   return (
                     <td 
                       key={`grand-${idx}`} 
-                      className="py-2.5 px-3 sm:px-3.5 text-right border-r border-t border-b border-[#e7dbdc] text-[#781D1D] font-mono font-bold"
-                      style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                      style={{ width: w, minWidth: w, maxWidth: w, backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+                      className="py-2.5 px-2.5 text-right border-r border-t border-b border-[#e7dbdc] text-[#781D1D] font-mono font-bold"
                     >
                       {v === 0 ? "0" : Math.round(v).toLocaleString('vi-VN')}
                     </td>
                   );
                 })}
                 {!hiddenColumns.grandTotal && (
-                  <td className="py-2.5 px-3 sm:px-3.5 text-right border-r border-t border-b border-[#e7dbdc] text-[#781D1D] font-black bg-amber-100/90 font-mono">
+                  <td 
+                    style={{ width: columnWidths["grandTotal"] || 140, minWidth: columnWidths["grandTotal"] || 140, maxWidth: columnWidths["grandTotal"] || 140 }}
+                    className="py-2.5 px-2.5 text-right border-r border-t border-b border-[#e7dbdc] text-[#781D1D] font-black bg-amber-100/90 font-mono"
+                  >
                     {superGrandTotal === 0 ? "0" : Math.round(superGrandTotal).toLocaleString('vi-VN')}
                   </td>
                 )}
@@ -933,28 +1213,50 @@ export function PivotSheet() {
         )}
       </div>
 
-      {/* FOOTER BAR WITH PAGE SIZE, SETTINGS ICON MENU, AND PAGINATION */}
+      {/* FOOTER BAR WITH PAGE SIZE MATCHING HOLD AE_MASTER, SETTINGS ICON MENU, AND PAGINATION */}
       <div 
-        className="px-4 py-[12px] border-t border-[#e7dbdc] flex flex-wrap items-center justify-between gap-4 text-xs text-slate-700"
+        className="px-4 py-[10px] border-t border-[#e7dbdc] flex flex-wrap items-center justify-between gap-4 text-xs text-slate-700"
         style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
       >
-        {/* LEFT SIDE: PAGE SIZE DROPDOWN & SETTINGS ICON BUTTON */}
-        <div className="flex items-center gap-2 relative">
-          <div className="relative">
-            <select
-              value={rowsPerPage}
-              onChange={(e) => {
-                setRowsPerPage(Number(e.target.value));
+        {/* LEFT SIDE: PAGE SIZE DROPDOWN MATCHING HOLD AE_MASTER & SETTINGS ICON BUTTON */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-medium text-slate-600 whitespace-nowrap">
+              Hiển thị:
+            </span>
+            <Select
+              value={rowsPerPage >= 99999 ? "all" : String(rowsPerPage)}
+              onValueChange={(val) => {
+                setRowsPerPage(val === "all" ? 999999 : Number(val));
                 setCurrentPage(1);
               }}
-              className="appearance-none bg-white border border-[#e7dbdc] rounded-lg pl-2.5 pr-6 text-[9.5px] font-extrabold uppercase tracking-widest text-slate-600 focus:outline-none focus:ring-1 focus:ring-[#781D1D]/20 shadow-3xs cursor-pointer h-6.5"
             >
-              <option value={50} className="text-[10px] text-slate-700 font-semibold bg-white">50 dòng</option>
-              <option value={100} className="text-[10px] text-slate-700 font-semibold bg-white">100 dòng</option>
-              <option value={10000} className="text-[10px] text-slate-700 font-semibold bg-white">Tất cả</option>
-            </select>
-            <ChevronDown className="w-3 h-3 text-slate-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <SelectTrigger 
+                className="h-[28px] rounded-full px-3 text-[11px] font-bold text-slate-800 border-[#e7dbdc] bg-white hover:bg-slate-50 transition-colors shadow-2xs"
+                style={{ width: "110px", height: "28px" }}
+              >
+                <SelectValue placeholder="Chọn..." />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-[#e7dbdc] z-[99999] opacity-100 shadow-xl rounded-xl">
+                <SelectItem value="10" className="text-[12px] font-bold cursor-pointer">10 dòng</SelectItem>
+                <SelectItem value="20" className="text-[12px] font-bold cursor-pointer">20 dòng</SelectItem>
+                <SelectItem value="50" className="text-[12px] font-bold cursor-pointer">50 dòng</SelectItem>
+                <SelectItem value="100" className="text-[12px] font-bold cursor-pointer">100 dòng</SelectItem>
+                <SelectItem value="200" className="text-[12px] font-bold cursor-pointer">200 dòng</SelectItem>
+                <SelectItem value="500" className="text-[12px] font-bold cursor-pointer">500 dòng</SelectItem>
+                <SelectItem value="all" className="text-[12px] font-bold cursor-pointer">Tất cả</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
+          <button
+            onClick={handleAddRow}
+            className="h-[28px] px-3 bg-white hover:bg-slate-50 text-slate-700 border border-[#e7dbdc] rounded-full transition-all shadow-2xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 font-bold text-xs"
+            title="Thêm dòng mới vào Pivot Master"
+          >
+            <Plus className="w-3.5 h-3.5 text-primary" />
+            <span>Thêm dòng</span>
+          </button>
 
           {/* SETTINGS / ACTION MENU BUTTON IN FOOTER */}
           <div className="relative" ref={settingsMenuRef}>

@@ -772,7 +772,7 @@ export function UiSettingsModal({
                             { label: "Thanh bên (Sidebar)", val: "#app-sidebar, .side-panel" },
                             { label: "Vùng làm việc (Main Content)", val: "#main-content, .content-area" },
                             { label: "Vùng chứa Bảng (Table)", val: ".table-container, .data-table-wrapper" },
-                            { label: "Vùng chứa trong Bảng (Table Div)", val: ".table-container > div.min-h-0" },
+                            { label: "Vùng chứa trong Bảng (Table Div)", val: ".master-ae-table-wrapper > div.min-h-0" },
                             { label: "Tiêu đề Bảng (Header TH)", val: ".table-container thead th, .data-table-wrapper thead th" },
                             { label: "Thẻ Thống kê (Stat Card)", val: ".stat-card, .stat-group" },
                             { label: "Nút bấm chính (Button)", val: "button.btn-primary, .btn-primary" },
