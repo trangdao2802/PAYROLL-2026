@@ -806,7 +806,7 @@ export function HoldAddDashboard() {
       if (Math.abs(absVal - targetDiff) < 10) {
         list.push({
           type: "Hold/Add Row",
-          label: `Bảng Hold AE (Dòng #${idx + 1}): AE "${r["Full name"] || "N/A"}" có số tiền ${val.toLocaleString()} VND (Bản ghi ở nguồn Hold đang ${val < 0 ? "trừ" : "cộng"} số tiền này).`,
+          label: `Bảng Hold AE (Dòng #${idx + 1}): AE "${r["Full name"] || "N/A"}" có số tiền ${val.toLocaleString()} (Bản ghi ở nguồn Hold đang ${val < 0 ? "trừ" : "cộng"} số tiền này).`,
           amount: val
         });
       }
@@ -819,7 +819,7 @@ export function HoldAddDashboard() {
       if (Math.abs(absVal - targetDiff) < 10) {
         list.push({
           type: "Bank North Row",
-          label: `Bảng Bank North (Dòng #${idx + 1}): AE "${r["Full name"] || r["Beneficiary Name"] || "N/A"}" có số tiền thanh toán thực tế là ${val.toLocaleString()} VND.`,
+          label: `Bảng Bank North (Dòng #${idx + 1}): AE "${r["Full name"] || r["Beneficiary Name"] || "N/A"}" có số tiền thanh toán thực tế là ${val.toLocaleString()}.`,
           amount: val
         });
       }
@@ -2374,7 +2374,7 @@ export function HoldAddDashboard() {
                     <p className="text-xs text-rose-800" style={{ lineHeight: "1.4" }}>
                       {!isMonthMatched
                         ? `Tháng được chọn trên sidebar (${selectedMonth}) chưa trùng khớp với bất kỳ dòng THÁNG nào của file AE tải lên (${fileMonths.join(", ") || "Chưa tải file"}).`
-                        : `Sự chênh lệch tài chính giữa (Sheet 1 + Hoạt động Hold AE) & Bank North AE khác 0 (Chênh lệch hiện tại: ${fmt(bulkPaymentDiff)} VND).`}
+                        : `Sự chênh lệch tài chính giữa (Sheet 1 + Hoạt động Hold AE) & Bank North AE khác 0 (Chênh lệch hiện tại: ${fmt(bulkPaymentDiff)}).`}
                     </p>
                   </div>
                 </div>

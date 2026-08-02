@@ -48,6 +48,7 @@ import {
   ExternalLink,
   Zap,
   LayoutDashboard,
+  Columns2,
 } from "lucide-react";
 import {
   parseMoneyToNumber,
@@ -1972,11 +1973,6 @@ export function BulkPayment({
                       >
                         {formatMoneyVND(totalPayoutSum).replace(" ₫", "")}
                       </p>
-                      <div style={{ fontSize: "10px" }}>
-                        <span className="font-black text-slate-500 uppercase tracking-widest">
-                          VND
-                        </span>
-                      </div>
                     </div>
                   </div>
 
@@ -2122,7 +2118,7 @@ export function BulkPayment({
                                 🎀 GROSS PAY:
                               </span>
                               <span className="font-bold text-slate-800 font-mono text-[11px] tracking-tight">
-                                {formatMoneyVND(sheet1Val).replace(" ₫", "")} VND
+                                {formatMoneyVND(sheet1Val).replace(" ₫", "")}
                               </span>
                             </div>
 
@@ -2134,7 +2130,7 @@ export function BulkPayment({
                                 </span>
                                 <span className={`font-bold font-mono text-[11px] tracking-tight ${deductionsSum >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
                                   {deductionsSum >= 0 ? "+" : ""}
-                                  {formatMoneyVND(deductionsSum).replace(" ₫", "")} VND
+                                  {formatMoneyVND(deductionsSum).replace(" ₫", "")}
                                 </span>
                               </div>
 
@@ -2146,8 +2142,7 @@ export function BulkPayment({
                                   <span className={`font-mono font-bold ${holdOnly !== 0 ? "text-amber-600" : "text-slate-400"}`}>
                                     {holdOnly !== 0
                                       ? `-${formatMoneyVND(Math.abs(holdOnly)).replace(" ₫", "")}`
-                                      : "0"}{" "}
-                                    VND
+                                      : "0"}
                                   </span>
                                 </div>
 
@@ -2158,8 +2153,7 @@ export function BulkPayment({
                                   <span className={`font-mono font-bold ${addOnly !== 0 ? "text-emerald-600" : "text-slate-400"}`}>
                                     {addOnly !== 0
                                       ? `+${formatMoneyVND(Math.abs(addOnly)).replace(" ₫", "")}`
-                                      : "0"}{" "}
-                                    VND
+                                      : "0"}
                                   </span>
                                 </div>
 
@@ -2170,8 +2164,7 @@ export function BulkPayment({
                                   <span className={`font-mono font-bold ${bonusOnly !== 0 ? "text-emerald-600" : "text-slate-400"}`}>
                                     {bonusOnly !== 0
                                       ? `+${formatMoneyVND(Math.abs(bonusOnly)).replace(" ₫", "")}`
-                                      : "0"}{" "}
-                                    VND
+                                      : "0"}
                                   </span>
                                 </div>
 
@@ -2184,8 +2177,7 @@ export function BulkPayment({
                                       -
                                       {formatMoneyVND(
                                         Math.abs(cancelOnly),
-                                      ).replace(" ₫", "")}{" "}
-                                      VND
+                                      ).replace(" ₫", "")}
                                     </span>
                                   </div>
                                 )}
@@ -2197,8 +2189,7 @@ export function BulkPayment({
                                 🎀 NET PAY:
                               </span>
                               <span className="text-xs font-black text-slate-950 font-mono tracking-tight">
-                                {formatMoneyVND(finalTotal).replace(" ₫", "")}{" "}
-                                VND
+                                {formatMoneyVND(finalTotal).replace(" ₫", "")}
                               </span>
                             </div>
                           </div>
@@ -2917,9 +2908,9 @@ export function BulkPayment({
 
       {/* Right Panel - Data View */}
       <div
-        className="flex-1 bg-white border border-slate-300 dark:border-slate-700 rounded-xl flex flex-col overflow-hidden min-h-0 shadow-xs relative pb-0 h-full"
+        className="flex-1 bg-white border border-slate-300 dark:border-slate-700 rounded-none flex flex-col overflow-hidden min-h-0 shadow-xs relative pb-0 h-full"
         style={{
-          borderRadius: "12px",
+          borderRadius: "0px",
           borderWidth: "1px",
           borderColor: "#cbd5e1",
           marginLeft: "0px",
@@ -2931,104 +2922,133 @@ export function BulkPayment({
       >
         {/* Interactive Top bar with title, 📋 toggle button, tabs, and general actions */}
         <div
-          className="px-3 border-b border-slate-200/80 flex flex-row items-center justify-between gap-3 shrink-0 select-none box-border"
+          className="px-4 border-b border-[#cbd5e1] flex items-center justify-between gap-4 shrink-0 select-none bg-white"
           style={{
-            height: "73px",
-            minHeight: "73px",
-            maxHeight: "73px",
-            backgroundColor: "#F5F4F5",
+            height: "56px",
           }}
         >
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0">
+            {/* Sidebar toggle button with premium styling */}
             <button
               onClick={() => setShowLeftCard(!showLeftCard)}
-              className={`w-7 h-7 rounded-lg transition-all cursor-pointer flex items-center justify-center active:scale-95 shadow-2xs ${
+              className={`w-7 h-7 rounded-full transition-all cursor-pointer flex items-center justify-center active:scale-95 shadow-3xs border ${
                 showLeftCard
-                  ? "bg-white text-[#781D1D] border border-[#e7dbdc] hover:bg-rose-50/70"
-                  : "bg-[#781D1D] text-white border border-[#781D1D] shadow-xs hover:bg-[#600032]"
+                  ? "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                  : "bg-primary text-white border-primary hover:bg-primary-hover"
               }`}
               title={
                 showLeftCard ? "Ẩn bảng điều khiển" : "Hiện bảng điều khiển"
               }
             >
-              <LayoutDashboard className="w-4 h-4 shrink-0" />
+              <LayoutDashboard className="w-3.5 h-3.5 shrink-0" />
             </button>
 
+            <div className="flex items-center justify-center rounded-full border border-slate-200 bg-white shadow-3xs w-7 h-7 p-0 shrink-0">
+              <Columns2 className="w-3.5 h-3.5 text-primary" />
+            </div>
+
+            <h3 className="font-bold uppercase tracking-wider text-primary text-[11px] font-display">
+              {rightPanelTab === "table"
+                ? "BẢNG KÊ CHUYỂN KHOẢN NGÂN HÀNG (BANK EXPORT)"
+                : rightPanelTab === "reconcile"
+                  ? "BẢNG ĐỐI CHIẾU VÀ ĐỐI SOÁT GIAO DỊCH"
+                  : "BÁO CÁO PHÂN TÍCH VÀ TRỰC QUAN HÓA (ANALYTICS)"}
+            </h3>
+
             {displayBankExportData.length > 0 && (
-              <div className="flex items-center ml-1">
-                <div className="flex items-center relative">
-                  <select
-                    value={rightPanelTab}
-                    onChange={(e) => {
-                      setRightPanelTab(e.target.value as any);
-                      localStorage.setItem(
-                        "bulk_payment_right_tab",
-                        e.target.value,
-                      );
+              <div className="flex items-center ml-2">
+                <div className="flex items-center bg-slate-100/80 rounded-full p-0.5 border border-slate-200/60 shadow-3xs">
+                  <button
+                    onClick={() => {
+                      setRightPanelTab("table");
+                      localStorage.setItem("bulk_payment_right_tab", "table");
                     }}
-                    className="appearance-none bg-transparent hover:bg-transparent border-0 rounded-none pl-1 pr-6 py-1 text-[11px] font-extrabold uppercase tracking-widest text-slate-700 focus:outline-none transition-all cursor-pointer h-7 shadow-none"
+                    className={`px-3 py-1 text-[9.5px] font-black uppercase tracking-wider rounded-full transition-all duration-200 cursor-pointer ${
+                      rightPanelTab === "table"
+                        ? "bg-white text-slate-900 shadow-3xs"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
                   >
-                    <option 
-                      value="table"
-                      className="font-semibold text-[10px] text-slate-800 bg-white"
-                    >
-                      TRANSACTIONS
-                    </option>
-                    <option 
-                      value="reconcile"
-                      className="font-semibold text-[10px] text-slate-800 bg-white"
-                    >
-                      ĐỐI SOÁT{" "}
-                      {reconciliationAudit.varianceCount +
-                        reconciliationAudit.missingInfoCount >
-                      0
-                        ? `(${reconciliationAudit.varianceCount + reconciliationAudit.missingInfoCount})`
-                        : ""}
-                    </option>
-                    <option 
-                      value="visuals"
-                      className="font-semibold text-[10px] text-slate-800 bg-white"
-                    >
-                      ANALYTICS
-                    </option>
-                  </select>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-600 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    Bảng Kê
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRightPanelTab("reconcile");
+                      localStorage.setItem("bulk_payment_right_tab", "reconcile");
+                    }}
+                    className={`px-3 py-1 text-[9.5px] font-black uppercase tracking-wider rounded-full transition-all duration-200 cursor-pointer ${
+                      rightPanelTab === "reconcile"
+                        ? "bg-white text-slate-900 shadow-3xs"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    Đối Soát
+                    {reconciliationAudit.varianceCount + reconciliationAudit.missingInfoCount > 0 
+                      ? ` (${reconciliationAudit.varianceCount + reconciliationAudit.missingInfoCount})`
+                      : ""}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRightPanelTab("visuals");
+                      localStorage.setItem("bulk_payment_right_tab", "visuals");
+                    }}
+                    className={`px-3 py-1 text-[9.5px] font-black uppercase tracking-wider rounded-full transition-all duration-200 cursor-pointer ${
+                      rightPanelTab === "visuals"
+                        ? "bg-white text-slate-900 shadow-3xs"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    Phân Tích
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Key statistics block perfectly matching the MasterAE style */}
+            {displayBankExportData.length > 0 && rightPanelTab === "table" && (
+              <div className="flex items-center gap-4 mr-1">
+                <div className="flex flex-col items-end">
+                  <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter whitespace-nowrap">BẢN GHI</span>
+                  <span className="text-xs font-black text-slate-800 leading-tight">{displayBankExportData.length}</span>
+                </div>
+                <div className="flex flex-col items-end border-l border-slate-200 pl-4">
+                  <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter whitespace-nowrap">TỔNG ACC (CẦN CHI)</span>
+                  <div className="bg-slate-50 px-2 py-0.5 rounded border border-slate-100/80 mt-0.5">
+                    <span className="text-xs font-black text-slate-800 tracking-tight font-mono">{formatMoneyVND(calculationSummary.calculatedTotal).replace(" ₫", "")}đ</span>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end border-l border-slate-200 pl-4">
+                  <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter whitespace-nowrap">THỰC TẾ (BANK)</span>
+                  <div className="bg-slate-50 px-2 py-0.5 rounded border border-slate-100/80 mt-0.5">
+                    <span className="text-xs font-black text-slate-800 tracking-tight font-mono">{formatMoneyVND(bankExportTotal).replace(" ₫", "")}đ</span>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* General Summary Stats - Compacted */}
-            {displayBankExportData.length > 0 && rightPanelTab === "table" && (
-              <div
-                className="hidden lg:flex items-center gap-5 border-l border-slate-200 pl-5 h-8 ml-2"
-                style={{ width: "300.295px", paddingRight: "20px" }}
-              >
-                <div className="flex flex-col leading-tight">
-                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
-                    Bulk Payment (Bank)
-                  </span>
-                  <span className="text-[11px] font-black font-mono text-sky-600">
-                    {formatMoneyVND(bankExportTotal).replace(" ₫", "")}
+            {displayBankExportData.length > 0 && rightPanelTab === "reconcile" && (
+              <div className="flex items-center gap-4 mr-1">
+                <div className="flex flex-col items-end">
+                  <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter whitespace-nowrap">CẦN XỬ LÝ</span>
+                  <span className="text-xs font-black text-slate-800 leading-tight">
+                    {reconciliationAudit.varianceCount + reconciliationAudit.missingInfoCount}
                   </span>
                 </div>
-                <div className="flex flex-col leading-tight">
-                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
-                    Total ACC
-                  </span>
-                  <span className="text-[11px] font-black font-mono text-emerald-600">
-                    {formatMoneyVND(calculationSummary.calculatedTotal).replace(
-                      " ₫",
-                      "",
-                    )}
-                  </span>
+                <div className="flex flex-col items-end border-l border-slate-200 pl-4">
+                  <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter whitespace-nowrap">TỔNG LỆCH</span>
+                  <div className="bg-slate-50 px-2 py-0.5 rounded border border-slate-100/80 mt-0.5">
+                    <span className={`text-xs font-black tracking-tight font-mono ${reconciliationAudit.netVariance === 0 ? "text-slate-800" : "text-rose-600"}`}>
+                      {formatMoneyVND(reconciliationAudit.netVariance).replace(" ₫", "")}đ
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col leading-tight">
-                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
-                    Records
-                  </span>
-                  <span className="text-[11px] font-black font-mono text-slate-700">
-                    {displayBankExportData.length}
-                  </span>
+                <div className="flex flex-col items-end border-l border-slate-200 pl-4">
+                  <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter whitespace-nowrap">THỰC TẾ (BANK)</span>
+                  <div className="bg-slate-50 px-2 py-0.5 rounded border border-slate-100/80 mt-0.5">
+                    <span className="text-xs font-black text-slate-800 tracking-tight font-mono">{formatMoneyVND(reconciliationAudit.totalActualSum).replace(" ₫", "")}đ</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -3783,9 +3803,6 @@ export function BulkPayment({
                                 0,
                               ),
                             ).replace(" ₫", "")}
-                            <span className="text-xs ml-1 font-sans font-bold opacity-60 italic">
-                              VND
-                            </span>
                           </span>
                         </div>
                         <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100 shadow-sm shadow-rose-500/5">

@@ -342,7 +342,7 @@ const ColumnFilter = ({
           className={`flex items-center justify-center p-0.5 rounded transition-all shrink-0 ${
             isFiltered
               ? "bg-amber-500 text-white font-extrabold ring-2 ring-amber-300 shadow-sm scale-110"
-              : "text-foreground/60 hover:text-accent hover:bg-muted/60"
+              : "text-foreground/30 opacity-50 hover:opacity-100 hover:text-accent hover:bg-muted/60"
           }`}
           onClick={(e) => {
             e.stopPropagation();
@@ -2653,7 +2653,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
           </div>
         )}
         <div
-          id="table-card"
+          id="table-card-inner"
           ref={tableRef}
           className={`table-container data-table-wrapper flex flex-col flex-1 min-h-0 w-full max-w-full outline-none overflow-hidden relative ${className || ""} ${hasActiveFilters ? "bg-amber-50/[0.005]" : ""}`}
           style={
@@ -3153,28 +3153,15 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
             {/* Footer — Floating Card Style mimicking payment page */}
           {showPagination && (
           <div
-            className="flex items-center justify-between shrink-0 z-40 relative table-footer-pagination"
+            className="flex items-center justify-between shrink-0 z-40 relative table-footer-pagination border-t border-[#cbd5e1] bg-white px-3"
             style={{
-              height: "44.9802px",
-              borderWidth: "0px",
-              borderStyle: "none",
-              borderRadius: "0px",
-              borderColor: "transparent",
-              backgroundColor: "var(--table-header-bg, var(--secondary, #FAF9F6))",
-              marginTop: "0px",
-              marginBottom: "0px",
-              marginRight: "0px",
-              marginLeft: "0px",
-              boxShadow: "none",
-              paddingRight: "3px",
-              paddingLeft: "3px",
-              paddingTop: "3px",
-              paddingBottom: "3px"
+              height: "42px",
+              minHeight: "42px",
             }}
           >
-            <div className="flex items-center gap-3 px-3" style={{ paddingLeft: "12px" }}>
+            <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5 hidden md:flex">
-                <span className="text-[11px] font-medium text-foreground/60 whitespace-nowrap ml-2">
+                <span className="text-[11px] font-medium text-slate-500 whitespace-nowrap">
                   Hiển thị:
                 </span>
                 <Select
@@ -3185,15 +3172,15 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                     scrollContainerRef.current?.scrollTo({ top: 0 });
                   }}
                 >
-                  <SelectTrigger className="rounded-[15px] px-2 text-[12px] font-bold text-foreground border-[#e7dbdc] bg-card hover:bg-muted transition-colors shadow-sm" style={{ height: "20px", width: "100.988px" }}>
+                  <SelectTrigger className="rounded-md px-2.5 text-[11px] font-bold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-2xs h-6 w-[100px]">
                     <SelectValue placeholder="Chọn..." />
                   </SelectTrigger>
-                  <SelectContent className="bg-[var(--popover)] border-[#e7dbdc] z-[99999] opacity-100">
-                    <SelectItem value="10" className="text-[12px] font-bold">10 dòng</SelectItem>
-                    <SelectItem value="20" className="text-[12px] font-bold">20 dòng</SelectItem>
-                    <SelectItem value="50" className="text-[12px] font-bold">50 dòng</SelectItem>
-                    <SelectItem value="100" className="text-[12px] font-bold">100 dòng</SelectItem>
-                    <SelectItem value="all" className="text-[12px] font-bold">Tất cả</SelectItem>
+                  <SelectContent className="bg-[var(--popover)] border-[#cbd5e1] z-[99999] opacity-100">
+                    <SelectItem value="10" className="text-[11px] font-bold">10 dòng</SelectItem>
+                    <SelectItem value="20" className="text-[11px] font-bold">20 dòng</SelectItem>
+                    <SelectItem value="50" className="text-[11px] font-bold">50 dòng</SelectItem>
+                    <SelectItem value="100" className="text-[11px] font-bold">100 dòng</SelectItem>
+                    <SelectItem value="all" className="text-[11px] font-bold">Tất cả</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -3203,11 +3190,11 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="flex items-center justify-center rounded-full border border-slate-200/90 bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-900 transition-all shadow-xs cursor-pointer w-7 h-7 p-0 active:scale-95 shrink-0"
+                    className="flex items-center justify-center rounded-full border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-all shadow-3xs cursor-pointer w-[26px] h-[26px] p-0 active:scale-95 shrink-0"
                     title={`Ẩn/Hiện Cột (${visibleColumns.length + (isRowNumberVisible ? 1 : 0)}/${allDropdownColumns.length})`}
                     aria-label="Ẩn/Hiện Cột"
                   >
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-slate-600" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" side="top" className="w-60 max-h-[350px] overflow-y-auto bg-popover dark:bg-[var(--card)] opacity-100 z-[99999] border-[#e7dbdc] shadow-2xl p-1 rounded-xl">
@@ -3257,21 +3244,10 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
               )}
 
               <div 
-                className="flex items-center gap-1.5 hidden md:flex border-l border-slate-100 pl-3"
-                style={{
-                  marginRight: "0px",
-                  marginBottom: "0px",
-                  marginTop: "3px",
-                  height: "36.9953px"
-                }}
+                className="flex items-center gap-1.5 hidden md:flex border-l border-slate-200 pl-3 h-5"
               >
                 <SaveStatusCard 
-                  className="!px-1.5 !py-0.5 !rounded-[10px] bg-slate-50 border border-[#e7dbdc]/80 shadow-none gap-1 ml-1"
-                  style={{
-                    paddingLeft: "0px",
-                    paddingRight: "0px",
-                    marginRight: "12px"
-                  }}
+                  className="!px-1.5 !py-0.5 !rounded-md bg-slate-50 border border-slate-200 shadow-none gap-1 ml-1"
                   textStyle={{
                     fontFamily: "inherit",
                     fontWeight: "600",
@@ -3288,7 +3264,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
             </div>
 
             {/* Pagination Controls - Direct, high-fidelity tactile buttons */}
-            <div className="flex items-center gap-1 px-3">
+            <div className="flex items-center gap-1 pl-3 border-l border-slate-200 h-7">
               <button
                 type="button"
                 disabled={currentPage === 1}
@@ -3296,7 +3272,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   setCurrentPage(1);
                   scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="flex items-center justify-center w-6 h-6 rounded-md border border-[#e7dbdc] bg-white text-foreground hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 cursor-pointer select-none"
+                className="flex items-center justify-center w-7 h-7 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-3xs active:scale-95 cursor-pointer select-none"
                 title="Trang đầu"
               >
                 <ChevronsLeft className="w-3.5 h-3.5" />
@@ -3308,13 +3284,13 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   setCurrentPage((p) => Math.max(1, p - 1));
                   scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="flex items-center justify-center w-6 h-6 rounded-md border border-[#e7dbdc] bg-white text-foreground hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 cursor-pointer select-none"
+                className="flex items-center justify-center w-7 h-7 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-3xs active:scale-95 cursor-pointer select-none"
                 title="Trang trước"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
               
-              <span className="text-[10px] font-bold text-foreground/75 px-1.5 font-mono whitespace-nowrap text-center min-w-[70px]">
+              <span className="text-[10.5px] font-black text-slate-700/80 px-3 font-display uppercase tracking-widest whitespace-nowrap text-center min-w-[90px]">
                 TRANG {currentPage} / {totalPages || 1}
               </span>
 
@@ -3325,7 +3301,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   setCurrentPage((p) => Math.min(totalPages, p + 1));
                   scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="flex items-center justify-center w-6 h-6 rounded-md border border-[#e7dbdc] bg-white text-foreground hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 cursor-pointer select-none"
+                className="flex items-center justify-center w-7 h-7 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-3xs active:scale-95 cursor-pointer select-none"
                 title="Trang sau"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -3337,7 +3313,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                   setCurrentPage(totalPages);
                   scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="flex items-center justify-center w-6 h-6 rounded-md border border-[#e7dbdc] bg-white text-foreground hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 cursor-pointer select-none"
+                className="flex items-center justify-center w-7 h-7 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed transition-all shadow-3xs active:scale-95 cursor-pointer select-none"
                 title="Trang cuối"
               >
                 <ChevronsRight className="w-3.5 h-3.5" />

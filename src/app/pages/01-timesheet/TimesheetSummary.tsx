@@ -1074,9 +1074,9 @@ export default function TimesheetSummaryPage({ onBack }: TimesheetSummaryPagePro
             <div style={{ paddingTop: "0px", paddingBottom: "0px" }}>
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <h1 className="font-normal font-serif tracking-tight flex items-baseline gap-1" style={{ lineHeight: "1.2", fontSize: "26px", color: "#4c504a" }}>
-                  Data{" "}
-                  <span className="not-italic font-script text-[#c09e9a] lowercase inline-block" style={{ fontFamily: "Waterfall, cursive", lineHeight: "1", fontSize: "33px", fontWeight: "normal" }}>
-                    summary
+                  Cài đặt{" "}
+                  <span className="not-italic font-script text-[#c09e9a] inline-block" style={{ fontFamily: "Waterfall, cursive", lineHeight: "1", fontSize: "33px", fontWeight: "normal" }}>
+                    & Tải file
                   </span>
                   <span 
                     className="tracking-tight" 
@@ -1089,7 +1089,7 @@ export default function TimesheetSummaryPage({ onBack }: TimesheetSummaryPagePro
                       fontSize: "23px"
                     }}
                   >
-                    & Source
+                    (Timesheet)
                   </span>
                 </h1>
               </div>

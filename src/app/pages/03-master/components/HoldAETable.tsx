@@ -2,7 +2,7 @@
 import React, { useMemo, useCallback, forwardRef } from "react";
 import { useAppData } from "../../../lib/contexts/AppDataContext";
 import { DataTable } from "../../../components/DataTable";
-import { Trash2, Settings, Download, RefreshCw, Plus, Search, X, ArrowLeft } from "lucide-react";
+import { Trash2, Settings, Download, RefreshCw, Plus, Search, X, ArrowLeft, Columns2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -145,6 +145,21 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
 
       return { ...raw, data: filteredRows };
     }, [appData.Hold_AE, appData.globalMonth, parseToMonthIndex]);
+
+    const holdAETotalSum = useMemo(() => {
+      if (!filteredData?.data) return 0;
+      return filteredData.data.reduce((sum: number, row: any) => {
+        const val = row && row["TOTAL PAYMENT"];
+        return sum + (parseMoneyToNumber(val) || 0);
+      }, 0);
+    }, [filteredData?.data]);
+
+    const formatMoneyVNDLocal = useCallback((val: number) => {
+      return new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
+      }).format(val);
+    }, []);
 
     // 3. Special cell change handler for Hold_AE
     const handleCellChange = useCallback(
@@ -552,41 +567,39 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
 
     return (
       <div 
-        className="flex-1 flex flex-col min-h-0 w-full h-full px-0 py-0 m-0 relative overflow-hidden gap-0 bg-white border border-[#e7dbdc] dark:border-[#e7dbdc] shadow-xs z-10"
+        id="table-card"
+        className="flex-1 flex flex-col min-h-0 w-full h-full px-0 py-0 m-0 relative overflow-hidden gap-0 bg-white border border-[#cbd5e1] dark:border-[#cbd5e1] shadow-xs z-10"
         style={{ borderRadius: "0px", borderWidth: "1px", borderColor: "#cbd5e1" }}
       >
         {/* Top Toolbar Header with Settings Button */}
-        <div className="px-6 py-2.5 border-b border-[#e7dbdc] flex items-center justify-between gap-4 shrink-0 select-none" style={{ borderRadius: "0px", backgroundColor: "var(--table-header-bg, #FAF9F6)" }}>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="font-display font-bold text-xs uppercase tracking-wider text-primary">
-                HOLD AE_MASTER
-              </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-200/60 text-slate-700 font-bold">
-                {filteredData.data.length} dòng
-              </span>
+        <div className="px-4 py-2 border-b border-[#cbd5e1] flex items-center justify-between gap-4 shrink-0 select-none bg-white" style={{ height: "56px" }}>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center rounded-full border border-slate-200 bg-white shadow-3xs w-7 h-7 p-0 shrink-0">
+              <Columns2 className="w-3.5 h-3.5 text-primary" />
             </div>
+            <h3 className="font-bold uppercase tracking-wider text-primary text-[11px] font-display">
+              BẢNG HOLD AE CHI TIẾT (LŨY KẾ)
+            </h3>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             {cameFromBulkPayment && (
               <button
                 onClick={() => onBackToBulkPayment?.()}
-                className="h-[30px] px-3 mr-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 font-bold text-xs"
-                style={{ borderRadius: "9999px", height: "30px" }}
+                className="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-all shadow-3xs rounded-full active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 font-bold text-[10px] h-7 uppercase tracking-wider"
                 title="Quay lại Bảng Đối Soát"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Về Bảng Đối Soát</span>
+                <ArrowLeft className="w-3 h-3" />
+                <span>Về Đối Soát</span>
               </button>
             )}
             
             {/* Search Input */}
             <div 
-              className="flex items-center gap-2 h-[30px] px-3.5 py-1 text-xs w-48 sm:w-64 bg-white border border-[#e7dbdc]/80 shadow-xs focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all rounded-full"
-              style={{ borderRadius: "24px", height: "30px" }}
+              className="flex items-center gap-2 px-3 py-1 text-xs bg-white border border-[#cbd5e1] shadow-3xs rounded-full h-8 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all"
+              style={{ width: "220px" }}
             >
-              <Search className="w-4 h-4 text-blue-500 shrink-0" />
+              <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <input
                 type="text"
                 placeholder="Tìm kiếm..."
@@ -600,9 +613,23 @@ export const HoldAETable = forwardRef<any, HoldAETableProps>(
                   className="text-slate-400 hover:text-slate-700 text-xs p-0.5 transition-colors cursor-pointer"
                   title="Xóa tìm kiếm"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-3 h-3" />
                 </button>
               )}
+            </div>
+
+            {/* Key statistics block perfectly matching the second image */}
+            <div className="flex items-center gap-4 mr-1">
+              <div className="flex flex-col items-end">
+                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter whitespace-nowrap">NHÂN VIÊN</span>
+                <span className="text-xs font-black text-slate-800 leading-tight">{filteredData.data.length}</span>
+              </div>
+              <div className="flex flex-col items-end border-l border-slate-200 pl-4">
+                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter whitespace-nowrap">TỔNG TIỀN</span>
+                <div className="bg-slate-50 px-2 py-0.5 rounded border border-slate-100/80 mt-0.5">
+                  <span className="text-xs font-black text-slate-800 tracking-tight font-mono">{formatMoneyVNDLocal(holdAETotalSum).replace(" ₫", "")}đ</span>
+                </div>
+              </div>
             </div>
 
             {/* Nút Cài đặt (Settings Button) */}

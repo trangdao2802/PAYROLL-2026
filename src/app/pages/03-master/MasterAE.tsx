@@ -25,7 +25,8 @@ import {
   Eye,
   EyeOff,
   X,
-  ArrowLeft
+  ArrowLeft,
+  Columns2
 } from "lucide-react";
 import { DataTable } from "../../components/DataTable";
 import {
@@ -825,7 +826,7 @@ export function MasterAE() {
   }, [setActiveTab, handleRefreshData, handleExportExcel]);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 relative overflow-hidden bg-transparent">
+    <div className="flex-1 flex flex-col min-h-0 relative overflow-hidden bg-transparent pt-0" style={{ paddingTop: "0px" }}>
       <AnimatePresence initial={false}>
         {view === "list" && (
           <motion.div
@@ -833,8 +834,8 @@ export function MasterAE() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: "100%" }}
-            className="flex-1 flex flex-col min-h-0 gap-4 relative overflow-hidden bg-transparent w-full px-5 pt-2 pb-5"
-            style={{ paddingTop: "12px" }}
+            className="flex-1 flex flex-col min-h-0 gap-4 relative overflow-hidden bg-transparent w-full pl-0 pr-5 pt-1.5 pb-5"
+            style={{ paddingTop: "6px", paddingLeft: "0px" }}
           >
             {/* Inner Content Area holding Table */}
             <div className="flex-1 min-h-0 relative overflow-hidden w-full h-full">
@@ -895,91 +896,96 @@ export function MasterAE() {
                         </div>
                       ) : (
                         <div 
-                          className="flex-1 flex flex-col min-h-0 w-full h-full px-0 py-0 m-0 relative overflow-hidden gap-0 bg-white border border-[#e7dbdc] dark:border-slate-700 shadow-xs z-10"
-                          style={{ borderRadius: "0px", borderWidth: "1px", borderColor: "#cbd5e1" }}
+                          className="flex-1 flex flex-col min-h-0 w-full h-full px-0 py-0 m-0 relative overflow-hidden gap-0 bg-white border border-[#cbd5e1] dark:border-slate-700 shadow-xs z-10"
+                          style={{ borderRadius: "12px", borderWidth: "1px", borderColor: "#cbd5e1" }}
                         >
                           {/* Top Toolbar Header with Settings Button */}
-                          <div className="px-6 py-2.5 border-b border-[#e7dbdc] flex items-center justify-between gap-4 shrink-0 select-none" style={{ borderRadius: "0px", paddingBottom: "12px", backgroundColor: "var(--table-header-bg, #FAF9F6)" }}>
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center gap-2">
-                                <span className="font-display font-bold text-xs uppercase tracking-wider text-primary">
-                                  {activeTab === "Sheet1_AE" ? `Gross from salary per period ${appData.globalMonth}` : activeTab}
-                                </span>
-                                {activeTab !== "Sheet1_AE" && (
-                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-200/60 text-slate-700 font-bold">
-                                    {currentData.data.length} dòng
-                                  </span>
-                                )}
+                          <div className="px-4 py-2 border-b border-[#cbd5e1] flex items-center justify-between gap-4 shrink-0 select-none bg-white" style={{ height: "56px" }}>
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center justify-center rounded-full border border-slate-200 bg-white shadow-3xs w-7 h-7 p-0 shrink-0">
+                                <Columns2 className="w-3.5 h-3.5 text-primary" />
                               </div>
+                              <h3 className="font-bold uppercase tracking-wider text-primary text-[11px] font-display">
+                                {activeTab === "Sheet1_AE"
+                                  ? `BẢNG LƯƠNG GROSS CHI TIẾT (SHEET1 AE) - THÁNG ${appData.globalMonth}`
+                                  : activeTab === "Deductions"
+                                    ? "BẢNG CHI TIẾT KHẤU TRỪ VÀ THU KHÁC"
+                                    : activeTab === "NetPay"
+                                      ? "BẢNG LƯƠNG NET THỰC CHUYỂN"
+                                      : activeTab === "Mkt_Local_North"
+                                        ? "BẢNG PHÂN PHỐI LƯƠNG AE LOCAL (NORTH)"
+                                        : activeTab}
+                              </h3>
                             </div>
 
-                              <div className="flex items-center gap-2">
-                                {cameFromBulkPayment && activeTab !== "BulkPayment" && (
+                            <div className="flex items-center gap-4">
+                              {cameFromBulkPayment && activeTab !== "BulkPayment" && (
+                                <button
+                                  onClick={() => {
+                                    setSearchTerm("");
+                                    localStorage.removeItem("master_ae_search");
+                                    localStorage.setItem("bulk_payment_right_tab", "reconcile");
+                                    setActiveTab("BulkPayment");
+                                    setCameFromBulkPayment(false);
+                                    window.dispatchEvent(new CustomEvent("bulk-payment-set-right-tab", { detail: { tab: "reconcile" } }));
+                                  }}
+                                  className="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-all shadow-3xs rounded-full active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 font-bold text-[10px] h-7 uppercase tracking-wider"
+                                  title="Quay lại Bảng Đối Soát"
+                                >
+                                  <ArrowLeft className="w-3 h-3" />
+                                  <span>Về Đối Soát</span>
+                                </button>
+                              )}
+                              
+                              {/* Search Input shown dynamically based on showSearch state */}
+                              {showSearch && (
+                                <div 
+                                  className="flex items-center gap-2 px-3 py-1 text-xs bg-white border border-[#cbd5e1] shadow-3xs rounded-full h-8 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all animate-in fade-in slide-in-from-right duration-250"
+                                  style={{ width: "220px" }}
+                                >
+                                  <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                  <input
+                                    type="text"
+                                    placeholder="Tìm kiếm..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full bg-transparent border-none outline-none text-xs text-slate-800 placeholder:text-slate-400"
+                                  />
+                                  {searchTerm && (
+                                    <button
+                                      onClick={() => setSearchTerm("")}
+                                      className="text-slate-400 hover:text-slate-700 text-xs p-0.5 transition-colors cursor-pointer"
+                                      title="Xóa tìm kiếm"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  )}
                                   <button
                                     onClick={() => {
+                                      setShowSearch(false);
                                       setSearchTerm("");
-                                      localStorage.removeItem("master_ae_search");
-                                      localStorage.setItem("bulk_payment_right_tab", "reconcile");
-                                      setActiveTab("BulkPayment");
-                                      setCameFromBulkPayment(false);
-                                      window.dispatchEvent(new CustomEvent("bulk-payment-set-right-tab", { detail: { tab: "reconcile" } }));
                                     }}
-                                    className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-all shadow-xs rounded-full active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 font-bold text-xs h-9"
-                                    title="Quay lại Bảng Đối Soát"
+                                    className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-0.5 rounded-full transition-colors cursor-pointer"
+                                    title="Đóng tìm kiếm"
                                   >
-                                    <ArrowLeft className="w-3.5 h-3.5" />
-                                    <span>Về Bảng Đối Soát</span>
+                                    <X className="w-3 h-3" />
                                   </button>
-                                )}
-                                
-                                {/* Search Input shown dynamically based on showSearch state */}
-                                {showSearch ? (
-                                  <div 
-                                    className="flex items-center gap-2 px-3.5 py-1 text-xs bg-white border border-[#e7dbdc]/80 shadow-xs rounded-full h-9 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all animate-in fade-in slide-in-from-right duration-250"
-                                    style={{ borderRadius: "24px", width: "450px" }}
-                                  >
-                                    <Search className="w-4 h-4 text-slate-400 shrink-0" />
-                                    <input
-                                      type="text"
-                                      placeholder="Tìm kiếm..."
-                                      value={searchTerm}
-                                      onChange={(e) => setSearchTerm(e.target.value)}
-                                      className="w-full bg-transparent border-none outline-none text-xs text-slate-800 placeholder:text-slate-400"
-                                    />
-                                    {searchTerm && (
-                                      <button
-                                        onClick={() => setSearchTerm("")}
-                                        className="text-slate-400 hover:text-slate-700 text-xs p-0.5 transition-colors cursor-pointer"
-                                        title="Xóa tìm kiếm"
-                                      >
-                                        <X className="w-3.5 h-3.5" />
-                                      </button>
-                                    )}
-                                    <button
-                                      onClick={() => {
-                                        setShowSearch(false);
-                                        setSearchTerm("");
-                                      }}
-                                      className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1 rounded-full transition-colors cursor-pointer"
-                                      title="Đóng tìm kiếm"
-                                    >
-                                      <X className="w-4 h-4" />
-                                    </button>
+                                </div>
+                              )}
+
+                              {/* Key statistics block perfectly matching the second image */}
+                              <div className="flex items-center gap-4 mr-1">
+                                <div className="flex flex-col items-end">
+                                  <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter whitespace-nowrap">NHÂN VIÊN</span>
+                                  <span className="text-xs font-black text-slate-800 leading-tight">{currentData.data.length}</span>
+                                </div>
+                                <div className="flex flex-col items-end border-l border-slate-200 pl-4">
+                                  <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter whitespace-nowrap">TỔNG TIỀN</span>
+                                  <div className="bg-slate-50 px-2 py-0.5 rounded border border-slate-100/80 mt-0.5">
+                                    <span className="text-xs font-black text-slate-800 tracking-tight font-mono">{formatMoneyVND(currentTabTotalSum).replace(" ₫", "")}đ</span>
                                   </div>
-                                ) : (
-                                  /* Total Number / Sum Pill replacing Search when hidden */
-                                  <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#cbd5e1] rounded-full h-8 select-none whitespace-nowrap flex-nowrap shrink-0 shadow-3xs">
-                                    <span className="text-[9.5px] font-extrabold text-slate-500 uppercase tracking-widest font-sans">
-                                      TỔNG TIỀN:
-                                    </span>
-                                    <span className="text-[11px] font-mono font-black text-rose-600">
-                                      {formatMoneyVND(currentTabTotalSum).replace(" ₫", "")}
-                                    </span>
-                                    <span className="text-[9px] font-bold text-[#781D1D] font-sans">
-                                      VND
-                                    </span>
-                                  </div>
-                                )}
+                                </div>
+                              </div>
  
                                  {/* Nút Cài đặt (Settings Button) */}
                                  <DropdownMenu>

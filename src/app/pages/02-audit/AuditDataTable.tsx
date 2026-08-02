@@ -274,7 +274,7 @@ const ColumnFilter = ({
           className={`flex items-center justify-center w-3.5 h-3.5 rounded transition-all shrink-0 bg-transparent ${
             currentFilters && currentFilters.size !== uniqueValues.length
               ? "text-accent hover:text-accent/80 scale-110 font-bold"
-              : "text-slate-400 hover:text-accent"
+              : "text-slate-400/50 opacity-50 hover:opacity-100 hover:text-accent"
           }`}
           onClick={(e) => {
             e.stopPropagation();
@@ -2384,6 +2384,7 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
           </div>
         )}
         <div
+          id="table-card"
           ref={tableRef}
           className={`flex flex-col flex-1 min-h-0 w-full max-w-full outline-none overflow-hidden relative pl-0 ${className || ""} ${hasActiveFilters ? "bg-amber-50/[0.005]" : ""} data-table-wrapper audit-data-table-wrapper`}
           style={
@@ -2756,12 +2757,12 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
 
           {/* Footer — Floating Card Style mimicking payment page */}
           <div
-            className="flex items-center justify-between shrink-0 z-40 relative mt-0 border-0 shadow-none rounded-none table-footer-pagination"
-            style={{ paddingTop: "0px", paddingBottom: "0px", height: "35.9896px", minHeight: "35.9896px", backgroundColor: "var(--table-header-bg, var(--secondary, #FAF9F6))" }}
+            className="flex items-center justify-between shrink-0 z-40 relative mt-0 border-t border-[#cbd5e1] bg-white shadow-none rounded-none table-footer-pagination px-3"
+            style={{ height: "40px", minHeight: "40px" }}
           >
-            <div className="flex items-center gap-3 px-3" style={{ height: "30px", paddingLeft: "0px", paddingRight: "0px" }}>
+            <div className="flex items-center gap-3" style={{ height: "100%" }}>
               <div className="flex items-center gap-1.5 hidden md:flex">
-                <span className="text-[11px] font-medium text-slate-400 whitespace-nowrap ml-2">
+                <span className="text-[11px] font-medium text-slate-500 whitespace-nowrap">
                   Hiển thị:
                 </span>
                 <Select
@@ -2772,20 +2773,19 @@ export const DataTable = React.forwardRef<DataTableRef, DataTableProps>(
                     scrollContainerRef.current?.scrollTo({ top: 0 });
                   }}
                 >
-                  <SelectTrigger className="h-[20px] px-2 text-[12px] font-bold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm w-[110px]" style={{ height: "20px" }}>
+                  <SelectTrigger className="h-6 px-2.5 text-[11px] font-bold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-2xs w-[100px] rounded-md">
                     <SelectValue placeholder="Chọn..." />
                   </SelectTrigger>
-                  <SelectContent className="bg-[var(--popover)] border-border z-[99999] opacity-100 w-[110px] min-w-[80px]">
-                    <SelectItem value="50" className="text-[12px] font-bold">50 dòng</SelectItem>
-                    <SelectItem value="100" className="text-[12px] font-bold">100 dòng</SelectItem>
-                    <SelectItem value="all" className="text-[12px] font-bold">Tất cả</SelectItem>
+                  <SelectContent className="bg-popover border-border z-[99999] opacity-100 w-[110px] min-w-[80px]">
+                    <SelectItem value="50" className="text-[11px] font-bold">50 dòng</SelectItem>
+                    <SelectItem value="100" className="text-[11px] font-bold">100 dòng</SelectItem>
+                    <SelectItem value="all" className="text-[11px] font-bold">Tất cả</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div 
-                className="flex items-center gap-1.5 hidden md:flex border-l border-slate-100 pl-3"
-                style={{ height: "20px" }}
+                className="flex items-center gap-2 hidden md:flex border-l border-slate-200 pl-3 h-5"
               >
                 <Popover>
                   <PopoverTrigger asChild>

@@ -399,11 +399,11 @@
     z-index: 45 !important;
     background-color: var(--table-header-bg, var(--secondary, #FAF9F6)) !important;
     color: var(--accent, #1e293b) !important;
-    font-weight: 700 !important;
-    font-size: 0.75rem !important;
-    line-height: 1.25rem !important;
-    padding-top: 5px !important;
-    padding-bottom: 5px !important;
+    font-weight: 800 !important;
+    font-size: 0.85rem !important;
+    line-height: 1.5rem !important;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
   }
 
   /* Remove automatic hiding of the second column which causes alignment issues */
@@ -612,11 +612,11 @@
   .data-table-wrapper tfoot tr td {
     background-color: var(--table-header-bg, var(--secondary, #FAF9F6)) !important;
     color: var(--accent, #1e293b) !important;
-    font-weight: 700 !important;
-    font-size: 0.75rem !important;
-    line-height: 1.25rem !important;
-    padding-top: 5px !important;
-    padding-bottom: 5px !important;
+    font-weight: 800 !important;
+    font-size: 0.85rem !important;
+    line-height: 1.5rem !important;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
     border-top: 1px solid var(--border, #cbd5e1) !important;
     border-bottom: 1px solid var(--border, #cbd5e1) !important;
     position: sticky !important;
@@ -783,9 +783,7 @@ table,
 header.table-header,
 div.table-wrapper,
 .main-header-wrapper,
-.table-data-container,
-[class*="container"]:not(.rounded-full):not(button),
-[class*="wrapper"]:not(.rounded-full):not(button) {
+.table-data-container {
   border-radius: 0px !important;
 }
 
@@ -1002,4 +1000,174 @@ div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-
   padding-top: 12px !important;
 }
 
+/* Additional Focus Mode Adjustments 10 */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) {
+  border-width: 0px !important;
+  padding-top: 12px !important;
+  padding-left: 12px !important;
+}
 
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+  padding-bottom: 0px !important;
+  padding-top: 0px !important;
+  border-width: 0.606061px !important;
+  border-style: solid !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) {
+  border-radius: 24px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  border-width: 0px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div#roster-center-table-wrapper:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > table:nth-of-type(1) {
+  border-width: 0px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div#roster-center-table-wrapper:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  border-width: 0.606061px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) {
+  width: 536.676px !important;
+}
+
+/* Additional Focus Mode Adjustments 11 */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div#roster-center-table-wrapper:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) {
+  height: 48.2008px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  padding-top: 12px !important;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+  padding-bottom: 12px !important;
+  border-width: 0px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) {
+  font-size: 12px !important;
+  line-height: 19px !important;
+  height: 43.8466px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) {
+  font-size: 13px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > h1:nth-of-type(1) {
+  font-size: 22px !important;
+  line-height: 24.2px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) {
+  border-width: 0.3px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) {
+  font-size: 8px !important;
+  line-height: 13px !important;
+}
+
+/* Additional Focus Mode Adjustments 12 */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) {
+  width: 1116.25px !important;
+}
+
+/* Focus Mode Adjustments: Applied CSS rules for targeted selectors */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) {
+  width: 165.985px !important;
+  border-radius: 0px !important;
+  border-width: 0px !important;
+  background-color: transparent !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) {
+  width: 216.971px !important;
+  background-color: transparent !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  padding-top: 0px !important;
+  height: 128.157px !important;
+  background-color: transparent !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) {
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > span:nth-of-type(1) {
+  margin-bottom: 0px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1) {
+  margin-bottom: 0px !important;
+}
+
+/* Custom scrollbar styles: thin, light background */
+::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+::-webkit-scrollbar-track {
+  background: #fcfaf6 !important;
+  border-radius: 9999px !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e2e2da !important;
+  border-radius: 9999px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #cdcdc3 !important;
+}
+
+/* Firefox scrollbar styles */
+* {
+  scrollbar-width: thin !important;
+  scrollbar-color: #e2e2da #fcfaf6 !important;
+}
+
+/* Custom Rule 1: .table-container > div.min-h-0 background transparent & border styled */
+.table-container > div.min-h-0 {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Custom Rule 2: Dashboard Page Isolation to prevent overflow & scrolling issues */
+#dashboard-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+#dashboard-container * {
+  box-sizing: border-box !important;
+}
+
+/* Global Grand Total Row Styling - Increased height, padding, and font weight */
+table tfoot tr,
+table tfoot td,
+table tfoot th,
+tfoot,
+tfoot tr,
+tfoot td,
+tfoot th,
+.total-row,
+.total-row td,
+.total-row th,
+tr.total-row td {
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+  height: auto !important;
+  min-height: 52px !important;
+  font-size: 0.85rem !important;
+}

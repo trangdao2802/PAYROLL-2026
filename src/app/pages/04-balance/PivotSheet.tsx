@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect, react-hooks/purity */
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import * as XLSX from "xlsx";
-import { Download, RefreshCw, FileSpreadsheet, Eye, ArrowUpDown, Upload, SlidersHorizontal, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, Trash2 } from "lucide-react";
+import { Download, RefreshCw, FileSpreadsheet, Eye, ArrowUpDown, Upload, SlidersHorizontal, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, Columns2 } from "lucide-react";
 import { useAppData } from "../../lib/contexts/AppDataContext";
 import { toast } from "sonner";
 import {
@@ -375,6 +375,7 @@ export function PivotSheet() {
     setEditValue("");
   };
 
+  /*
   const handleAddRow = () => {
     const defaultBU = "AHN";
     const defaultL07 = `CENTER_${Date.now().toString().slice(-4)}`;
@@ -390,6 +391,7 @@ export function PivotSheet() {
     });
     toast.success(`Đã thêm dòng mới với Center/L07: ${defaultL07}`);
   };
+  */
 
   const handleDeleteRow = (bu: string, l07: string) => {
     if (window.confirm(`Bạn có chắc chắn muốn xóa dòng ${bu} - ${l07}?`)) {
@@ -1022,7 +1024,10 @@ export function PivotSheet() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 w-full overflow-hidden bg-white rounded-none border border-[#e7dbdc] shadow-2xs relative z-10">
+    <div 
+      className="flex-1 flex flex-col min-h-0 w-full h-full px-0 py-0 m-0 relative overflow-hidden gap-0 bg-white border border-[#cbd5e1] dark:border-slate-700 shadow-xs z-10 pivot-table-container"
+      style={{ borderRadius: "0px", borderWidth: "1px", borderColor: "#cbd5e1", borderStyle: "solid" }}
+    >
       <input
         ref={fileInputRef}
         type="file"
@@ -1034,24 +1039,26 @@ export function PivotSheet() {
       />
       {/* TOP HEADER TOOLBAR & STATS BADGES */}
       <div 
-        className="shrink-0 flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 border-b border-[#e7dbdc]"
-        style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+        className="shrink-0 flex flex-wrap items-center justify-between gap-3 px-4 border-b border-[#cbd5e1] bg-white select-none"
+        style={{ height: "56px", minHeight: "56px" }}
       >
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#781D1D] shrink-0 inline-block"></span>
-          <span className="text-[#781D1D] font-extrabold uppercase tracking-wider" style={{ fontSize: "13px" }}>
+          <div className="flex items-center justify-center rounded-full border border-slate-200 bg-white shadow-3xs w-7 h-7 p-0 shrink-0">
+            <Columns2 className="w-3.5 h-3.5 text-primary" />
+          </div>
+          <h3 className="font-bold uppercase tracking-wider text-primary text-[11px] font-display">
             PHÂN BỔ CHI LƯƠNG (PIVOT MASTER)
-          </span>
+          </h3>
         </div>
         
         <div className="flex items-center gap-3">
-          <div className="text-right px-3 py-1 bg-white rounded border border-[#e7dbdc]/80 shadow-2xs">
+          <div className="text-right px-3 py-1 bg-white rounded border border-[#cbd5e1]/80 shadow-3xs">
             <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">SỐ TRUNG TÂM</p>
-            <p className="text-sm font-bold text-slate-800 font-mono leading-tight">{totalCenters}</p>
+            <p className="text-xs font-bold text-slate-800 font-mono leading-tight">{totalCenters}</p>
           </div>
-          <div className="text-right px-3 py-1 bg-white rounded border border-[#e7dbdc]/80 shadow-2xs">
+          <div className="text-right px-3 py-1 bg-white rounded border border-[#cbd5e1]/80 shadow-3xs">
             <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">TỔNG CHI PHÍ (VNĐ)</p>
-            <p className="text-sm font-bold text-[#781D1D] font-mono leading-tight">{Math.round(totalSalarySum).toLocaleString('vi-VN')}</p>
+            <p className="text-xs font-bold text-primary font-mono leading-tight">{Math.round(totalSalarySum).toLocaleString('vi-VN')}</p>
           </div>
         </div>
       </div>
@@ -1215,13 +1222,13 @@ export function PivotSheet() {
 
       {/* FOOTER BAR WITH PAGE SIZE MATCHING HOLD AE_MASTER, SETTINGS ICON MENU, AND PAGINATION */}
       <div 
-        className="px-4 py-[10px] border-t border-[#e7dbdc] flex flex-wrap items-center justify-between gap-4 text-xs text-slate-700"
-        style={{ backgroundColor: "var(--table-header-bg, #FAF9F6)" }}
+        className="px-3 border-t border-[#cbd5e1] flex items-center justify-between gap-4 text-xs text-slate-700 bg-white shrink-0 z-20"
+        style={{ height: "42px", minHeight: "42px" }}
       >
         {/* LEFT SIDE: PAGE SIZE DROPDOWN MATCHING HOLD AE_MASTER & SETTINGS ICON BUTTON */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-medium text-slate-600 whitespace-nowrap">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-medium text-slate-500 whitespace-nowrap">
               Hiển thị:
             </span>
             <Select
@@ -1232,8 +1239,7 @@ export function PivotSheet() {
               }}
             >
               <SelectTrigger 
-                className="h-[28px] rounded-full px-3 text-[11px] font-bold text-slate-800 border-[#e7dbdc] bg-white hover:bg-slate-50 transition-colors shadow-2xs"
-                style={{ width: "110px", height: "28px" }}
+                className="h-6 rounded-md px-2.5 text-[11px] font-bold text-slate-800 border-[#cbd5e1] bg-white hover:bg-slate-50 transition-colors shadow-2xs w-[100px]"
               >
                 <SelectValue placeholder="Chọn..." />
               </SelectTrigger>
@@ -1248,15 +1254,6 @@ export function PivotSheet() {
               </SelectContent>
             </Select>
           </div>
-
-          <button
-            onClick={handleAddRow}
-            className="h-[28px] px-3 bg-white hover:bg-slate-50 text-slate-700 border border-[#e7dbdc] rounded-full transition-all shadow-2xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 font-bold text-xs"
-            title="Thêm dòng mới vào Pivot Master"
-          >
-            <Plus className="w-3.5 h-3.5 text-primary" />
-            <span>Thêm dòng</span>
-          </button>
 
           {/* SETTINGS / ACTION MENU BUTTON IN FOOTER */}
           <div className="relative" ref={settingsMenuRef}>
